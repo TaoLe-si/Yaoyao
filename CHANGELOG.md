@@ -29,6 +29,7 @@
 | 104000| 3.58    | more data, stable |
 | 105400| 3.30    | first successful generation! |
 | 135400| 3.55    | 3 more epochs, plateau |
+| 75000 | 3.20    | SEQ=64 + top-p breakthrough |
 
 
 ## D=128 (current)
