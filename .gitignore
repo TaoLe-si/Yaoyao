@@ -1,15 +1,41 @@
-# --- binaries ---
+# Compiled binaries
 *.exe
+*.o
+*.obj
+*.so
 *.dll
+
+# Model checkpoints
 *.bin
+*.pt
+*.h5
 
-# --- logs ---
+# Data files
+tinystories_*.txt
 *.log
+*.zip
+*.tsv
+!docs/*.txt
+!vocab.txt
 
-# --- large data ---
-*.parquet
-tinystories_train.txt
-tinystories_val.txt
+# Session artifacts
+session-extract/
+archive/
+session.zip
+build-smoke.bat
+compile-test.bat
+compile-v07.bat
+compile_gpu*.bat
+extract_words.py
+run-v07-short.bat
+save_load_func.cpp
+test_vocab_*.cpp
+words.txt
+vocab_words.tsv
+tinystories_unit.txt
 
-# --- misc ---
-*.tmp
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
