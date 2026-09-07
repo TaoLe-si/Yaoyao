@@ -58,3 +58,11 @@
 - TTFT: 2200ms → 15ms (150x faster)
 - Streaming throughput: 7.4 tok/s → 120+ tok/s (16x faster)
 - Per-token interval: 130ms → 7.8ms (17x faster)
+
+## v0.9.8: Complete README rewrite
+- 17 sections covering: architecture, vocabulary layer (h+s replacing attention),
+  Q1 hash bucket, Q3 conv, dynamic alpha, Q4 output head, RMSNorm,
+  current spec, training progression, performance, file structure,
+  API docs, alignment with Mamba/RWKV, performance comparison
+- Acknowledges "vocabulary layer" terminology for (h, s) channels
+- All tables reflect current v0.9.7 state (Loss=3.11, 17.64 MB model)
