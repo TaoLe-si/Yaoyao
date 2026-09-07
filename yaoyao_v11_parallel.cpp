@@ -337,6 +337,7 @@ void forward(M& m, const std::vector<int>& inp, int BATCH, int SEQ, int PAD,
         for(int v=1;v<V_unit;++v) if(logits[n*V_unit+v]>mx) mx=logits[n*V_unit+v];
         float sum=0;
         for(int v=0;v<V_unit;++v){ probs[n*V_unit+v]=std::exp(logits[n*V_unit+v]-mx); sum+=probs[n*V_unit+v]; }
+        if(!(sum>0)) { std::fprintf(stderr,"NaN at softmax n=%d mx=%f sum=%f\n",n,mx,sum); }
         for(int v=0;v<V_unit;++v) probs[n*V_unit+v]/=sum;
     }
 }
@@ -375,9 +376,9 @@ int main(int argc, char** argv){
     int SEQ=64, BATCH=16, BL=SEQ*BATCH;
     int N_WIN=(argc>3)?atoi(argv[3]):2000;
     int EPOCHS=(argc>4)?atoi(argv[4]):2;
-    float LR=0.003f, LR_ALPHA=0.0003f;
+    float LR=(argc>5)?(float)atof(argv[5]):0.003f; float LR_ALPHA=(argc>6)?(float)atof(argv[6]):0.0003f;
     int PAD=vocab.pad_id;
-    std::printf("Config: BATCH=%d SEQ=%d N_WIN=%d EPOCHS=%d\n", BATCH, SEQ, N_WIN, EPOCHS);
+    std::printf("Config: BATCH=%d SEQ=%d N_WIN=%d EPOCHS=%d LR=%.5f LR_ALPHA=%.5f\n", BATCH, SEQ, N_WIN, EPOCHS, LR, LR_ALPHA);
     
     std::vector<float> x(BL*D), x_prev(D), y(BL*D), alpha(BL*D);
     std::vector<float> h(BATCH*(SEQ+1)*D), s(BATCH*(SEQ+1)*D);
@@ -419,8 +420,8 @@ int main(int argc, char** argv){
                     xs, ys, alphas, hs, ss, hgs, sgs, q1_aux);
             
             float loss=0;
-            for(int n=0;n<BL;++n){int t=tgtBL[n]; float p=std::max(probs[n*V_unit+t], 1e-9f); loss+=-std::log(p);}
-            loss/=BL;  // already averaged over BL=BATCH*SEQ total+=loss; nb++; m.step++;
+            for(int n=0;n<BL;++n){int t=tgtBL[n]; float p=std::max(probs[n*V_unit+t], 1e-9f); if(std::isnan(p)){std::fprintf(stderr,"NaN probs at n=%d tgt=%d p=%f\n",n,t,p); break;} loss+=-std::log(p);}
+            loss/=BL; total+=loss; nb++; m.step++;
             
             for(int n=0;n<BL;++n){for(int v=0;v<V_unit;++v) d_logits[n*V_unit+v]=probs[n*V_unit+v]; d_logits[n*V_unit+tgtBL[n]]-=1.0f;}
             // W_bi accumulation: race condition on +=, keep sequential
@@ -431,10 +432,15 @@ int main(int argc, char** argv){
     for(int v=0;v<V_unit;++v) for(int d=0;d<D;++d){float s1=0,s2=0; for(int n=0;n<BL;++n){s1+=d_logits[n*V_unit+v]*hg[n*D+d]; s2+=d_logits[n*V_unit+v]*sg[n*D+d];} d_Wh_g[v*D+d]=s1; d_Ws_g[v*D+d]=s2;}
             
             for(int l=NL-1;l>=0;--l){
+                std::fill(d_x.begin(), d_x.end(), 0.0f);
+                std::fill(d_alpha.begin(), d_alpha.end(), 0.0f);
+                // Loop over all batches - batch bb
+                for(int bb=0;bb<BATCH;++bb){
+                int boff=bb*SEQ;
                 std::vector<float> h_seq(SEQ*D), s_seq(SEQ*D);
                 for(int tt=0;tt<SEQ;++tt) for(int d=0;d<D;++d){
-                    h_seq[tt*D+d]=h[(0*(SEQ+1)+tt+1)*D+d];
-                    s_seq[tt*D+d]=s[(0*(SEQ+1)+tt+1)*D+d];
+                    h_seq[tt*D+d]=h[(bb*(SEQ+1)+tt+1)*D+d];
+                    s_seq[tt*D+d]=s[(bb*(SEQ+1)+tt+1)*D+d];
                 }
                 std::vector<float> d_h_seq(SEQ*D,0), d_s_seq(SEQ*D,0);
                 for(int tt=0;tt<SEQ;++tt){
@@ -444,10 +450,10 @@ int main(int argc, char** argv){
                     for(int d=0;d<D;++d){float v=s_seq[tt*D+d]; ms_s+=v*v;}
                     ms_s=ms_s/(float)D+1e-5f; float r_s=std::sqrt(ms_s);
                     float dot_h=0, dot_s=0;
-                    for(int d=0;d<D;++d){dot_h+=d_hg[tt*D+d]*h_seq[tt*D+d]; dot_s+=d_sg[tt*D+d]*s_seq[tt*D+d];}
+                    for(int d=0;d<D;++d){dot_h+=d_hg[(boff+tt)*D+d]*h_seq[tt*D+d]; dot_s+=d_sg[(boff+tt)*D+d]*s_seq[tt*D+d];}
                     for(int d=0;d<D;++d){
-                        d_h_seq[tt*D+d]=d_hg[tt*D+d]/r_h-h_seq[tt*D+d]*dot_h/((float)D*r_h*r_h*r_h);
-                        d_s_seq[tt*D+d]=d_sg[tt*D+d]/r_s-s_seq[tt*D+d]*dot_s/((float)D*r_s*r_s*r_s);
+                        d_h_seq[tt*D+d]=d_hg[(boff+tt)*D+d]/r_h-h_seq[tt*D+d]*dot_h/((float)D*r_h*r_h*r_h);
+                        d_s_seq[tt*D+d]=d_sg[(boff+tt)*D+d]/r_s-s_seq[tt*D+d]*dot_s/((float)D*r_s*r_s*r_s);
                     }
                 }
                 std::vector<float> cum_s((SEQ+1)*D,0);
@@ -456,40 +462,40 @@ int main(int argc, char** argv){
                 for(int tt=SEQ-1;tt>=0;--tt){
                     for(int d=0;d<D;++d){
                         d_h_total[(tt+1)*D+d] += d_h_seq[tt*D+d];
-                        float a=alphas[l*BL*D+tt*D+d];
-                        float h_prev=hs[l*BATCH*(SEQ+1)*D+(0*(SEQ+1)+tt)*D+d];
+                        float a=alphas[l*BL*D+(boff+tt)*D+d];
+                        float h_prev=hs[l*BATCH*(SEQ+1)*D+(bb*(SEQ+1)+tt)*D+d];
                         float dh=d_h_total[(tt+1)*D+d];
-                        d_ys[l*BL*D+tt*D+d]=(1-a)*dh+cum_s[tt*D+d];
-                        d_alphas[l*BL*D+tt*D+d]=(h_prev-ys[l*BL*D+tt*D+d])*dh;
+                        d_ys[l*BL*D+(boff+tt)*D+d]=(1-a)*dh+cum_s[tt*D+d];
+                        d_alphas[l*BL*D+(boff+tt)*D+d]=(h_prev-ys[l*BL*D+(boff+tt)*D+d])*dh;
                         d_h_total[tt*D+d] += a*dh;
                     }
                 }
-                std::fill(d_x.begin(), d_x.end(), 0.0f);
                 for(int d=0;d<D;++d){
                     float a0=0,a1=0,a2=0;
                     for(int tt=0;tt<SEQ;++tt){
-                        float dy=d_ys[l*BL*D+tt*D+d];
-                        if(tt>=2){a0+=dy*xs[l*BL*D+(tt-2)*D+d]; d_x[(tt-2)*D+d]+=dy*m.q3w0[l*D+d];}
-                        if(tt>=1){a1+=dy*xs[l*BL*D+(tt-1)*D+d]; d_x[(tt-1)*D+d]+=dy*m.q3w1[l*D+d];}
-                        a2+=dy*xs[l*BL*D+tt*D+d]; d_x[tt*D+d]+=dy*m.q3w2[l*D+d];
+                        float dy=d_ys[l*BL*D+(boff+tt)*D+d];
+                        if(tt>=2){a0+=dy*xs[l*BL*D+(boff+tt-2)*D+d]; d_x[(boff+tt-2)*D+d]+=dy*m.q3w0[l*D+d];}
+                        if(tt>=1){a1+=dy*xs[l*BL*D+(boff+tt-1)*D+d]; d_x[(boff+tt-1)*D+d]+=dy*m.q3w1[l*D+d];}
+                        a2+=dy*xs[l*BL*D+(boff+tt)*D+d]; d_x[(boff+tt)*D+d]+=dy*m.q3w2[l*D+d];
                     }
                     d_q3w0[l*D+d]+=a0; d_q3w1[l*D+d]+=a1; d_q3w2[l*D+d]+=a2;
                 }
                 for(int tt=0;tt<SEQ;++tt){
                     for(int d=0;d<D;++d){
-                        float a=alphas[l*BL*D+tt*D+d];
-                        d_alpha[tt*D+d]=d_alphas[l*BL*D+tt*D+d]*a*(1-a)/2.0f;
+                        float a=alphas[l*BL*D+(boff+tt)*D+d];
+                        d_alpha[(boff+tt)*D+d]=d_alphas[l*BL*D+(boff+tt)*D+d]*a*(1-a)/2.0f;
                     }
                 }
                 for(int d=0;d<D;++d) for(int k=0;k<D;++k){
                     float s=0;
-                    for(int tt=0;tt<SEQ;++tt) s+=d_alpha[tt*D+d]*xs[l*BL*D+tt*D+k];
+                    for(int tt=0;tt<SEQ;++tt) s+=d_alpha[(boff+tt)*D+d]*xs[l*BL*D+(boff+tt)*D+k];
                     d_aW[l*D*D+d*D+k]+=s;
                 }
-                for(int d=0;d<D;++d){float s=0; for(int tt=0;tt<SEQ;++tt) s+=d_alpha[tt*D+d]; d_ab[l*D+d]+=s;}
+                for(int d=0;d<D;++d){float s=0; for(int tt=0;tt<SEQ;++tt) s+=d_alpha[(boff+tt)*D+d]; d_ab[l*D+d]+=s;}
                 for(int tt=0;tt<SEQ;++tt){
-                    for(int d=0;d<D;++d){float dz=d_alpha[tt*D+d]; for(int k=0;k<D;++k) d_x[tt*D+k]+=dz*m.aW[l*D*D+d*D+k];}
+                    for(int d=0;d<D;++d){float dz=d_alpha[(boff+tt)*D+d]; for(int k=0;k<D;++k) d_x[(boff+tt)*D+k]+=dz*m.aW[l*D*D+d*D+k];}
                 }
+                } // end bb loop
                 if(l>0){for(int n=0;n<BL;++n) for(int d=0;d<D;++d) d_hg[n*D+d]=d_sg[n*D+d]=d_x[n*D+d];}
                 else{
                     for(int t=0;t<BL;++t){
@@ -517,7 +523,8 @@ int main(int argc, char** argv){
             std::fill(d_ab.begin(),d_ab.end(),0.0f);
             std::fill(m.q1_grad.begin(),m.q1_grad.end(),0.0f);
             
-            if((w+1)%1000==0){
+            // UNIT TEST: print every 5 windows
+            if((w+1)%5==0||w==0){
                 float el=std::chrono::duration<double>(std::chrono::steady_clock::now()-t0).count();
                 std::printf("  ep%d win%d/%d loss=%.4f avg=%.4f (%.1fs)\n", epoch+1, w+1, N_WIN, loss, total/nb, el);
             }

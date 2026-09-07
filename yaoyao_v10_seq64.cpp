@@ -512,7 +512,8 @@ int main(int argc, char** argv){
             std::fill(d_ab.begin(),d_ab.end(),0.0f);
             std::fill(m.q1_grad.begin(),m.q1_grad.end(),0.0f);
             
-            if((w+1)%1000==0){
+            // UNIT TEST: print every window
+            {
                 float el=std::chrono::duration<double>(std::chrono::steady_clock::now()-t0).count();
                 std::printf("  ep%d win%d/%d loss=%.4f avg=%.4f (%.1fs)\n", epoch+1, w+1, N_WIN, loss, total/nb, el);
             }
