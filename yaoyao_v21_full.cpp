@@ -128,7 +128,7 @@ const int NL_H = 2;
 const int Q1_B = 128;
 const int Q1_K = 16;
 const int Q3_K = 5;
-const int HASH_FEATURES = 16;
+const int HASH_FEATURES = 64;  // [V21-Phase1] 16 -> 64, 4 个独立 hash 函数
 
 // ============================================================================
 //  Q1 (从 v19 保留, hash bucket pool)
@@ -292,6 +292,13 @@ struct M {
     std::vector<float> q1_grad;
     int step = 0;
     int V_unit = 0;
+    // [V21-Phase2] SwiGLU 权重
+    int HIDDEN_SGL = 0;  // 在 init() 中设为 D + HASH_FEATURES
+    std::vector<float> W_sgl_gate, W_sgl_gate_m, W_sgl_gate_v;   // HIDDEN × HIDDEN
+    std::vector<float> b_sgl_gate, b_sgl_gate_m, b_sgl_gate_v;   // HIDDEN
+    std::vector<float> W_sgl_up, W_sgl_up_m, W_sgl_up_v;         // HIDDEN × HIDDEN
+    std::vector<float> b_sgl_up, b_sgl_up_m, b_sgl_up_v;         // HIDDEN
+    std::vector<float> W_sgl_out, W_sgl_out_m, W_sgl_out_v;       // V × HIDDEN
 
     void init(std::mt19937& rng, int V) {
         const int D = D_H, NL = NL_H;
@@ -314,6 +321,14 @@ struct M {
         Wbi_m.assign(V*V, 0); Wbi_v.assign(V*V, 0);
         W_m.assign(V*D, 0); W_v.assign(V*D, 0);
         W_hash_m.assign(V*HASH_FEATURES, 0); W_hash_v.assign(V*HASH_FEATURES, 0);
+        // [V21-Phase2] SwiGLU 权重分配
+        HIDDEN_SGL = D + HASH_FEATURES;  // 192
+        int H = HIDDEN_SGL;
+        W_sgl_gate.assign(H*H, 0); W_sgl_gate_m.assign(H*H, 0); W_sgl_gate_v.assign(H*H, 0);
+        b_sgl_gate.assign(H, 0); b_sgl_gate_m.assign(H, 0); b_sgl_gate_v.assign(H, 0);
+        W_sgl_up.assign(H*H, 0); W_sgl_up_m.assign(H*H, 0); W_sgl_up_v.assign(H*H, 0);
+        b_sgl_up.assign(H, 0); b_sgl_up_m.assign(H, 0); b_sgl_up_v.assign(H, 0);
+        W_sgl_out.assign(V*H, 0); W_sgl_out_m.assign(V*H, 0); W_sgl_out_v.assign(V*H, 0);
         std::normal_distribution<float> ndw(0, 0.1f);
         for (auto& x : W) x = ndw(rng);
         for (auto& x : W_hash) x = ndw(rng) * 0.5f;
@@ -341,6 +356,18 @@ struct M {
             }
             for (auto& x : gb) x = -1.7f;
         }
+        // [V21-Phase2] SwiGLU 权重初始化
+        // 复用策略: W_sgl_out[:, 0..D] = W (旧的 trit->vocab), W_sgl_out[:, D..H] 用 W_hash 填充
+        // 这里 HIDDEN_SGL 已在 init 开头定义
+        for (int v = 0; v < V; ++v) {
+            for (int d = 0; d < D; ++d) W_sgl_out[v*HIDDEN_SGL + d] = W[v*D + d];
+            for (int f = 0; f < HASH_FEATURES; ++f) W_sgl_out[v*HIDDEN_SGL + D + f] = W_hash[v*HASH_FEATURES + f];
+        }
+        // W_sgl_gate, W_sgl_up: 随机初始化
+        std::normal_distribution<float> nds(0, 0.05f);
+        for (auto& x : W_sgl_gate) x = nds(rng);
+        for (auto& x : W_sgl_up) x = nds(rng);
+        std::printf("  [V21-Phase2] SwiGLU initialized: HIDDEN=%d\n", HIDDEN_SGL);
     }
 
     // [V21] Save to binary file
@@ -348,7 +375,7 @@ struct M {
         std::ofstream f(path, std::ios::binary);
         if (!f) return false;
         int magic = 0x59414F59;  // "YAOY"
-        int version = 3;  // v21 version
+        int version = 4;  // v21-Phase2 (SwiGLU)
         int v = V_unit;
         f.write((const char*)&magic, 4);
         f.write((const char*)&version, 4);
@@ -392,6 +419,15 @@ struct M {
         wr(q1.adam_v.data(), q1.adam_v.size()*4);
         f.write((const char*)&q1.step, 4);
         f.write((const char*)&step, 4);
+        // [V21-Phase2] SwiGLU 权重
+        if (HIDDEN_SGL > 0) {
+            int H = HIDDEN_SGL;
+            wr(W_sgl_gate.data(), W_sgl_gate.size()*4);
+            wr(b_sgl_gate.data(), b_sgl_gate.size()*4);
+            wr(W_sgl_up.data(), W_sgl_up.size()*4);
+            wr(b_sgl_up.data(), b_sgl_up.size()*4);
+            wr(W_sgl_out.data(), W_sgl_out.size()*4);
+        }
         std::printf("Saved v21 model to %s (step=%d)\n", path.c_str(), step);
         return true;
     }
@@ -403,7 +439,7 @@ struct M {
         int magic; f.read((char*)&magic, 4);
         if (magic != 0x59414F59) return false;
         int version; f.read((char*)&version, 4);
-        if (version != 3) return false;
+        if (version != 3 && version != 4) return false;
         int v; f.read((char*)&v, 4);
         if (v != V_unit) return false;
         auto rd = [&](void* p, size_t n){ f.read((char*)p, n); };
@@ -438,6 +474,23 @@ struct M {
         rd(q1.adam_v.data(), q1.adam_v.size()*4);
         f.read((char*)&q1.step, 4);
         f.read((char*)&step, 4);
+        // [V21-Phase2] 加载 SwiGLU 权重 (version 4+) 或从 v3 升级 (复用 W, W_hash)
+        if (version >= 4 && HIDDEN_SGL > 0) {
+            int H = HIDDEN_SGL;
+            f.read((char*)W_sgl_gate.data(), W_sgl_gate.size()*4);
+            f.read((char*)b_sgl_gate.data(), b_sgl_gate.size()*4);
+            f.read((char*)W_sgl_up.data(), W_sgl_up.size()*4);
+            f.read((char*)b_sgl_up.data(), b_sgl_up.size()*4);
+            f.read((char*)W_sgl_out.data(), W_sgl_out.size()*4);
+        } else if (version == 3 && HIDDEN_SGL > 0) {
+            // 从 v3 升级: 复用 W 到 W_sgl_out 前 D 列, W_hash 到 W_sgl_out 的 hash 部分
+            int H = HIDDEN_SGL;
+            for (int v = 0; v < V_unit; ++v) {
+                for (int d = 0; d < D_H; ++d) W_sgl_out[v*H + d] = W[v*D_H + d];
+                for (int f = 0; f < HASH_FEATURES; ++f) W_sgl_out[v*H + D_H + f] = W_hash[v*HASH_FEATURES + f];
+            }
+            std::printf("  [V21-Phase2] Upgraded from v3: W_sgl_out initialized from old W + W_hash\n");
+        }
         std::printf("Loaded v21 model from %s (step=%d)\n", path.c_str(), step);
         return true;
     }
@@ -447,11 +500,36 @@ struct M {
 //  [V] 提取 hash 特征
 // ============================================================================
 
+// [V21-Phase1] HASH_FEATURES=64: 4 组独立 hash 函数, 每组 16 features
+// - features[0..15]:   直接按 16-bit 切片 (独立位)
+// - features[16..31]:  MurmurHash3 风格混合 (fnv 常数)
+// - features[32..47]:  Wang/Jenkins hash 风格 (shift+xor)
+// - features[48..63]:  SplitMix64 风格 (异或种子)
+// 关键: features 只读 h_hash, 不修改状态, 完全可逆
 inline void extract_hash_features(hash_t h, float* features) {
-    hash_t temp = h;
-    for (int i = 0; i < HASH_FEATURES; i++) {
-        features[i] = ((float)(temp & 0xFFFFu) / 65535.0f - 0.5f);
-        temp = temp * 0x9e3779b1u + 0x1u;
+    // Part 1: 直接按位切片 (前 16 个 features)
+    hash_t temp1 = h;
+    for (int i = 0; i < 16; i++) {
+        features[i] = ((float)(temp1 & 0xFFFFu) / 65535.0f - 0.5f);
+        temp1 = temp1 >> 16;
+    }
+    // Part 2: MurmurHash3 风格 (中间 16 个 features, 不同雪崩常数)
+    hash_t temp2 = h;
+    for (int i = 16; i < 32; i++) {
+        temp2 = temp2 * 0x85ebca6bu + 0xc2b2ae35u;
+        features[i] = ((float)(temp2 & 0xFFFFu) / 65535.0f - 0.5f);
+    }
+    // Part 3: Jenkins hash 风格 (中间 16 个 features)
+    hash_t temp3 = h;
+    for (int i = 32; i < 48; i++) {
+        temp3 = (temp3 ^ (temp3 >> 16)) * 0x9e3779b9u;
+        features[i] = ((float)(temp3 & 0xFFFFu) / 65535.0f - 0.5f);
+    }
+    // Part 4: SplitMix64 风格 (后 16 个 features, 不同种子)
+    hash_t temp4 = h ^ 0xdeadbeefu;
+    for (int i = 48; i < 64; i++) {
+        temp4 = temp4 * 0x27d4eb2fu + 0x165667b1u;
+        features[i] = ((float)(temp4 & 0xFFFFu) / 65535.0f - 0.5f);
     }
 }
 
@@ -555,14 +633,42 @@ void yao_forward(M& m, const std::vector<int>& inp, int BATCH, int SEQ, int PAD,
         }
     }
 
-    // === [V] 预测头: 用 W 和 W_hash 替换 v19 的 Wh, Ws ===
+    // === [V21-Phase2] SwiGLU MLP 替换简单线性 ===
+    constexpr int HIDDEN = D_H + HASH_FEATURES;  // 192, constexpr 避免 VLA
+    // 注意: 我们要把 trit_features 和 hash_features 拼接到一个临时 buffer
+    // 然后 W_gate, W_up 输入 state (D+H), 输出 HIDDEN
+    // hidden = silu(W_gate · state) * (W_up · state)
+    // logits = Wbi[prev,v] + W_out[v,:] · hidden
+
     #pragma omp parallel for
     for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) { int bt = b*SEQ+t;
         int prev = (t > 0) ? inp[(b*SEQ+t-1)] : PAD;
+        // 1. 拼接 state [D+HASH_FEATURES]
+        float state[HIDDEN];
+        for (int d = 0; d < D; ++d) state[d] = (float)trit_features[bt*D+d];
+        for (int f = 0; f < HASH_FEATURES; ++f) state[D+f] = hash_features[bt*HASH_FEATURES+f];
+        
+        // 2. SwiGLU: gate = silu(W_gate · state + b_gate), up = W_up · state + b_up
+        float hidden[HIDDEN];
+        for (int h = 0; h < HIDDEN; ++h) {
+            float gate_z = m.b_sgl_gate[h];
+            float up_z = m.b_sgl_up[h];
+            for (int s = 0; s < HIDDEN; ++s) {
+                gate_z += m.W_sgl_gate[h*HIDDEN + s] * state[s];
+                up_z += m.W_sgl_up[h*HIDDEN + s] * state[s];
+            }
+            // SiLU(gate_z) = gate_z * sigmoid(gate_z)
+            float sig = 1.0f / (1.0f + std::exp(-gate_z));
+            if (sig > 1) sig = 1; if (sig < 0) sig = 0;
+            float silu = gate_z * sig;
+            // SwiGLU: hidden = silu(gate) * up
+            hidden[h] = silu * up_z;
+        }
+        
+        // 3. logits = Wbi[prev,v] + W_out[v,:] · hidden
         for (int v = 0; v < V_unit; ++v) {
             float lv = m.Wbi[prev*V_unit + v];
-            for (int d = 0; d < D; ++d) lv += m.W[v*D+d] * (float)trit_features[bt*D+d];
-            for (int f = 0; f < HASH_FEATURES; ++f) lv += m.W_hash[v*HASH_FEATURES+f] * hash_features[bt*HASH_FEATURES+f];
+            for (int h = 0; h < HIDDEN; ++h) lv += m.W_sgl_out[v*HIDDEN + h] * hidden[h];
             logits[bt*V_unit + v] = lv;
         }
     }
