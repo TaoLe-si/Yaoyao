@@ -29,3 +29,10 @@
 | 104000| 3.58    | more data, stable |
 | 105400| 3.30    | first successful generation! |
 | 135400| 3.55    | 3 more epochs, plateau |
+
+
+## D=128 (current)
+- Doubled D from 64 to 128
+- Loss 4.42 -> 3.56 after 3 epochs
+- Top-p sampling with p=0.9 produces diverse vocabulary
+- Saved as yaoyao_v09_d128_baseline.bin
