@@ -1,0 +1,90 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+  [V21-Phase2] SwiGLU initialized: HIDDEN=192
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=11500)
+  [V21] Resumed from existing model (step=11500)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=200 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=7.93e-06 PASS
+  [V-Math] d_logits sum: max_err=2.99e-06 PASS
+  ep1 win1/200 loss=4.7379 avg=4.7379 (0.2s)
+  ep1 win50/200 loss=4.3573 avg=4.4549 (10.7s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/200 loss=4.4249 avg=4.4224 (21.4s)
+  ep1 win150/200 loss=4.5650 avg=4.3990 (32.1s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/200 loss=4.5565 avg=4.4022 (42.8s)
+Epoch  1/3 avg_loss=4.4022
+  [V-Math] softmax sum: max_err=7.99e-06 PASS
+  [V-Math] d_logits sum: max_err=3.42e-06 PASS
+  ep2 win1/200 loss=4.5076 avg=4.5076 (43.0s)
+  ep2 win50/200 loss=4.5156 avg=4.4274 (53.5s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/200 loss=4.4935 avg=4.4192 (64.3s)
+  ep2 win150/200 loss=4.3736 avg=4.4091 (75.0s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/200 loss=4.4158 avg=4.4102 (85.8s)
+Epoch  2/3 avg_loss=4.4102
+  [V-Math] softmax sum: max_err=8.70e-06 PASS
+  [V-Math] d_logits sum: max_err=3.04e-06 PASS
+  ep3 win1/200 loss=4.6916 avg=4.6916 (86.0s)
+  ep3 win50/200 loss=4.6046 avg=4.5519 (96.5s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/200 loss=4.7262 avg=4.5255 (107.2s)
+  ep3 win150/200 loss=4.5435 avg=4.5310 (117.9s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/200 loss=4.5495 avg=4.5153 (128.7s)
+Epoch  3/3 avg_loss=4.5153
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time girl sitting the patient swings pushed has bird must race sunshine places build cold big he that the. hair liked explore forest wet start bad Tim your amazing bunny that it spider returned bus many snow'
+
+Prompt: 'The little girl'
+  Output: 'The little girl see Maybe secret an here man fair a clever, sun Their catch job colorful closer man The be a path. as clothes played okay stone cloud farmer bird pick high beautiful enjoyed pool ll And be'
+
+Prompt: 'He was very'
+  Output: 'He was very promised girl turned feet rocks bedroom running. shouted wants Every their Where car nearby m lady, people asked move a standing proud seen her he family open friends wished giant bucket next water standing his excitement someone'
+
+Prompt: 'Lily and'
+  Output: 'Lily and Sammy were cup careful Jen set shared believe with won healthy" Jill thing him you d sees sound things rainbow but reach the else, filled saw Together than along school nearby dream fish well it song out himself'
+
+Prompt: 'Today was'
+  Output: 'Today was red. playground words able from hidden on sit broke dream onto gathered use strong bite ugly kite Mum One village laughing always smiling Sue Dad hello played realized, it replied cold might chair you tasty have Max other'
+
+Prompt: 'The cat'
+  Output: 'The cat started high garden person Inside around had sister chest key started yummy work buy arms smile for Max, her sad fly one around or every. watching blanket smart climbed One Ben hours wrong Jen ride â€œI stayed'
+
+Prompt: 'Mom said'
+  Output: 'Mom said it Amy being everyone kind saw mum cry here have must. gentle free living We listened be apple wings treasure Lily monkey never Jill grandma small Wow he pictures his very hopping Max he couldn' t life give'
+
+Prompt: 'They went'
+  Output: 'They went always ask, angry wait eating go told The, beautiful share sure blocks take birds nap holding not arrived sunshine she exciting fire funny he course. lion onto light I the Wow day dragon nest leave bus'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=12100)
+
+[Done]

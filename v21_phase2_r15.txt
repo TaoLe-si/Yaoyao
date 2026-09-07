@@ -1,0 +1,90 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+  [V21-Phase2] SwiGLU initialized: HIDDEN=192
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=16300)
+  [V21] Resumed from existing model (step=16300)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=200 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=8.05e-06 PASS
+  [V-Math] d_logits sum: max_err=3.23e-06 PASS
+  ep1 win1/200 loss=4.6931 avg=4.6931 (0.2s)
+  ep1 win50/200 loss=4.2888 avg=4.3704 (10.7s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/200 loss=4.3683 avg=4.3523 (21.4s)
+  ep1 win150/200 loss=4.5072 avg=4.3325 (32.1s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/200 loss=4.4834 avg=4.3346 (42.9s)
+Epoch  1/3 avg_loss=4.3346
+  [V-Math] softmax sum: max_err=7.27e-06 PASS
+  [V-Math] d_logits sum: max_err=3.60e-06 PASS
+  ep2 win1/200 loss=4.3966 avg=4.3966 (43.1s)
+  ep2 win50/200 loss=4.4383 avg=4.3571 (53.6s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/200 loss=4.3870 avg=4.3485 (64.4s)
+  ep2 win150/200 loss=4.3075 avg=4.3392 (75.1s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/200 loss=4.2929 avg=4.3387 (85.8s)
+Epoch  2/3 avg_loss=4.3387
+  [V-Math] softmax sum: max_err=8.94e-06 PASS
+  [V-Math] d_logits sum: max_err=4.12e-06 PASS
+  ep3 win1/200 loss=4.6391 avg=4.6391 (86.0s)
+  ep3 win50/200 loss=4.5045 avg=4.4454 (96.5s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/200 loss=4.6280 avg=4.4197 (107.2s)
+  ep3 win150/200 loss=4.4229 avg=4.4264 (117.9s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/200 loss=4.4169 avg=4.4132 (128.5s)
+Epoch  3/3 avg_loss=4.4132
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time girl while, sounds towards morning rainbow candy Eventually! its hidden Lily Together just explained much delicious when it table water after then goodbye do sea again Lily and Emily would few it hugged In away Mum until'
+
+Prompt: 'The little girl'
+  Output: 'The little girl being too my duck cute s table new on herself shop hot called funny sitting. hard plane day birthday he an very little stepped called, group take Emily Even Hey at sparkly pretty gave creature deep.'
+
+Prompt: 'He was very'
+  Output: 'He was very promised girl sees brother forget careful day what, colourful something pictures waited farmer it give? love perfect was for: to hide sometimes waved saw arms mouth everyone no silly Alice nodded sound head deep amazing across'
+
+Prompt: 'Lily and'
+  Output: 'Lily and Sammy were cup able A The lost His the spot Jill very dinner sound gathered made yes sang to an that with Hey mom stuck said drink had sweet enough she treasure pointed hands picnic has so stone named with'
+
+Prompt: 'Today was'
+  Output: 'Today was behind and told real fair at upset table her bugs the feel to room for Spot important so wear asks eventually made the voice Just pot would then, she saw never real like full. doll smiled Jenny that'
+
+Prompt: 'The cat'
+  Output: 'The cat started happy fight her words was our jumped Sammy trying laugh one but picked needed used bigger dance and race daddy other bird the his There back hear walk gave able some first rainbow sleep upset Sam taking brother tired'
+
+Prompt: 'Mom said'
+  Output: 'Mom said it Amy being everyone good happy ran nothing wished promised From she street waited saw Mary sat also didn Mia feet kite Now stopped world beach flying squirrel feel" little m ready Why enjoyed tiny it a forgot Mommy'
+
+Prompt: 'They went'
+  Output: 'They went always ask the hard lived the a she began that Dad sand has Lila lot only fun leaves nest at forget right day care grandma each s anymore was â€ green make explained juice while his spot horse s followed'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=16900)
+
+[Done]

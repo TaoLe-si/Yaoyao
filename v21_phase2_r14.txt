@@ -1,0 +1,90 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+  [V21-Phase2] SwiGLU initialized: HIDDEN=192
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=15700)
+  [V21] Resumed from existing model (step=15700)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=200 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=8.05e-06 PASS
+  [V-Math] d_logits sum: max_err=3.06e-06 PASS
+  ep1 win1/200 loss=4.6957 avg=4.6957 (0.2s)
+  ep1 win50/200 loss=4.2890 avg=4.3713 (10.6s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/200 loss=4.3703 avg=4.3529 (21.4s)
+  ep1 win150/200 loss=4.5077 avg=4.3331 (32.0s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/200 loss=4.4906 avg=4.3353 (42.8s)
+Epoch  1/3 avg_loss=4.3353
+  [V-Math] softmax sum: max_err=7.39e-06 PASS
+  [V-Math] d_logits sum: max_err=3.60e-06 PASS
+  ep2 win1/200 loss=4.4030 avg=4.4030 (43.0s)
+  ep2 win50/200 loss=4.4393 avg=4.3578 (53.5s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/200 loss=4.3877 avg=4.3493 (64.3s)
+  ep2 win150/200 loss=4.3084 avg=4.3399 (75.0s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/200 loss=4.3002 avg=4.3395 (85.7s)
+Epoch  2/3 avg_loss=4.3395
+  [V-Math] softmax sum: max_err=8.94e-06 PASS
+  [V-Math] d_logits sum: max_err=3.39e-06 PASS
+  ep3 win1/200 loss=4.6436 avg=4.6436 (86.0s)
+  ep3 win50/200 loss=4.5068 avg=4.4468 (96.4s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/200 loss=4.6287 avg=4.4210 (107.2s)
+  ep3 win150/200 loss=4.4236 avg=4.4276 (118.0s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/200 loss=4.4255 avg=4.4144 (128.7s)
+Epoch  3/3 avg_loss=4.4144
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time girl while, fairy most Jake tail lived every picnic he if open keep, safe children she he voice her out and his him find over made able very lady too amazed smile seen cloud away excited'
+
+Prompt: 'The little girl'
+  Output: 'The little girl being watched learn group instead they safe, bite it are Jack cool things head way he, All path so Timmy. sure bottle she her ll But catch smart share so Lila she Dad run worried his'
+
+Prompt: 'He was very'
+  Output: 'He was very promised girl sounds thing Let saw arms she pick She clothes work talked do the mouth hair took finished few caught a why busy the feet. problem secret he cozy Everyone clothes ask that worry used my blue'
+
+Prompt: 'Lily and'
+  Output: 'Lily and Sammy were cup able â€œI Jane But Jen who worry Eventually helping loud buy soon rock chair wet feet" thought purple was. to school park lucky the they hill patient free promised bear never join what fun'
+
+Prompt: 'Today was'
+  Output: 'Today was cried With colors we she yard so play reach with yelled, goodbye it is ride full train toys and they was could bite find their family, them time upset spider his the high, under were'
+
+Prompt: 'The cat'
+  Output: 'The cat started happy fight her an, dog person end climb upon sing today carried around two garden. small dog, stars they. Yes name stopped angry wall ice strange dolls hop ask answer There Together Sam owl'
+
+Prompt: 'Mom said'
+  Output: 'Mom said it Amy being everyone good happy path faster watching find Mr way might places today cozy old blanket problem As Max bedroom agreed Sally lost stop towards. also, very Mommy slide cat noticed scared bottle baby wings'
+
+Prompt: 'They went'
+  Output: 'They went always ask the young an pieces! each wondered very m hear owner hurt saw bug the that Jill when Every they opened bike moved shiny and sometimes the things whole but Billy was Every! Dad Why Mrs realized'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=16300)
+
+[Done]

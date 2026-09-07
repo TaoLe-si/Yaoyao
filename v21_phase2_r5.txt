@@ -1,0 +1,90 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+  [V21-Phase2] SwiGLU initialized: HIDDEN=192
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=10300)
+  [V21] Resumed from existing model (step=10300)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=200 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=8.11e-06 PASS
+  [V-Math] d_logits sum: max_err=3.31e-06 PASS
+  ep1 win1/200 loss=4.7836 avg=4.7836 (0.2s)
+  ep1 win50/200 loss=4.4325 avg=4.5247 (10.6s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/200 loss=4.4776 avg=4.4833 (21.2s)
+  ep1 win150/200 loss=4.6043 avg=4.4566 (31.9s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/200 loss=4.6270 avg=4.4614 (42.5s)
+Epoch  1/3 avg_loss=4.4614
+  [V-Math] softmax sum: max_err=7.27e-06 PASS
+  [V-Math] d_logits sum: max_err=3.63e-06 PASS
+  ep2 win1/200 loss=4.5725 avg=4.5725 (42.7s)
+  ep2 win50/200 loss=4.5830 avg=4.4893 (53.2s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/200 loss=4.5590 avg=4.4828 (63.9s)
+  ep2 win150/200 loss=4.4341 avg=4.4714 (74.6s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/200 loss=4.4876 avg=4.4717 (85.4s)
+Epoch  2/3 avg_loss=4.4717
+  [V-Math] softmax sum: max_err=8.34e-06 PASS
+  [V-Math] d_logits sum: max_err=3.70e-06 PASS
+  ep3 win1/200 loss=4.7274 avg=4.7274 (85.6s)
+  ep3 win50/200 loss=4.6781 avg=4.6268 (96.0s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/200 loss=4.8015 avg=4.6040 (106.8s)
+  ep3 win150/200 loss=4.6293 avg=4.6088 (117.5s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/200 loss=4.6118 avg=4.5916 (128.2s)
+Epoch  3/3 avg_loss=4.5916
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time girl dry around Mary up Timmy ground bear After Benny really tail returned hours about swimming she feeling' of cut own open. ball' spent music thinks quickly set Do dream must if mysterious hours truck dragon lost'
+
+Prompt: 'The little girl'
+  Output: 'The little girl leaves Hi upset liked hear. magical smiled who he though Mr something smile crying friends kitchen were share pocket she Mia so your thank will mommy without beautiful tall Ben mom walk bike is- feel Mama,'
+
+Prompt: 'He was very'
+  Output: 'He was very promised girl daddy to do park he her that Finally like rest sunshine where about Grandma but careful make doing cake face. real angry wearing coin purple box Jake. fair Mr They bad still smile know she-'
+
+Prompt: 'Lily and'
+  Output: 'Lily and Sammy were cup climb sail hungry magical be fly at slide top mommy Sally' water building watching She drove Sue bag give feet so small owl of up blue and white Once them No pretend waited bunny field it'
+
+Prompt: 'Today was'
+  Output: 'Today was such and nearby young Mrs called hours. else Lila scary to gave nest Sara moral On pictures something mummy. too paper to. keep day, something This being life. good upon Dad fish'
+
+Prompt: 'The cat'
+  Output: 'The cat started the off at there. getting scared woods bit find blanket to hurt town over monkey bad wish he animals. him hidden says head tasted smell pushed book bike soup game turned picture ocean suddenly grow'
+
+Prompt: 'Mom said'
+  Output: 'Mom said it Amy being everyone was in said magic lake at reached table ll jungle hop Their toys spotted brave wings meadow and Their here laughing anything ran made. happy tasty branch Mummy grabbed truck his closed One'
+
+Prompt: 'They went'
+  Output: 'They went always their special that thank matter. dirty rainbow grabbed re going called He shapes party he at spider want princess decided to play told in not hand so mysterious other Now. sparkly' ride Pete sea ran'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=10900)
+
+[Done]
