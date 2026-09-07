@@ -1,0 +1,66 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=500 EPOCHS=3 LR=0.00500
+  [V] trit_features 范围检查: 0/131072 越界 (期望 0)
+  ep1 win1/500 loss=7.3013 avg=7.3013 (0.2s)
+  ep1 win50/500 loss=6.4260 avg=6.5996 (9.8s)
+  ep1 win100/500 loss=6.0040 avg=6.4090 (19.3s)
+  ep1 win150/500 loss=5.8742 avg=6.2472 (28.3s)
+  ep1 win200/500 loss=5.6651 avg=6.1231 (37.2s)
+  ep1 win250/500 loss=5.7008 avg=6.0307 (46.1s)
+  ep1 win300/500 loss=5.5136 avg=5.9611 (54.9s)
+  ep1 win350/500 loss=5.1580 avg=5.8979 (63.8s)
+  ep1 win400/500 loss=5.6666 avg=5.8421 (72.7s)
+  ep1 win450/500 loss=5.4434 avg=5.7879 (81.7s)
+  ep1 win500/500 loss=5.1326 avg=5.7446 (90.9s)
+Epoch  1/3 avg_loss=5.7446
+  [V] trit_features 范围检查: 0/131072 越界 (期望 0)
+  ep2 win1/500 loss=5.1215 avg=5.1215 (91.1s)
+  ep2 win50/500 loss=5.1491 avg=5.2240 (99.6s)
+  ep2 win100/500 loss=5.5087 avg=5.2395 (107.9s)
+  ep2 win150/500 loss=5.6045 avg=5.2550 (116.2s)
+  ep2 win200/500 loss=4.9992 avg=5.2382 (124.4s)
+  ep2 win250/500 loss=5.1939 avg=5.2256 (132.6s)
+  ep2 win300/500 loss=5.1094 avg=5.2068 (140.8s)
+  ep2 win350/500 loss=5.0887 avg=5.1887 (149.1s)
+  ep2 win400/500 loss=5.2384 avg=5.1634 (157.3s)
+  ep2 win450/500 loss=5.1867 avg=5.1552 (165.6s)
+  ep2 win500/500 loss=5.2509 avg=5.1399 (174.3s)
+Epoch  2/3 avg_loss=5.1399
+  [V] trit_features 范围检查: 0/131072 越界 (期望 0)
+  ep3 win1/500 loss=5.0863 avg=5.0863 (174.4s)
+  ep3 win50/500 loss=5.1841 avg=5.0639 (182.6s)
+  ep3 win100/500 loss=4.9277 avg=5.0149 (190.9s)
+  ep3 win150/500 loss=4.9592 avg=4.9867 (200.2s)
+  ep3 win200/500 loss=4.6136 avg=4.9730 (209.4s)
+  ep3 win250/500 loss=4.9381 avg=4.9673 (218.4s)
+  ep3 win300/500 loss=4.8578 avg=4.9560 (227.5s)
+  ep3 win350/500 loss=4.9213 avg=4.9363 (236.5s)
+  ep3 win400/500 loss=4.8226 avg=4.9295 (245.8s)
+  ep3 win450/500 loss=4.4551 avg=4.9205 (255.0s)
+  ep3 win500/500 loss=4.8320 avg=4.9087 (264.2s)
+Epoch  3/3 avg_loss=4.9087
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+[Done]

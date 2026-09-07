@@ -1,0 +1,89 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=50)
+  [V21] Resumed from existing model (step=50)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=200 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=2.32e-06 PASS
+  [V-Math] d_logits sum: max_err=4.35e-07 PASS
+  ep1 win1/200 loss=6.3768 avg=6.3768 (0.2s)
+  ep1 win50/200 loss=5.8821 avg=6.1992 (9.4s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/200 loss=5.8637 avg=6.1157 (18.9s)
+  ep1 win150/200 loss=5.2681 avg=5.8613 (28.2s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/200 loss=5.5581 avg=5.8088 (37.7s)
+Epoch  1/3 avg_loss=5.8088
+  [V-Math] softmax sum: max_err=2.56e-06 PASS
+  [V-Math] d_logits sum: max_err=7.44e-07 PASS
+  ep2 win1/200 loss=5.9354 avg=5.9354 (37.9s)
+  ep2 win50/200 loss=5.6645 avg=5.6010 (47.2s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/200 loss=5.6171 avg=5.5001 (56.8s)
+  ep2 win150/200 loss=5.3006 avg=5.4567 (67.0s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/200 loss=5.1545 avg=5.3901 (77.3s)
+Epoch  2/3 avg_loss=5.3901
+  [V-Math] softmax sum: max_err=2.74e-06 PASS
+  [V-Math] d_logits sum: max_err=9.40e-07 PASS
+  ep3 win1/200 loss=5.3618 avg=5.3618 (77.5s)
+  ep3 win50/200 loss=5.4529 avg=5.3197 (86.7s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/200 loss=5.0859 avg=5.2401 (96.0s)
+  ep3 win150/200 loss=5.0743 avg=5.1897 (105.2s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/200 loss=5.1190 avg=5.1668 (114.4s)
+Epoch  3/3 avg_loss=5.1668
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time of tightly, if eat not swam carefully up cup every behind say smart sky you there are careful. another' bigger a, bear before is Soon? hours fall No alone enjoy watching Mama Jenny great'
+
+Prompt: 'The little girl'
+  Output: 'The little girl welcome across dream everything clapped proud nest share bucket made books Mummy food about street Grandma door taking which ever fall that perfect too moral stop rainbow flowers wouldn hill down bought food where closed sat on lay ground'
+
+Prompt: 'He was very'
+  Output: 'He was very Hey long swings bird brother turned noise soon pot cat Soon far swimming Fluffy wind kitten behind smiled stepped ll garden Amy when jar stayed pond caught look still most pulled looked Billy Mr walk forgot As who little Lily'
+
+Prompt: 'Lily and'
+  Output: 'Lily and cheered each Lily learned problem world Let lunch kind song drove hurt snow She magic next will holding sweet bee field floor time wants mouse living pushed afraid When farmer next cloud kitten fix might remembered spicy outside duck he'
+
+Prompt: 'Today was'
+  Output: 'Today was 3 and They sky strange before branch at all talking great smile danced smart hello explained fast surprised lay show patient start want ready well hidden brother me John" also this mysterious pool brother am person saw building'
+
+Prompt: 'The cat'
+  Output: 'The cat work full hot which home get fence spot clean by the other to birthday hand broke morning his show year lovely liked mommy surprise yes relieved Spot woke slowly Daddy soup spotted mum magic Hey does noticed One exciting lake'
+
+Prompt: 'Mom said'
+  Output: 'Mom said nap dolls birthday tree s stopped owner fruit top mess favorite soft still There believe cheered morning kitten own hard shy neighbor one grabbed wonderful Mum Hi horse also cut store worried noticed toys as more were feet gave'
+
+Prompt: 'They went'
+  Output: 'They went heard wet use lots dropped swim climbed Bobby problem pictures group hug had life basket table kept can okay mum train talk as hot clean swam sleep grass sound we interesting As Their new hair instead adventure scary lesson book'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=650)
+
+[Done]

@@ -1,0 +1,89 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=1850)
+  [V21] Resumed from existing model (step=1850)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=200 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=2.32e-06 PASS
+  [V-Math] d_logits sum: max_err=7.59e-07 PASS
+  ep1 win1/200 loss=4.9086 avg=4.9086 (0.2s)
+  ep1 win50/200 loss=4.5399 avg=4.6604 (9.5s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/200 loss=4.5027 avg=4.6625 (19.5s)
+  ep1 win150/200 loss=4.4731 avg=4.6255 (29.4s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/200 loss=4.7489 avg=4.6358 (38.6s)
+Epoch  1/3 avg_loss=4.6358
+  [V-Math] softmax sum: max_err=2.44e-06 PASS
+  [V-Math] d_logits sum: max_err=8.33e-07 PASS
+  ep2 win1/200 loss=4.9540 avg=4.9540 (38.8s)
+  ep2 win50/200 loss=4.7253 avg=4.6665 (47.9s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/200 loss=4.7541 avg=4.6429 (57.1s)
+  ep2 win150/200 loss=4.5521 avg=4.6159 (66.3s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/200 loss=4.5867 avg=4.5879 (75.5s)
+Epoch  2/3 avg_loss=4.5879
+  [V-Math] softmax sum: max_err=2.74e-06 PASS
+  [V-Math] d_logits sum: max_err=1.29e-06 PASS
+  ep3 win1/200 loss=4.6124 avg=4.6124 (75.7s)
+  ep3 win50/200 loss=4.5172 avg=4.5704 (85.0s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/200 loss=4.5136 avg=4.5411 (94.3s)
+  ep3 win150/200 loss=4.5694 avg=4.5326 (103.6s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/200 loss=4.5948 avg=4.5353 (113.0s)
+Epoch  3/3 avg_loss=4.5353
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time of sky. deep didn When air left Sure higher dolls coming picnic had door lot beautiful! continued mom." wants shook excitement bee years hugged fox asks truck" warm blew And about don'
+
+Prompt: 'The little girl'
+  Output: 'The little girl higher coin love full pot joy girl goodbye cute glad water thing dog Every curious hat bad beautiful talk he, reach you white boat ball friend carried climb sun woods bigger they fix what strange whole nothing shook'
+
+Prompt: 'He was very'
+  Output: 'He was very Soon near carried while plane pieces park open noise fire fly think farmer there woke laugh. And do will try something watched trees were three sad run set the head tasty Joe cut of Of they fun enjoy'
+
+Prompt: 'Lily and'
+  Output: 'Lily and Grandma not sad bigger When <eos> wouldn children playing your played, stuck turns Lucy things finished When sign replied woke In parents fairy touch sleep apple monster touched other rabbit yelled birds others cheered" paper held wrong'
+
+Prompt: 'Today was'
+  Output: 'Today was care to quickly white living be stayed.. real it soup s towards a side himself exciting colors lonely together says the she Sarah sing air front spoon her dog came busy thought Why a after friend Lily came'
+
+Prompt: 'The cat'
+  Output: 'The cat does it amazing into pocket pieces 3 for until always excited" good voice instead the afraid on person clapped sure store pushed away woods forward fish white hidden grateful ladder Lucy why beach mother asks spot'
+
+Prompt: 'Mom said'
+  Output: 'Mom said she mess cookies cool grandma room others nearby as hungry air We plan place carried himself why pocket ice dress singing hopping pretty kitten big start rolled or some. places touched way on special floor and busy ever'
+
+Prompt: 'They went'
+  Output: 'They went new helped lost always never door the down paint her smart yelled sad Come his pushed in car across Max elephant work group huge hurt says Ben she shouted brave magical puppy he looked and getting eating spider sweet'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=2450)
+
+[Done]

@@ -30,6 +30,39 @@
 
 ---
 
+## v21 实现 (实际训练)
+
+### 集成到 yaoyao_v21_full.cpp
+- 基于 v19 改造, 替换 h/s 通道
+- 保留 Q1 (hash bucket pool) + Q3 (ternary conv) + alpha + gate + Wbi
+- 新增: W (trit to vocab) + W_hash (hash to vocab)
+- 完整 save/load 支持增量训练 (.bin)
+- 内置 generation phase (top-p sampling + repetition penalty)
+
+### 数学验证 (运行时)
+- 启动: mod3 封闭/可逆/hash 可逆/组合可逆, 5/5 PASS
+- 训练中: softmax sum err < 3e-6
+- 训练中: d_logits sum err < 1e-6
+- 训练中: 每 100 windows hash 完全可逆
+- 训练结束: trit + hash 8 步完全恢复
+
+### 增量训练结果 (TinyStories 483MB, V=1024)
+- Init (50 steps): loss 6.66
+- R1 (650 steps): loss 5.17, down 1.49
+- R2 (1250 steps): loss 4.79, down 0.38
+- R3 (1850 steps): loss 4.63, down 0.16
+- R4 (2450 steps): loss 4.54, down 0.09
+
+总计: 2400 windows x 3 epochs = 7200 windows
+最终 Loss: 4.54 (收敛中, 无退化)
+模型: D:\TaoVm\yaoyao_v21.bin (step=2450)
+
+### 与 v19 对比
+- v19 (2000 windows): Loss 4.01, 不可逆, 有损, 长期退化
+- v21 (2400 windows): Loss 4.54, 完全可逆, 无损, 无退化
+
+---
+
 ## v0.9 (current)
 - Word-level vocab (1024 tokens from tinystories)
 - Q1 hash bucket pool + fixed query (zero query = deterministic lookup)
