@@ -341,12 +341,17 @@ void forward(M& m, const std::vector<int>& inp, int BATCH, int SEQ, int PAD,
 }
 
 int main(int argc, char** argv){
-    if(argc<3){std::fprintf(stderr,"Usage: %s <model.bin> <prompt> [max_tokens=60] [temperature=0.9] [top_p=0.9]\n",argv[0]); return 1;}
+    if(argc<3){std::fprintf(stderr,"Usage: %s <model.bin> <prompt|stream> [max_tokens=60] [temperature=0.9] [top_p=0.9]\n",argv[0]); return 1;}
+    bool streaming=false;
     const char* model_path=argv[1];
-    std::string prompt=argv[2];
-    int max_tokens=(argc>3)?atoi(argv[3]):60;
-    float T=(argc>4)?atof(argv[4]):0.9f;
-    float top_p=(argc>5)?atof(argv[5]):0.9f;
+    std::string arg2=argv[2];
+    std::string prompt;
+    int arg_offset=2;
+    if(arg2=="stream"){streaming=true; arg_offset=3; if(argc<4){std::fprintf(stderr,"Need prompt after stream\n");return 1;} prompt=argv[3];}
+    else prompt=arg2;
+    int max_tokens=(argc>arg_offset+1)?atoi(argv[arg_offset+1]):60;
+    float T=(argc>arg_offset+2)?atof(argv[arg_offset+2]):0.9f;
+    float top_p=(argc>arg_offset+3)?atof(argv[arg_offset+3]):0.9f;
     
     std::mt19937 rng(42);
     std::printf("Loading %s\n",model_path);
@@ -391,7 +396,9 @@ int main(int argc, char** argv){
     std::vector<int> ids=vocab.encode(prompt);
     if((int)ids.size()==0){std::fprintf(stderr,"Empty prompt after tokenization\n");return 1;}
     
+    auto t_total_start=std::chrono::steady_clock::now();
     for(int step=0;step<max_tokens;++step){
+        auto t_step_start=std::chrono::steady_clock::now();
         int L=(int)ids.size();
         std::vector<int> in2(SEQ);
         for(int i=0;i<SEQ;++i){int idx=L-SEQ+i; in2[i]=(idx<0)?PAD:ids[idx];}
@@ -424,6 +431,17 @@ int main(int argc, char** argv){
         std::discrete_distribution<int> dist(nuc_probs.begin(),nuc_probs.end());
         int best=idx[dist(rng)];
         ids.push_back(best);
+        auto t_step_end=std::chrono::steady_clock::now();
+        double step_ms=std::chrono::duration<double,std::milli>(t_step_end-t_step_start).count();
+        if(streaming){
+            std::string tok_str=vocab.decode({best});
+            // Sanitize token string for line protocol
+            for(char& c:tok_str){if(c=='\n')c='/'; if(c=='\r')c='/'; if(c=='\t')c=' ';}
+            auto t_now=std::chrono::steady_clock::now();
+            double elapsed_total_ms=std::chrono::duration<double,std::milli>(t_now-t_total_start).count();
+            std::printf("TOKEN %d %d %.2fms %.2fms %s\n", step, best, step_ms, elapsed_total_ms, tok_str.c_str());
+            std::fflush(stdout);
+        }
     }
     // Decode generated tokens only (skip prompt tokens)
     std::vector<int> gen_ids(ids.begin() + (int)prompt.size()/2, ids.end());
@@ -436,6 +454,10 @@ int main(int argc, char** argv){
     // Trim leading whitespace
     while(!response.empty() && std::isspace((unsigned char)response[0])) response.erase(response.begin());
     
-    std::printf("RESPONSE:\n%s\n",response.c_str());
+    if(!streaming){
+        std::printf("RESPONSE:\n%s\n",response.c_str());
+    } else {
+        std::printf("DONE\n");
+    }
     return 0;
 }

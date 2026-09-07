@@ -43,3 +43,10 @@
 - yaoyao_gen.exe: inference-only C++ exe
 - Endpoints: GET /v1/models, POST /v1/chat/completions
 - Compatible with any OpenAI client (curl, requests, etc.)
+
+## v0.9.6: Streaming output with per-token timing
+- yaoyao_gen.cpp: streaming mode (stream arg) outputs TOKEN lines with step_ms + total_ms
+- yaoyao_api.py: SSE streaming using asyncio subprocess (no threading)
+- Each token sent as separate SSE chunk with timing in JSON
+- Compatible with OpenAI streaming SDK (stream=True)
+- Test script shows per-token: step=6.5ms total=13.0ms
