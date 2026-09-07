@@ -323,7 +323,7 @@ void forward(M& m, const std::vector<int>& inp, int BATCH, int SEQ, int PAD,
         std::memcpy(sgs.data()+l*BL*D, sg.data(), BL*D*sizeof(float));
         for(int n=0;n<BL;++n) for(int d=0;d<D;++d) x[n*D+d]=hg[n*D+d]+sg[n*D+d];
     }
-    for(int b=0;b<BATCH;++b) for(int t=0;t<SEQ;++t){int bt=b*SEQ+t;
+        for(int b=0;b<BATCH;++b) for(int t=0;t<SEQ;++t){int bt=b*SEQ+t;
         int prev=(t>0)?inp[(b*SEQ+t-1)]:PAD;
         for(int v=0;v<V_unit;++v){
             float lv=m.Wbi[prev*V_unit+v];
@@ -371,7 +371,7 @@ int main(int argc, char** argv){
     if(loadpath) m.load(loadpath);
     std::printf("Model: V=%d D=%d NL=%d Q1[B=%d,K=%d]\n", V_unit, D, NL, Q1_B, Q1_K);
     
-    int SEQ=64, BATCH=1, BL=SEQ*BATCH;
+    int SEQ=64, BATCH=16, BL=SEQ*BATCH;
     int N_WIN=(argc>3)?atoi(argv[3]):2000;
     int EPOCHS=(argc>4)?atoi(argv[4]):2;
     float LR=0.003f, LR_ALPHA=0.0003f;
@@ -396,21 +396,22 @@ int main(int argc, char** argv){
     float b1=0.9f, b2=0.999f, eps=1e-8f;
     auto t0=std::chrono::steady_clock::now();
     
-    std::vector<int> all_in(N_WIN*SEQ), all_tg(N_WIN*SEQ);
+    std::vector<int> all_in(N_WIN*BATCH*SEQ), all_tg(N_WIN*BATCH*SEQ);
     for(int epoch=0;epoch<EPOCHS;++epoch){
         std::uniform_int_distribution<int> udist(0, (int)tokens.size()-N_WIN*SEQ-SEQ-1);
         int offset=udist(rng);
-        for(int i=0;i<N_WIN;++i){
-            int start=offset+i*SEQ;
+        for(int i=0;i<N_WIN;++i) for(int b=0;b<BATCH;++b){
+            int start=offset+i*SEQ+b*7;  // shift by 7 for each batch (different story slices)
+            if(start+SEQ+1>=(int)tokens.size()) start=offset+i*SEQ;
             for(int j=0;j<SEQ;++j){
-                all_in[i*SEQ+j]=tokens[start+j];
-                all_tg[i*SEQ+j]=tokens[start+j+1];
+                all_in[(i*BATCH+b)*SEQ+j]=tokens[start+j];
+                all_tg[(i*BATCH+b)*SEQ+j]=tokens[start+j+1];
             }
         }
         float total=0; int nb=0;
         for(int w=0;w<N_WIN;++w){
             std::vector<int> inpBL(BL), tgtBL(BL);
-            for(int n=0;n<BL;++n){inpBL[n]=all_in[w*SEQ+(n%SEQ)]; tgtBL[n]=all_tg[w*SEQ+(n%SEQ)];}
+            for(int n=0;n<BL;++n){inpBL[n]=all_in[w*BL+n]; tgtBL[n]=all_tg[w*BL+n];}
             
             forward(m, inpBL, BATCH, SEQ, PAD, D, NL, V_unit,
                     x, x_prev, y, alpha, h, s, hg, sg, logits, probs,
@@ -418,12 +419,13 @@ int main(int argc, char** argv){
             
             float loss=0;
             for(int n=0;n<BL;++n){int t=tgtBL[n]; float p=std::max(probs[n*V_unit+t], 1e-9f); loss+=-std::log(p);}
-            loss/=BL; total+=loss; nb++; m.step++;
+            loss/=BL;  // already averaged over BL=BATCH*SEQ total+=loss; nb++; m.step++;
             
             for(int n=0;n<BL;++n){for(int v=0;v<V_unit;++v) d_logits[n*V_unit+v]=probs[n*V_unit+v]; d_logits[n*V_unit+tgtBL[n]]-=1.0f;}
-            for(int b=0;b<BATCH;++b) for(int t=0;t<SEQ;++t){int prev=(t>0)?inpBL[(b*SEQ+t-1)]:PAD; for(int v=0;v<V_unit;++v) d_Wbi_g[prev*V_unit+v]+=d_logits[(b*SEQ+t)*V_unit+v];}
-            for(int n=0;n<BL;++n){for(int d=0;d<D;++d){float s1=0,s2=0; for(int v=0;v<V_unit;++v){s1+=d_logits[n*V_unit+v]*m.Wh[v*D+d]; s2+=d_logits[n*V_unit+v]*m.Ws[v*D+d];} d_hg[n*D+d]=s1; d_sg[n*D+d]=s2;}}
-            for(int v=0;v<V_unit;++v) for(int d=0;d<D;++d){float s1=0,s2=0; for(int n=0;n<BL;++n){s1+=d_logits[n*V_unit+v]*hg[n*D+d]; s2+=d_logits[n*V_unit+v]*sg[n*D+d];} d_Wh_g[v*D+d]=s1; d_Ws_g[v*D+d]=s2;}
+            // W_bi accumulation: race condition on +=, keep sequential
+    for(int b=0;b<BATCH;++b) for(int t=0;t<SEQ;++t){int prev=(t>0)?inpBL[(b*SEQ+t-1)]:PAD; for(int v=0;v<V_unit;++v) d_Wbi_g[prev*V_unit+v]+=d_logits[(b*SEQ+t)*V_unit+v];}
+                for(int n=0;n<BL;++n){for(int d=0;d<D;++d){float s1=0,s2=0; for(int v=0;v<V_unit;++v){s1+=d_logits[n*V_unit+v]*m.Wh[v*D+d]; s2+=d_logits[n*V_unit+v]*m.Ws[v*D+d];} d_hg[n*D+d]=s1; d_sg[n*D+d]=s2;}}
+                for(int v=0;v<V_unit;++v) for(int d=0;d<D;++d){float s1=0,s2=0; for(int n=0;n<BL;++n){s1+=d_logits[n*V_unit+v]*hg[n*D+d]; s2+=d_logits[n*V_unit+v]*sg[n*D+d];} d_Wh_g[v*D+d]=s1; d_Ws_g[v*D+d]=s2;}
             
             for(int l=NL-1;l>=0;--l){
                 std::vector<float> h_seq(SEQ*D), s_seq(SEQ*D);
