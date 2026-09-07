@@ -1,0 +1,15 @@
+# --- binaries ---
+*.exe
+*.dll
+*.bin
+
+# --- logs ---
+*.log
+
+# --- large data ---
+*.parquet
+tinystories_train.txt
+tinystories_val.txt
+
+# --- misc ---
+*.tmp
