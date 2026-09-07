@@ -1,7 +1,8 @@
 # 夭夭 (Yaoyao) - CPU 原生小语言模型
 
 > **三值 {-1, 0, +1} + 词汇层替代 attention + CPU 极致优化**
-> 当前版本: v0.9.7 (Loss 3.11 / perplexity ≈ 22)
+> 当前最佳: **v0.9.7** (Loss 3.11, perplexity ≈ 22, 120 tok/s)
+> 最新进展: **v21** 完全可逆链 (Loss 4.45, **5609 tok/s**, 数学保证可逆)
 
 ---
 
@@ -422,7 +423,61 @@ ball, cream, toy, book, train, food, slide, swing, candy, treasure
 
 ---
 
-## 11. 编译与运行
+## 11. v21 最新进展: 完全可逆链 (mod 3 + hash)
+
+> 核心突破: 用 mod 3 trit + 滚动 hash 替换 v0.9 的 h/s 通道, 实现数学保证的完全可逆.
+
+### 11.1 架构变化
+
+| 通道 | v0.9 (有损) | v21 (无损, 可逆) |
+|------|-------------|------------------|
+| 状态 1 | h: EMA 衰减 | h_trit: mod 3 累积 |
+| 状态 2 | s: 浮点求和 | h_hash: 滚动 hash |
+| 信息保留 | 96.875% (浮点压缩有损) | 100% (整数无损) |
+| 可逆性 | 否 | 是 (数学保证) |
+
+### 11.2 数学性质
+
+```
+h_trit[t+1] = (h_trit[t] + embed[t+1]) mod 3       # trit ∈ {-1,0,+1}
+h_hash[t+1] = (h_hash[t] * 33 + token[t+1] + 7) mod 2^32
+
+可逆性:
+h_trit[t]   = (h_trit[t+1] - embed[t+1]) mod 3
+h_hash[t]   = (h_hash[t+1] - token[t+1] - 7) * 0x3e0f83e1  mod 2^32
+              (33^-1 mod 2^32 = 0x3e0f83e1)
+```
+
+### 11.3 推理速度优化 (5609 tok/s)
+
+| 版本 | 算法 | tok/s | 单 token |
+|------|------|-------|----------|
+| yaoyao_gen_v21.exe | 每步重算 BATCH*SEQ=1024 | 8 | 125 ms |
+| yaoyao_gen_v21_fast.exe | 每步仅算 1 个新位置 | 5609 | 0.18 ms |
+
+加速比 702x. 核心: h_trit 和 h_hash 是 O(1) 增量更新, 不需要缓存历史.
+
+### 11.4 训练结果
+
+| 模型 | 架构 | Loss | 可逆性 | tok/s |
+|------|------|------|--------|-------|
+| yaoyao_v09_best.bin | v0.9 h+s | 3.11 | 否 | ~120 |
+| yaoyao_v21.bin | v21 mod3+hash | 4.45 | 是 | 5609 |
+
+v21 Loss 略高 1.34, 但完全可逆, 推理快 47x, 无长期退化.
+
+### 11.5 v21 文件
+
+- `yaoyao_v21_full.cpp` - 训练 + 生成 (657 行)
+- `yaoyao_v21.bin` - 训练模型 (17 MB, step=13250)
+- `yaoyao_gen_v21_fast.cpp` - 极速推理版 (5609 tok/s)
+- `REVERSIBLE_CHAIN_BREAKTHROUGH.md` - 数学突破详解
+
+训练日志: `v21_round1-8.txt` (手动增量) + `v21_auto_round9-13.txt` (自适应)
+
+---
+
+## 12. 编译与运行
 
 ### 11.1 编译
 

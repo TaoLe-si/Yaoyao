@@ -1,0 +1,107 @@
+========================================
+  Yaoyao v21: Reversible Chain (Full)
+========================================
+
+========================================
+  [V] 数学模型验证
+========================================
+  [PASS] mod 3 封闭性
+  [PASS] mod 3 可逆 (forward+reverse = id)
+  [PASS] hash 可逆 (33^-1 = 0x3e0f83e1)
+  [PASS] 组合可逆 (trit + hash, 100 步)
+  [ALL PASS] 总体
+
+[Step 1] Loading D:\TaoVm\tinystories_train.txt ...
+  Loaded 483495096 chars
+[Step 2] Building vocab (max 1024) ...
+  Vocab=1024
+[Step 3] Encoding text ...
+  Encoded 112946485 tokens
+[Step 4] Initializing model ...
+Loaded v21 model from D:\TaoVm\yaoyao_v21.bin (step=3650)
+  [V21] Resumed from existing model (step=3650)
+  Config: V=1024 D=128 NL=2 BATCH=16 SEQ=64 N_WIN=400 EPOCHS=3 LR=0.00500
+  [V-Math] softmax sum: max_err=2.26e-06 PASS
+  [V-Math] d_logits sum: max_err=1.40e-06 PASS
+  ep1 win1/400 loss=4.8934 avg=4.8934 (0.2s)
+  ep1 win50/400 loss=4.8592 avg=4.9342 (8.5s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep1 win100/400 loss=4.9360 avg=4.9075 (17.3s)
+  ep1 win150/400 loss=4.6412 avg=4.8676 (25.9s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep1 win200/400 loss=4.6966 avg=4.7955 (34.5s)
+  ep1 win250/400 loss=4.6080 avg=4.7593 (43.1s)
+  [V-Math] reversibility check at win=300: hash_recoverable verified
+  ep1 win300/400 loss=4.7174 avg=4.7287 (51.4s)
+  ep1 win350/400 loss=4.9892 avg=4.7190 (59.9s)
+  [V-Math] reversibility check at win=400: hash_recoverable verified
+  ep1 win400/400 loss=4.9650 avg=4.7252 (68.5s)
+Epoch  1/3 avg_loss=4.7252
+  [V-Math] softmax sum: max_err=2.62e-06 PASS
+  [V-Math] d_logits sum: max_err=1.05e-06 PASS
+  ep2 win1/400 loss=4.7506 avg=4.7506 (68.7s)
+  ep2 win50/400 loss=4.9553 avg=4.7914 (77.0s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep2 win100/400 loss=4.5909 avg=4.7760 (85.6s)
+  ep2 win150/400 loss=4.5730 avg=4.7243 (94.3s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep2 win200/400 loss=4.6283 avg=4.6795 (102.8s)
+  ep2 win250/400 loss=4.5419 avg=4.6462 (112.1s)
+  [V-Math] reversibility check at win=300: hash_recoverable verified
+  ep2 win300/400 loss=4.4169 avg=4.6147 (120.8s)
+  ep2 win350/400 loss=4.7198 avg=4.6051 (129.3s)
+  [V-Math] reversibility check at win=400: hash_recoverable verified
+  ep2 win400/400 loss=4.6511 avg=4.6064 (138.0s)
+Epoch  2/3 avg_loss=4.6064
+  [V-Math] softmax sum: max_err=2.86e-06 PASS
+  [V-Math] d_logits sum: max_err=9.21e-07 PASS
+  ep3 win1/400 loss=4.7322 avg=4.7322 (138.2s)
+  ep3 win50/400 loss=4.5469 avg=4.5881 (146.6s)
+  [V-Math] reversibility check at win=100: hash_recoverable verified
+  ep3 win100/400 loss=4.5483 avg=4.5828 (155.3s)
+  ep3 win150/400 loss=4.4568 avg=4.5547 (163.9s)
+  [V-Math] reversibility check at win=200: hash_recoverable verified
+  ep3 win200/400 loss=4.4826 avg=4.5239 (172.4s)
+  ep3 win250/400 loss=4.2955 avg=4.4907 (181.1s)
+  [V-Math] reversibility check at win=300: hash_recoverable verified
+  ep3 win300/400 loss=4.2344 avg=4.4788 (190.1s)
+  ep3 win350/400 loss=4.6077 avg=4.4832 (198.8s)
+  [V-Math] reversibility check at win=400: hash_recoverable verified
+  ep3 win400/400 loss=4.5347 avg=4.4923 (207.2s)
+Epoch  3/3 avg_loss=4.4923
+
+[V] 最终可逆性验证:
+  [PASS] trit 完全恢复 (8 步)
+  [PASS] hash 完全恢复 (8 步)
+
+========================================
+  [G] Generation Phase
+========================================
+
+Prompt: 'Once upon a time'
+  Output: 'Once upon a time and surprised, move cry water reached doll One race twins colors voice Timmy her many. words you the I than so. he the can No your ride and swimming cried holding" heard playground lady friends many'
+
+Prompt: 'The little girl'
+  Output: 'The little girl ate far bee Oh bit turned carried on herself and stood wouldn pointed Jenny fox All angry doll fun she as a That and duck lots window other One That candy A also bear went sure into hair brown'
+
+Prompt: 'He was very'
+  Output: 'He was very spot dog who listened kids explained to it away own soon stars His mine work train air he neighbor hug in as garden flowers started could his to began ride play large end pushed mum wrong run stuck watched'
+
+Prompt: 'Lily and'
+  Output: 'Lily and real teddy going looked Thank bed interesting called. nodded table head wish realized again: had slide key dog Grandma them promised. ground were instead for wouldn away sorry few Where free tasty with. not us,'
+
+Prompt: 'Today was'
+  Output: 'Today was I and well slide wear â€œI they pot bug watched From the shop. meadow magical wet fell Sarah some doing, my searched And smile give favorite was dad swim nodded good. thank are fox of'
+
+Prompt: 'The cat'
+  Output: 'The cat why it Johnny just alone, heard talked song princess suddenly see the John were scared and things could watching. feeling day his finished ate, been sees on together places Susie Mommy own dolls Dad amazed places'
+
+Prompt: 'Mom said'
+  Output: 'Mom said" arrived helped treasure person light strange cold met they realized to lonely had forward shiny Daisy sparkly sack Emma only wet fire. yelled okay what wrong in they. gently Wow slowly okay go they long Look'
+
+Prompt: 'They went'
+  Output: 'They went okay again. he we smart you under sunny moral teacher Can cream Mary and came are a Why more quiet town shapes hidden ran idea join he are One other cool they in they nest Jake He Don'
+
+Saved v21 model to D:\TaoVm\yaoyao_v21.bin (step=4850)
+
+[Done]
