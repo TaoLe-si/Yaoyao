@@ -50,3 +50,11 @@
 - Each token sent as separate SSE chunk with timing in JSON
 - Compatible with OpenAI streaming SDK (stream=True)
 - Test script shows per-token: step=6.5ms total=13.0ms
+
+## v0.9.7: Persistent C++ server for low-latency generation
+- yaoyao_gen.cpp: --server mode, reads prompts from stdin, prints tokens to stdout
+- yaoyao_api.py: spawns ONE persistent subprocess, pipes requests via stdin
+- Eliminates ~2.2s model load per request
+- TTFT: 2200ms → 15ms (150x faster)
+- Streaming throughput: 7.4 tok/s → 120+ tok/s (16x faster)
+- Per-token interval: 130ms → 7.8ms (17x faster)

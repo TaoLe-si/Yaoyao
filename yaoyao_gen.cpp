@@ -341,9 +341,118 @@ void forward(M& m, const std::vector<int>& inp, int BATCH, int SEQ, int PAD,
 }
 
 int main(int argc, char** argv){
-    if(argc<3){std::fprintf(stderr,"Usage: %s <model.bin> <prompt|stream> [max_tokens=60] [temperature=0.9] [top_p=0.9]\n",argv[0]); return 1;}
+    bool server_mode=false;
     bool streaming=false;
     const char* model_path=argv[1];
+    if(argc>=2 && std::string(argv[1])=="--server"){server_mode=true;}
+    
+    if(server_mode){
+        // SERVER MODE: reads prompts from stdin, generates, prints tokens
+        if(argc<3){std::fprintf(stderr,"Usage: %s --server <model.bin>\n",argv[0]);return 1;}
+        model_path=argv[2];
+        std::mt19937 server_rng(42);
+        std::printf("Loading %s\n",model_path);
+        // Load vocab from a fixed file
+        std::ifstream tf("D:\\TaoVm\\tinystories_train.txt");
+        std::stringstream sstrm; sstrm<<tf.rdbuf();
+        std::string text=sstrm.str();
+        tf.close();
+        Vocab vocab;
+        vocab.build(text.substr(0, std::min<size_t>(text.size(), 5000000)), 1024);
+        // Read model header
+        std::ifstream mf(model_path, std::ios::binary);
+        int magic, version, V_unit;
+        mf.read((char*)&magic,4); mf.read((char*)&version,4); mf.read((char*)&V_unit,4);
+        mf.close();
+        M m;
+        m.init(server_rng, V_unit); m.V_unit=V_unit;
+        if(!m.load(model_path)){std::fprintf(stderr,"Load failed\n");return 1;}
+        std::printf("Server ready step=%d V=%d\n",m.step,V_unit);
+        std::fflush(stdout);
+        
+        const int D=m.q1.D, NL=2;
+        int SEQ=64, BATCH=1, BL=SEQ*BATCH, PAD=vocab.pad_id;
+        std::vector<float> x(BL*D), x_prev(D), y(BL*D), alpha(BL*D);
+        std::vector<float> h(BATCH*(SEQ+1)*D), s(BATCH*(SEQ+1)*D);
+        std::vector<float> hg(BL*D), sg(BL*D), logits(BL*V_unit), probs(BL*V_unit);
+        std::vector<float> xs(NL*BL*D), ys(NL*BL*D), alphas(NL*BL*D);
+        std::vector<float> hs(NL*BATCH*(SEQ+1)*D), ss(NL*BATCH*(SEQ+1)*D);
+        std::vector<float> hgs(NL*BL*D), sgs(NL*BL*D);
+        std::vector<Q1::Aux> q1_aux(BL);
+        
+        std::string line;
+        while(true){
+            // Read request: prompt|stream|max_tokens|temperature|top_p
+            if(!std::getline(std::cin, line)) break;
+            if(line.empty()) continue;
+            // Parse request line (pipe-separated)
+            std::vector<std::string> parts;
+            size_t pos=0;
+            while((pos=line.find('|'))!=std::string::npos){
+                parts.push_back(line.substr(0,pos));
+                line=line.substr(pos+1);
+            }
+            parts.push_back(line);
+            
+            std::string prompt=parts[0];
+            bool s_stream=parts.size()>1?parts[1]=="1":true;
+            int s_max_tokens=parts.size()>2?atoi(parts[2].c_str()):60;
+            float s_T=parts.size()>3?atof(parts[3].c_str()):0.9f;
+            float s_top_p=parts.size()>4?atof(parts[4].c_str()):0.9f;
+            
+            std::vector<int> ids=vocab.encode(prompt);
+            if((int)ids.size()==0){std::printf("ERROR empty_prompt\n");std::fflush(stdout);continue;}
+            std::printf("PROMPT_TOKENS %d\n",(int)ids.size());std::fflush(stdout);
+            
+            auto t_total_start=std::chrono::steady_clock::now();
+            for(int step=0;step<s_max_tokens;++step){
+                auto t_step_start=std::chrono::steady_clock::now();
+                int L=(int)ids.size();
+                std::vector<int> in2(SEQ);
+                for(int i=0;i<SEQ;++i){int idx=L-SEQ+i; in2[i]=(idx<0)?PAD:ids[idx];}
+                std::vector<int> inBL(BL);
+                for(int t=0;t<SEQ;++t) inBL[t]=in2[t];
+                forward(m, inBL, BATCH, SEQ, PAD, D, NL, V_unit,
+                        x, x_prev, y, alpha, h, s, hg, sg, logits, probs,
+                        xs, ys, alphas, hs, ss, hgs, sgs, q1_aux);
+                int bt=(BATCH-1)*SEQ+(SEQ-1);
+                std::vector<float> adj_logit(V_unit);
+                for(int v=0;v<V_unit;++v) adj_logit[v]=logits[bt*V_unit+v]/s_T;
+                for(size_t back=0; back<ids.size() && back<6; ++back){
+                    int tk = ids[ids.size()-1-back];
+                    if(tk>=2 && tk<V_unit){float penalty=3.0f*std::pow(0.65f,(float)back); adj_logit[tk]-=penalty;}
+                }
+                std::vector<int> idx(V_unit);
+                std::iota(idx.begin(),idx.end(),0);
+                std::sort(idx.begin(),idx.end(),[&](int a,int b){return adj_logit[a]>adj_logit[b];});
+                float mx=adj_logit[idx[0]];
+                std::vector<float> probs2(V_unit);
+                float sum=0;
+                for(int v=0;v<V_unit;++v){probs2[v]=std::exp(adj_logit[v]-mx);sum+=probs2[v];}
+                for(int v=0;v<V_unit;++v) probs2[v]/=sum;
+                float cum=0; int nuc=V_unit;
+                for(int i=0;i<V_unit;++i){cum+=probs2[idx[i]]; if(cum>=s_top_p){nuc=i+1;break;}}
+                std::vector<float> nuc_probs(nuc);
+                for(int i=0;i<nuc;++i) nuc_probs[i]=probs2[idx[i]];
+                float ns=0; for(int i=0;i<nuc;++i) ns+=nuc_probs[i];
+                for(int i=0;i<nuc;++i) nuc_probs[i]/=ns;
+                std::discrete_distribution<int> dist(nuc_probs.begin(),nuc_probs.end());
+                int best=idx[dist(server_rng)];
+                ids.push_back(best);
+                auto t_now=std::chrono::steady_clock::now();
+                double step_ms=std::chrono::duration<double,std::milli>(t_now-t_step_start).count();
+                double total_ms=std::chrono::duration<double,std::milli>(t_now-t_total_start).count();
+                std::string tok_str=vocab.decode({best});
+                for(char& c:tok_str){if(c=='\n')c='/'; if(c=='\r')c='/'; if(c=='\t')c=' ';}
+                std::printf("TOKEN %d %d %.2fms %.2fms %s\n", step, best, step_ms, total_ms, tok_str.c_str());
+                std::fflush(stdout);
+            }
+            std::printf("DONE\n");std::fflush(stdout);
+        }
+        return 0;
+    }
+    
+    if(argc<3){std::fprintf(stderr,"Usage: %s [--server <model.bin>] | <model.bin> <prompt|stream> [max_tokens=60] [temperature=0.9] [top_p=0.9]\n",argv[0]); return 1;}
     std::string arg2=argv[2];
     std::string prompt;
     int arg_offset=2;
