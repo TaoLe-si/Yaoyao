@@ -39,3 +39,6 @@ tinystories_unit.txt
 .idea/
 *.swp
 .DS_Store
+
+__pycache__/
+*.pyc

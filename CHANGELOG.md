@@ -37,3 +37,9 @@
 - Loss 4.42 -> 3.56 after 3 epochs
 - Top-p sampling with p=0.9 produces diverse vocabulary
 - Saved as yaoyao_v09_d128_baseline.bin
+
+## v0.9.5: OpenAI-compatible API
+- yaoyao_api.py: FastAPI server on port 11434
+- yaoyao_gen.exe: inference-only C++ exe
+- Endpoints: GET /v1/models, POST /v1/chat/completions
+- Compatible with any OpenAI client (curl, requests, etc.)
