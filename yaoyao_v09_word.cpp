@@ -538,19 +538,27 @@ int main(int argc, char** argv){
                 x, x_prev, y, alpha, h, s, hg, sg, logits, probs,
                 xs, ys, alphas, hs, ss, hgs, sgs, q1_aux);
         int bt=(BATCH-1)*SEQ+(SEQ-1);
-        // Repetition penalty: subtract penalty for recent tokens
-        // Penalty decays exponentially with distance back
+        // Gentle repetition penalty + top-k sampling
+        float T=0.9f;
         std::vector<float> adj_logit(V_unit);
-        for(int v=0;v<V_unit;++v) adj_logit[v]=logits[bt*V_unit+v];
-        for(size_t back=0; back<ids.size() && back<8; ++back){
+        for(int v=0;v<V_unit;++v) adj_logit[v]=logits[bt*V_unit+v]/T;
+        for(size_t back=0; back<ids.size() && back<4; ++back){
             int tk = ids[ids.size()-1-back];
-            if(tk>=0 && tk<V_unit){
-                float penalty = 3.0f * std::pow(0.7f, (float)back);
-                adj_logit[tk] -= penalty;
-            }
+            if(tk>=2 && tk<V_unit) adj_logit[tk] -= 2.5f;
         }
-        int best=0; float best_l=adj_logit[0];
-        for(int v=1;v<V_unit;++v) if(adj_logit[v]>best_l){best_l=adj_logit[v]; best=v;}
+        // Top-30 sampling
+        std::vector<int> idx(V_unit);
+        std::iota(idx.begin(), idx.end(), 0);
+        std::partial_sort(idx.begin(), idx.begin()+30, idx.end(),
+            [&](int a, int b){return adj_logit[a]>adj_logit[b];});
+        std::vector<float> topk(30);
+        for(int i=0;i<30;++i) topk[i]=adj_logit[idx[i]];
+        float mx=topk[0]; for(int i=1;i<30;++i) if(topk[i]>mx) mx=topk[i];
+        float sum=0;
+        for(int i=0;i<30;++i){ topk[i]=std::exp(topk[i]-mx); sum+=topk[i]; }
+        for(int i=0;i<30;++i) topk[i]/=sum;
+        std::discrete_distribution<int> dist(topk.begin(), topk.end());
+        int best=idx[dist(rng)];
         ids.push_back(best);
     }
     std::string gen=vocab.decode(ids);
