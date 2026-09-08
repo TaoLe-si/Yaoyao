@@ -1,3 +1,33 @@
+
+### [2026-09-08] Phase 4 - 多链 hash + Q3 移除
+
+**关键发现**:
+- ✅ Q3 局部卷积是**冗余且有害**: avg Loss 5.03 (Q3 训练权重) vs 4.85 (Q3 identity)
+- ✅ 4 链独立 hash 提供 128 bits 真独立信息
+- ✅ Warm-start from Phase 2 final, 快速收敛
+- ✅ 数学验证 ALL PASS
+
+**架构改动**:
+- `h_hash[BATCH]` → `h_hash[4][BATCH]` (4 独立链)
+- extract_hash_features 接受 4 个 hash, 输出 64 features (16 × 4)
+- Q3 重置为 identity (warm-start 时): kk=0=1, 其他=0
+- 多链 reverse 验证: 每链独立 reverse, 用 NEW state
+
+**新文件**:
+- yaoyao_gen_v21_fast_v2.cpp - 多链 hash 推理 (4749 tok/s)
+- yaoyao_gen_v21_fast_v3.cpp - 嵌套 hash 推理 (4595 tok/s)
+- PHASE4_LAYER_HASH.md - 多层 hash 设计文档
+- PHASE4_PROPOSAL.md - Phase 4 完整提案
+
+**数学定理**:
+- 数据处理不等式: 32-bit hash 不能创造新信息
+- 鸽巢原理: V^T (T≥5) > 2^32, 必有碰撞
+- 函数复合不变: f∘f 不增加基数
+
+**结论**: 多链 hash 提供 4x 信息但速度影响 <3%, 嵌套是优化不是突破.
+
+---
+
 # Changelog
 
 ## v1.0: Mod 3 可逆链突破 (当前主要工作)
