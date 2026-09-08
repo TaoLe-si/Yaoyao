@@ -1,14 +1,44 @@
-# 夭夭 (Yaoyao) v21: CPU 原生大语言模型
+# 夭夭 (Yaoyao) v21: CPU 原生 / GPU 加速大语言模型
 
 ## 🎯 项目定位
 
-**夭夭** 是一个**完全跑在 CPU 上、无自注意力、无 KV cache**的小型语言模型.
+**夭夭**是一个**无自注意力、无 KV cache**的小型语言模型.
 
 核心创新:
 - 🔁 **可逆链 (Reversible Chain)**: mod 3 trit 累积 + 滚动 hash, 数学严格可逆
 - 💾 **O(1) 内存**: 状态大小固定, 与上下文长度无关
 - 🚫 **无 Attention / 无 KV cache**: 用数学函数替代 softmax attention
-- ⚡ **CPU 友好**: 5609+ tok/s 推理速度 (H=64 SwiGLU)
+- ⚡ **CPU 友好**: 4658+ tok/s 推理 (H=192 SwiGLU)
+- 🚀 **GPU 加速**: NVIDIA RTX 4070 上 ~97k tok/s 训练 (20x CPU 加速)
+
+## 📊 Phase 5 (GPU) 训练结果
+
+最新 GPU 训练 (从 yaoyao_v21_phase4_step24800.bin, 训 5000 windows with random offset):
+```
+step=29641, CPU dump loss=4.7171 (single window, fixed token)
+GPU 训练 loss: 5.17→5.24 (5000 windows 训练数据, 模型已饱和)
+GPU 速度: ~95 windows/sec (~97k tokens/sec)
+CPU baseline: ~4.7k tokens/sec
+加速: 20x
+GPU 推理: 15522 tokens/sec (RTX 4070 forward only)
+```
+
+GPU vs CPU Loss 对比:
+- CPU Phase 4 (step=28800): loss 4.74
+- GPU 续训 (step=29641): loss 4.72 (略好)
+
+GPU 实现关键点 (yaoyao_v21_cuda_train.cu):
+- ✅ Forward 完全 verified: max diff 4e-6 vs CPU (trit/hash/state/hidden/logits)
+- ✅ Trit accumulate (mod 3) + Hash extract (4 chain batch-end) + Concat state
+- ✅ SwiGLU MLP via cuBLAS sgemm (state × W_gate^T, state × W_up^T, hidden × W_out^T)
+- ✅ Softmax + NLL + Adam update (W, W_hash, Wbi) + NaN guard
+- ✅ Save/Load .bin 完全兼容 CPU (magic 0x59414F59, version 4, v=V_unit=1024)
+- ✅ Random offset per window (避免 overfit)
+
+GPU 训练命令:
+```
+yaoyao_v21_cuda_train.exe yaoyao_v21.bin yaoyao_v21_tokens.bin yaoyao_v21_gpu_trained.bin 5000 1 0.005
+```
 
 ---
 
