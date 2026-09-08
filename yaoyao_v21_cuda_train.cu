@@ -162,6 +162,28 @@ __global__ void adam_Whash_kernel(float* Wh, float* Wm, float* Wv, const float* 
     Wh[idx] = w;
 }
 
+// [V21-Phase6-EXP] Un-freeze W_sgl_out: train the output projection
+// d_W_sgl_out[v, h] = sum_n d_logits[n, v] * hidden[n, h]
+// hidden is the output of silu_mul (stored in d_gate_z after that kernel)
+__global__ void adam_Wsglout_kernel(float* W, float* Wm, float* Wv, const float* d_logits, const float* hidden,
+                                     float lr, float b1, float b2, float bc1, float bc2, float eps,
+                                     int Vd, int Hd, int BL_d) {
+    int v = blockIdx.y;
+    int h = blockIdx.x * blockDim.x + threadIdx.x;
+    if (h >= Hd) return;
+    int idx = v * Hd + h;
+    float g = 0;
+    for (int n = 0; n < BL_d; ++n) g += d_logits[n * Vd + v] * hidden[n * Hd + h];
+    if (g > 1) g = 1; if (g < -1) g = -1;
+    float m = b1 * Wm[idx] + (1 - b1) * g;
+    float vv = b2 * Wv[idx] + (1 - b2) * g * g;
+    Wm[idx] = m; Wv[idx] = vv;
+    float st = lr * (m / bc1) / (sqrtf(vv / bc2) + eps);
+    float w = W[idx] - st;
+    if (w > 2) w = 2; if (w < -2) w = -2;
+    W[idx] = w;
+}
+
 __global__ void adam_Wbi_kernel(float* Wbi, float* Wm, float* Wv, const float* d_logits, const int* inp, const int* targets,
                                   float lr, float b1, float b2, float bc1, float bc2, float eps,
                                   int Vd, int BL_d, int PAD) {
@@ -192,7 +214,12 @@ struct Model {
     trit *q1;
     int q1_step, step;
     float *W_sgl_gate, *W_sgl_up, *W_sgl_out;
+    float *W_sgl_gate_m, *W_sgl_gate_v;
+    float *W_sgl_up_m, *W_sgl_up_v;
+    float *W_sgl_out_m, *W_sgl_out_v;
     float *b_sgl_gate, *b_sgl_up;
+    float *b_sgl_gate_m, *b_sgl_gate_v;
+    float *b_sgl_up_m, *b_sgl_up_v;
 };
 
 bool load_model(const char* path, Model& m) {
@@ -227,6 +254,17 @@ bool load_model(const char* path, Model& m) {
     f.read((char*)m.W_sgl_gate, H*H*4); f.read((char*)m.b_sgl_gate, H*4);
     f.read((char*)m.W_sgl_up, H*H*4);   f.read((char*)m.b_sgl_up, H*4);
     f.read((char*)m.W_sgl_out, V*H*4);
+    // [V21-Phase6-EXP] W_sgl_out_m/v 暂时不持久化到文件, 每次训练都从 0 开始
+    m.W_sgl_out_m = (float*)calloc(V*H, 4);
+    m.W_sgl_out_v = (float*)calloc(V*H, 4);
+    m.W_sgl_gate_m = (float*)calloc(H*H, 4);
+    m.W_sgl_gate_v = (float*)calloc(H*H, 4);
+    m.W_sgl_up_m = (float*)calloc(H*H, 4);
+    m.W_sgl_up_v = (float*)calloc(H*H, 4);
+    m.b_sgl_gate_m = (float*)calloc(H, 4);
+    m.b_sgl_gate_v = (float*)calloc(H, 4);
+    m.b_sgl_up_m = (float*)calloc(H, 4);
+    m.b_sgl_up_v = (float*)calloc(H, 4);
     return true;
 }
 
@@ -272,6 +310,8 @@ int main(int argc, char** argv) {
     int n_win = argc > 4 ? atoi(argv[4]) : 100;
     int epochs = argc > 5 ? atoi(argv[5]) : 1;
     float lr = argc > 6 ? atof(argv[6]) : 0.005f;
+    int train_sgl_out = argc > 7 ? atoi(argv[7]) : 0;  // [V21-Phase6-EXP]
+    if (train_sgl_out) printf("[V21-Phase6-EXP] Un-freezing W_sgl_out (output projection)\n");
     
     // Read tokens from file
     std::ifstream ft(argv[2], std::ios::binary);
@@ -423,6 +463,16 @@ int main(int argc, char** argv) {
             adam_Wbi_kernel<<<grid_Wbi, 1, 0, stream>>>(d_Wbi, d_Wbim, d_Wbiv, d_d_logits, d_inp, d_tgt,
                                                          lr, b1, b2, bc1, bc2, eps, V, BL, 0);
             
+            // [V21-Phase6-EXP] Train W_sgl_out: output projection (V × H)
+            // hidden is in d_gate_z (after silu_mul)
+            if (train_sgl_out) {
+                dim3 grid_SglOut((HIDDEN + 127) / 128, V);
+                adam_Wsglout_kernel<<<grid_SglOut, 128, 0, stream>>>(
+                    d_W_sgl_out, d_W_sgl_out_m, d_W_sgl_out_v,
+                    d_d_logits, d_gate_z,
+                    lr, b1, b2, bc1, bc2, eps, V, HIDDEN, BL);
+            }
+            
             cudaStreamSynchronize(stream);
             
             if ((w + 1) % 50 == 0 || w == 0) {
@@ -445,6 +495,7 @@ int main(int argc, char** argv) {
     cudaMemcpy(m.Wbi, d_Wbi, WbiSz*4, cudaMemcpyDeviceToHost);
     cudaMemcpy(m.Wbim, d_Wbim, WbiSz*4, cudaMemcpyDeviceToHost);
     cudaMemcpy(m.Wbiv, d_Wbiv, WbiSz*4, cudaMemcpyDeviceToHost);
+    if (train_sgl_out) cudaMemcpy(m.W_sgl_out, d_W_sgl_out, V*HIDDEN*4, cudaMemcpyDeviceToHost);
     cudaMemcpy(m.q1, d_q1, Q1Sz, cudaMemcpyDeviceToHost);
     
     save_model(argv[3], m);
