@@ -23,6 +23,7 @@
 #include <numeric>
 #include <cstdint>
 #include <cassert>
+#include <stdexcept>
 #include <immintrin.h>  // [V21-CPU-OPT] AVX2 SIMD
 
 // [V21-CPU-OPT] SIMD 矩阵-向量乘 (y = W·x + bias), W 是 [n, k] 浮点矩阵
@@ -53,27 +54,10 @@ typedef uint32_t hash_t;
 
 const hash_t INV33_MOD_2_32 = 0x3e0f83e1u;
 
-// [V21-Phase4] 多链独立 hash: 4 条独立 hash chains
-// 每条 chain 用不同基数,提供独立信息
-const int N_HASH_CHAINS = 4;
-const hash_t HASH_BASES[N_HASH_CHAINS] = {33, 37, 41, 43};
-const hash_t HASH_INV_BASES[N_HASH_CHAINS] = {0x3e0f83e1u, 0x914c1badu, 0xc18f9c19u, 0x2fa0be83u};
-const hash_t HASH_SEEDS[N_HASH_CHAINS] = {5381u, 5387u, 5393u, 5399u};
-const hash_t HASH_ADDS[N_HASH_CHAINS] = {7u, 11u, 13u, 17u};
-
-// 多链 forward: 同时更新所有 chains
-inline void hash_forward_multi(hash_t* h_arr, int token) {
-    for (int c = 0; c < N_HASH_CHAINS; ++c) {
-        h_arr[c] = h_arr[c] * HASH_BASES[c] + (hash_t)token + HASH_ADDS[c];
-    }
-}
-
-// 多链 reverse: 同时反向所有 chains
-inline void hash_reverse_multi(hash_t* h_arr, int token) {
-    for (int c = 0; c < N_HASH_CHAINS; ++c) {
-        h_arr[c] = (h_arr[c] - (hash_t)token - HASH_ADDS[c]) * HASH_INV_BASES[c];
-    }
-}
+// [V21-Phase6] 64 特征映射 (单链): h 的 8 个 4-bit nibble 循环输出
+// f_i = ((h >> (4*(i%8))) & 0xF) / 15.0f - 0.5f,  i = 0..63
+// 注意: HASH_FEATURES 在下方声明, 此处用 extern 声明, 实际定义在常量段之后。
+inline void extract_hash_features(hash_t h, float* features);
 
 // ============================================================================
 //  [V] 数学原语 + 自动验证
@@ -87,11 +71,11 @@ inline trit mod3(int x) {
 }
 
 inline hash_t hash_forward(hash_t h, int token) {
-    return ((h * 33u) + (hash_t)token + 7u);
+    return ((h * 33u) + (hash_t)token);
 }
 
 inline hash_t hash_reverse(hash_t h, int token) {
-    return (h - (hash_t)token - 7u) * INV33_MOD_2_32;
+    return (h - (hash_t)token) * INV33_MOD_2_32;
 }
 
 inline bool verify_mod3_closed() {
@@ -169,12 +153,23 @@ bool run_math_verification() {
 //  常量 (与 v19 一致)
 // ============================================================================
 
-const int D_H = 128;
+const int D_H = 256;
 const int NL_H = 2;
 const int Q1_B = 128;
 const int Q1_K = 16;
 const int Q3_K = 5;
 const int HASH_FEATURES = 64;  // [V21-Phase2] 64 features, 8 组 (Phase4 待优化)
+
+// [V21-Phase6] 64 特征映射 (单链): h 的 8 个 4-bit nibble 循环输出
+// f_i = ((h >> (4*(i%8))) & 0xF) / 15.0f - 0.5f,  i = 0..63
+inline void extract_hash_features(hash_t h, float* features) {
+    for (int i = 0; i < HASH_FEATURES; ++i) {
+        int nibble_idx = i & 7;             // i % 8
+        int shift = 4 * nibble_idx;
+        hash_t nib = (h >> shift) & 0xFu;
+        features[i] = ((float)nib) / 15.0f - 0.5f;
+    }
+}
 
 // ============================================================================
 //  Q1 (从 v19 保留, hash bucket pool)
@@ -346,6 +341,14 @@ struct M {
     std::vector<float> b_sgl_up, b_sgl_up_m, b_sgl_up_v;         // HIDDEN
     std::vector<float> W_sgl_out, W_sgl_out_m, W_sgl_out_v;       // V × HIDDEN
 
+    // [V21-Phase6] Raw forward/grad 接口所需的梯度缓冲
+    // 父代理调用 yao_backward_raw 后, grad_* 累积 batch 内 BL 上的总梯度 (未除以 BL)
+    // 调用方除以 BL 后即均值梯度, 与 yao_backward_raw 文档约定一致。
+    std::vector<float> grad_Wg, grad_Wu;            // HIDDEN × HIDDEN
+    std::vector<float> grad_Wout;                  // V × HIDDEN
+    std::vector<float> grad_Wbi;                   // V × V (按 prev 累计: d_logits[n,v] 计入 Wbi[inp[n-1] or PAD][v])
+    std::vector<float> grad_state;                  // BL × HIDDEN (诊断用, 包含 trit 与 hash 通道的反向)
+
     void init(std::mt19937& rng, int V) {
         const int D = D_H, NL = NL_H;
         V_unit = V;
@@ -375,6 +378,13 @@ struct M {
         W_sgl_up.assign(H*H, 0); W_sgl_up_m.assign(H*H, 0); W_sgl_up_v.assign(H*H, 0);
         b_sgl_up.assign(H, 0); b_sgl_up_m.assign(H, 0); b_sgl_up_v.assign(H, 0);
         W_sgl_out.assign(V*H, 0); W_sgl_out_m.assign(V*H, 0); W_sgl_out_v.assign(V*H, 0);
+
+        // [V21-Phase6] grad 缓冲分配
+        grad_Wg.assign(H*H, 0);
+        grad_Wu.assign(H*H, 0);
+        grad_Wout.assign(V*H, 0);
+        grad_Wbi.assign(V*V, 0);
+        grad_state.assign(0, 0);  // 由 raw forward 按需分配
         std::normal_distribution<float> ndw(0, 0.1f);
         for (auto& x : W) x = ndw(rng);
         for (auto& x : W_hash) x = ndw(rng) * 0.5f;
@@ -476,6 +486,18 @@ struct M {
             wr(b_sgl_up.data(), b_sgl_up.size()*4);
             wr(W_sgl_out.data(), W_sgl_out.size()*4);
         }
+        wr(W_sgl_gate_m.data(), W_sgl_gate_m.size()*4);
+        wr(W_sgl_gate_v.data(), W_sgl_gate_v.size()*4);
+        wr(W_sgl_up_m.data(), W_sgl_up_m.size()*4);
+        wr(W_sgl_up_v.data(), W_sgl_up_v.size()*4);
+        wr(W_sgl_out_m.data(), W_sgl_out_m.size()*4);
+        wr(W_sgl_out_v.data(), W_sgl_out_v.size()*4);
+        wr(b_sgl_gate_m.data(), b_sgl_gate_m.size()*4);
+        wr(b_sgl_gate_v.data(), b_sgl_gate_v.size()*4);
+        wr(b_sgl_up_m.data(), b_sgl_up_m.size()*4);
+        wr(b_sgl_up_v.data(), b_sgl_up_v.size()*4);
+        f.flush();
+        if (!f) return false;
         std::printf("Saved v21 model to %s (step=%d)\n", path.c_str(), step);
         return true;
     }
@@ -539,6 +561,24 @@ struct M {
             }
             std::printf("  [V21-Phase2] Upgraded from v3: W_sgl_out initialized from old W + W_hash\n");
         }
+        if (!f) return false; // reject truncated mandatory parameter data
+        const auto payload_end = f.tellg();
+        f.seekg(0,std::ios::end); const auto file_end = f.tellg(); f.seekg(payload_end);
+        const std::streamoff optimizer_bytes = (4*HIDDEN_SGL*HIDDEN_SGL + 2*V_unit*HIDDEN_SGL + 4*HIDDEN_SGL)*4;
+        if (file_end != payload_end) {
+            if (file_end-payload_end != optimizer_bytes) return false;
+            rd(W_sgl_gate_m.data(), W_sgl_gate_m.size()*4);
+            rd(W_sgl_gate_v.data(), W_sgl_gate_v.size()*4);
+            rd(W_sgl_up_m.data(), W_sgl_up_m.size()*4);
+            rd(W_sgl_up_v.data(), W_sgl_up_v.size()*4);
+            rd(W_sgl_out_m.data(), W_sgl_out_m.size()*4);
+            rd(W_sgl_out_v.data(), W_sgl_out_v.size()*4);
+            rd(b_sgl_gate_m.data(), b_sgl_gate_m.size()*4);
+            rd(b_sgl_gate_v.data(), b_sgl_gate_v.size()*4);
+            rd(b_sgl_up_m.data(), b_sgl_up_m.size()*4);
+            rd(b_sgl_up_v.data(), b_sgl_up_v.size()*4);
+            if (!f) return false;
+        }
         std::printf("Loaded v21 model from %s (step=%d)\n", path.c_str(), step);
         return true;
     }
@@ -571,39 +611,8 @@ struct M {
 };
 
 // ============================================================================
-//  [V] 提取 hash 特征
+//  [V] 验证 mod 3 单步 (运行时)
 // ============================================================================
-
-// [V21-Phase4] HASH_FEATURES=64: 4 个独立 hash chain, 每个 16 features
-// Chain 0: 直接切片, Chain 1: MurmurHash3, Chain 2: Jenkins, Chain 3: SplitMix64
-inline void extract_hash_features(hash_t h0, hash_t h1, hash_t h2, hash_t h3, float* features) {
-    // Chain 0: 直接按位切片 (16 features)
-    hash_t t0 = h0;
-    for (int i = 0; i < 16; i++) {
-        features[i] = ((float)(t0 & 0xFFFFu) / 65535.0f - 0.5f);
-        t0 = t0 >> 16;
-        if (t0 == 0) t0 = h0;
-    }
-    // Chain 1: MurmurHash3 风格雪崩 (16 features)
-    hash_t t1 = h1;
-    for (int i = 16; i < 32; i++) {
-        t1 = t1 * 0x85ebca6bu + 0xc2b2ae35u;
-        features[i] = ((float)(t1 & 0xFFFFu) / 65535.0f - 0.5f);
-    }
-    // Chain 2: Jenkins 风格 (16 features)
-    hash_t t2 = h2;
-    for (int i = 32; i < 48; i++) {
-        t2 = (t2 ^ (t2 >> 16)) * 0x9e3779b9u;
-        features[i] = ((float)(t2 & 0xFFFFu) / 65535.0f - 0.5f);
-    }
-    // Chain 3: SplitMix64 风格 (16 features)
-    hash_t t3 = h3 ^ 0xdeadbeefu;
-    for (int i = 48; i < 64; i++) {
-        t3 = t3 * 0x27d4eb2fu + 0x165667b1u;
-        features[i] = ((float)(t3 & 0xFFFFu) / 65535.0f - 0.5f);
-    }
-}
-
 // ============================================================================
 //  [V] 验证 mod 3 单步 (运行时)
 // ============================================================================
@@ -616,158 +625,277 @@ inline trit step_mod3(trit prev, trit x) {
 //  [V] Forward 函数: 替换 v19 的 h/s
 // ============================================================================
 
+int yao_forward_raw(M&, const int*, int, int, int, int, float*, float*, float*, float*, float*, float*, hash_t*);
+
 void yao_forward(M& m, const std::vector<int>& inp, int BATCH, int SEQ, int PAD,
              int D, int NL, int V_unit,
              std::vector<float>& x, std::vector<float>& x_prev,
              std::vector<float>& y, std::vector<float>& alpha,
-             // 替换 v19 的 h, s, hg, sg
-             std::vector<trit>& h_trit,
-             std::vector<hash_t>& h_hash,
-             // [V21-Phase4] 4 条独立 hash chains
-             std::vector<hash_t>& h_hash1,
-             std::vector<hash_t>& h_hash2,
-             std::vector<hash_t>& h_hash3,
-             // 输出特征
+             std::vector<trit>& h_trit, std::vector<hash_t>& h_hash,
              std::vector<float>& trit_features, std::vector<float>& hash_features,
              std::vector<float>& logits, std::vector<float>& probs,
              std::vector<float>& xs, std::vector<float>& ys, std::vector<float>& alphas,
-             std::vector<float>& gates_v){
-    int BL = BATCH * SEQ;
+             std::vector<float>& gates_v) {
+    const int BL = BATCH * SEQ, H = D + HASH_FEATURES;
+    std::vector<float> state(BL*H), hidden(BL*H), gp(BL*H), up(BL*H);
+    if (yao_forward_raw(m, inp.data(), BL, BATCH, SEQ, PAD, logits.data(), probs.data(),
+        state.data(),hidden.data(),gp.data(),up.data(),h_hash.data()) != 0)
+        throw std::runtime_error("Invalid forward inputs");
+    for (int n=0;n<BL;++n) {
+        for (int d=0;d<D;++d) trit_features[n*D+d]=state[n*H+d];
+        for (int f=0;f<HASH_FEATURES;++f) hash_features[n*HASH_FEATURES+f]=state[n*H+D+f];
+    }
+}
 
-    // Q1 嵌入 (与 v19 一致)
-    for (int d = 0; d < D; ++d) x_prev[d] = 0.0f;
-    std::vector<Q1::Aux> q1_aux(BL);
-    for (int t = 0; t < BL; ++t) {
-        int id = inp[t];
-        m.q1.forward(id, x_prev.data(), x.data() + t*D, q1_aux[t]);
-        for (int d = 0; d < D; ++d) x_prev[d] = 0.0f;
+// ============================================================================
+//  [V21-Phase6] Raw Forward 接口 (供父代理门禁测试使用)
+//  公式: logits = Wout·hidden + Wbi[prev,:], hidden = silu(Wg·state) ⊙ (Wu·state)
+//         state = [trit; hash]  (HIDDEN = D + HASH_FEATURES, 无 bias)
+//  此接口: 不打印/不dump/不更新参数; 只算并保存所需激活以便 backward 使用。
+//
+//  调用约定:
+//    inp        : [BL] int tokens, BL = BATCH * seq_len
+//    PAD        : previous-token pad id (用于 t=0)
+//    out_logits : [BL * V] float (已写)
+//    out_probs  : [BL * V] float (已写; softmax over V)
+//    out_state  : [BL * HIDDEN] float (已写)  -- 用于 dWg/dWu 的反向
+//    out_hidden : [BL * HIDDEN] float (已写)  -- post silu_mul, 用于 dWout
+//    out_gate_pre, out_up_pre : [BL * HIDDEN] float (已写) -- silu/gate 之前, 用于 silu_back
+//    scratch_h_hash : [BATCH] hash_t (读写; 保存 batch 内每个序列累积的 hash 末态)
+//    m         : 模型 (只读)
+//
+//  成功返回 0; inp 含非法 token (>= V_unit 或 < 0) 返回 -1。
+// ============================================================================
+int yao_forward_raw(M& m,
+                    const int* inp, int BL, int BATCH, int seq_len, int PAD,
+                    float* out_logits,    // [BL * V]
+                    float* out_probs,     // [BL * V]
+                    float* out_state,     // [BL * HIDDEN] (D+HASH_FEATURES)
+                    float* out_hidden,    // [BL * HIDDEN]
+                    float* out_gate_pre,  // [BL * HIDDEN]
+                    float* out_up_pre,    // [BL * HIDDEN]
+                    hash_t* scratch_h_hash // [BATCH]
+                   ) {
+    const int D = D_H;
+    const int HASH = HASH_FEATURES;
+    const int HIDDEN = D + HASH;
+    const int V_unit = m.V_unit;
+
+    // 0) token 范围检查
+    for (int n = 0; n < BL; ++n) {
+        int id = inp[n];
+        if (id < 0 || id >= V_unit) return -1;
     }
 
-    // Q3 conv + alpha + gate (与 v19 类似)
-    for (int l = 0; l < NL; ++l) {
-        std::memcpy(xs.data() + l*BL*D, x.data(), BL*D*sizeof(float));
-        for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) { int bt = b*SEQ+t;
-            for (int d = 0; d < D; ++d) {
-                float v = 0;
-                for (int kk = 0; kk < Q3_K; ++kk) { if (t >= kk) v += m.q3w[kk][l*D+d] * x[(b*SEQ+t-kk)*D+d]; }
-                if (v > 4) v = 4; if (v < -4) v = -4;
-                y[bt*D+d] = v;
-            }
-        }
-        std::memcpy(ys.data() + l*BL*D, y.data(), BL*D*sizeof(float));
-        for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) { int bt = b*SEQ+t;
-            for (int d = 0; d < D; ++d) {
-                float z = m.ab[l*D+d];
-                for (int k = 0; k < D; ++k) z += m.aW[l*D*D+d*D+k] * x[bt*D+k];
-                float zT = z / 2.0f;
-                if (zT > 20) zT = 20; if (zT < -20) zT = -20;
-                alpha[bt*D+d] = 1.0f / (1.0f + std::exp(-zT));
-            }
-        }
-        std::memcpy(alphas.data() + l*BL*D, alpha.data(), BL*D*sizeof(float));
-        for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) { int bt = b*SEQ+t;
-            for (int d = 0; d < D; ++d) {
-                float zg = m.gb[l*D+d];
-                for (int k = 0; k < D; ++k) zg += m.gW[l*D*D+d*D+k] * x[bt*D+k];
-                float zgT = zg / 2.0f;
-                if (zgT > 20) zgT = 20; if (zgT < -20) zgT = -20;
-                float g = 1.0f / (1.0f + std::exp(-zgT));
-                gates_v[l*BL*D+bt*D+d] = g;
-                y[bt*D+d] = y[bt*D+d] * g;
-            }
-        }
+    // 1) per-position hash 单链: h_{b,t} = h_{b,t-1} * 33 + inp[bt*SEQ + t] + 7
+    //    同时 extract 64 维特征 (单链 8 个 4-bit nibble 循环输出)
+    for (int b = 0; b < BATCH; ++b) {
+        scratch_h_hash[b] = 5381u;
+        for (int t = 0; t < seq_len; ++t) {
+            int bt = b * seq_len + t;
+            int id = inp[bt];
+            hash_t prev_h = (t > 0) ? scratch_h_hash[b] : 5381u;
+            scratch_h_hash[b] = prev_h * 33u + (hash_t)id;
 
-        // === [V] 替换 v19 的 h/s ===
-        // 计算 trit_features 和 hash 状态
-        if (l == NL - 1) {  // 仅在最后一层
-            for (int b = 0; b < BATCH; ++b) {
-                h_hash[b] = 5381u;
-                for (int d = 0; d < D; ++d) h_trit[b*D + d] = 0;
+            // trit 累积 (mod 3) - 与 v21 forward 一致
+            int bucket = Q1::hash(id, Q1_B);
+            for (int d = 0; d < D; ++d) {
+                trit prev_trit = (t > 0) ? (trit)out_state[(bt - 1) * HIDDEN + d] : (trit)0;
+                trit embed_trit = m.q1.trits[(bucket * Q1_K + 0) * D + d];
+                out_state[bt * HIDDEN + d] = (float)step_mod3(prev_trit, embed_trit);
             }
-            for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) {
-                int bt = b*SEQ + t;
-                int id = inp[bt];
-                int bucket = Q1::hash(id, Q1_B);
-
-                // mod 3 trit 累积
-                for (int d = 0; d < D; ++d) {
-                    trit prev_trit = (t > 0) ? trit_features[(b*SEQ+t-1)*D + d] : (trit)0;
-                    trit embed_trit = m.q1.trits[(bucket*Q1_K + 0)*D + d];
-                    trit_features[bt*D + d] = (trit)step_mod3(prev_trit, embed_trit);
-                }
-                // [V21-Phase4] 4 条独立 hash chains (base 33/37/41/43)
-                hash_t prev_hash = (t > 0) ? h_hash[b] : 5381u;
-                h_hash[b] = prev_hash * 33u + (hash_t)id + 7u;
-                if (t > 0) h_hash1[b] = h_hash1[b] * 37u + (hash_t)id + 11u;
-                else h_hash1[b] = 5387u;
-                h_hash2[b] = (t > 0) ? (h_hash2[b] * 41u + (hash_t)id + 13u) : 5393u;
-                h_hash3[b] = (t > 0) ? (h_hash3[b] * 43u + (hash_t)id + 17u) : 5399u;
-            }
-
-            // 提取 hash 特征
-            std::printf("  [DEBUG-yao] h_hash[0..3] = %u %u %u %u\n", h_hash[0], h_hash[1], h_hash[2], h_hash[3]);
-            for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) {
-                int bt = b*SEQ + t;
-                extract_hash_features(h_hash[b], h_hash1[b], h_hash2[b], h_hash3[b], hash_features.data() + bt*HASH_FEATURES);
-            }
-            std::printf("  [DEBUG-yao] hash_features[0..3] = %.3f %.3f %.3f %.3f\n", hash_features[0], hash_features[1], hash_features[2], hash_features[3]);
-            std::printf("  [DEBUG-yao] hash_features[64..67] = %.3f %.3f %.3f %.3f\n", hash_features[64], hash_features[65], hash_features[66], hash_features[67]);
+            // hash 特征 (单链, 64 dim)
+            extract_hash_features(scratch_h_hash[b], out_state + bt * HIDDEN + D);
         }
     }
 
-    // === [V21-Phase2] SwiGLU MLP 替换简单线性 ===
-    constexpr int HIDDEN = D_H + HASH_FEATURES;  // 192, constexpr 避免 VLA
-    // 注意: 我们要把 trit_features 和 hash_features 拼接到一个临时 buffer
-    // 然后 W_gate, W_up 输入 state (D+H), 输出 HIDDEN
-    // hidden = silu(W_gate · state) * (W_up · state)
-    // logits = Wbi[prev,v] + W_out[v,:] · hidden
-
-    #pragma omp parallel for
-    for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) { int bt = b*SEQ+t;
-        int prev = (t > 0) ? inp[(b*SEQ+t-1)] : PAD;
-        // 1. 拼接 state [D+HASH_FEATURES]
-        float state[HIDDEN];
-        for (int d = 0; d < D; ++d) state[d] = (float)trit_features[bt*D+d];
-        for (int f = 0; f < HASH_FEATURES; ++f) state[D+f] = hash_features[bt*HASH_FEATURES+f];
-        
-        // 2. SwiGLU: gate = silu(W_gate · state + b_gate), up = W_up · state + b_up
-        // [V21-CPU-OPT] 用 SIMD 优化矩阵乘
-        float gate_z_arr[HIDDEN], up_z_arr[HIDDEN];
-        sgl_matvec(m.W_sgl_gate.data(), state, m.b_sgl_gate.data(), gate_z_arr, HIDDEN, HIDDEN);
-        sgl_matvec(m.W_sgl_up.data(),   state, m.b_sgl_up.data(),   up_z_arr,   HIDDEN, HIDDEN);
-
-        float hidden[HIDDEN];
-        for (int h = 0; h < HIDDEN; ++h) {
-            float gate_z = gate_z_arr[h];
-            float up_z = up_z_arr[h];
-            // SiLU(gate_z) = gate_z * sigmoid(gate_z)
-            float sig = 1.0f / (1.0f + std::exp(-gate_z));
-            if (sig > 1) sig = 1; if (sig < 0) sig = 0;
-            float silu = gate_z * sig;
-            // SwiGLU: hidden = silu(gate) * up
-            hidden[h] = silu * up_z;
+    // 2) SwiGLU: gate = Wg·state (无 bias), up = Wu·state (无 bias), hidden = silu(gate) ⊙ up
+    for (int n = 0; n < BL; ++n) {
+        const float* state = out_state + n * HIDDEN;
+        float* gp = out_gate_pre + n * HIDDEN;
+        float* up = out_up_pre + n * HIDDEN;
+        for (int i = 0; i < HIDDEN; ++i) {
+            float gv = 0, uv = 0;
+            const float* row_g = m.W_sgl_gate.data() + i * HIDDEN;
+            const float* row_u = m.W_sgl_up.data()   + i * HIDDEN;
+            for (int k = 0; k < HIDDEN; ++k) {
+                float s = state[k];
+                gv += row_g[k] * s;
+                uv += row_u[k] * s;
+            }
+            gp[i] = gv;
+            up[i] = uv;
         }
-        
-        // 3. logits = Wbi[prev,v] + W_out[v,:] · hidden
+        float* hd = out_hidden + n * HIDDEN;
+        for (int i = 0; i < HIDDEN; ++i) {
+            float gz = gp[i];
+            float sig = 1.0f / (1.0f + std::exp(-gz));
+            hd[i] = gz * sig * up[i];
+        }
+    }
+
+    // 3) logits = Wbi[prev, v] + Wout[v, :] · hidden
+    for (int n = 0; n < BL; ++n) {
+        int t = n % seq_len;
+        int prev = (t > 0) ? inp[n - 1] : PAD;
+        const float* hd = out_hidden + n * HIDDEN;
         for (int v = 0; v < V_unit; ++v) {
-            float lv = m.Wbi[prev*V_unit + v];
-            for (int h = 0; h < HIDDEN; ++h) lv += m.W_sgl_out[v*HIDDEN + h] * hidden[h];
-            logits[bt*V_unit + v] = lv;
+            float lv = m.Wbi[prev * V_unit + v];
+            const float* row = m.W_sgl_out.data() + v * HIDDEN;
+            for (int h = 0; h < HIDDEN; ++h) lv += row[h] * hd[h];
+            out_logits[n * V_unit + v] = lv;
         }
     }
+
+    // 4) softmax -> probs
+    for (int n = 0; n < BL; ++n) {
+        float mx = out_logits[n * V_unit];
+        for (int v = 1; v < V_unit; ++v) if (out_logits[n*V_unit+v] > mx) mx = out_logits[n*V_unit+v];
+        float sum = 0;
+        for (int v = 0; v < V_unit; ++v) {
+            float p = std::exp(out_logits[n*V_unit+v] - mx);
+            out_probs[n*V_unit+v] = p; sum += p;
+        }
+        for (int v = 0; v < V_unit; ++v) out_probs[n*V_unit+v] /= sum;
+    }
+    return 0;
+}
+
+// ============================================================================
+//  [V21-Phase6] Raw Backward 接口 (供父代理门禁测试使用)
+//  输入: d_logits[BL, V] = probs - 1[target]  (调用方先准备, 或从 logits+targets 算)
+//        state[BL, HIDDEN], hidden[BL, HIDDEN], gate_pre[BL, HIDDEN], up_pre[BL, HIDDEN]
+//  输出: 累积到 m.grad_Wg, grad_Wu, grad_Wout, grad_Wbi (均为 SUM, 不除 BL)
+//        调用方除以 BL 即得均值梯度, 与 Adam 接口约定一致。
+//
+//  返回 0 成功。inp 含非法 token 返回 -1 (不会写入 m.grad_*)。
+//
+//  注: trit 与 hash 参数(q1, hash) 不在公式可学习列表, 不累积梯度到它们;
+//       grad_state 仍写到 m.grad_state[BL*HIDDEN] 供诊断 (q1 等聚合路径不闭合)。
+// ============================================================================
+int yao_backward_raw(M& m,
+                     const int* inp, int BL, int BATCH, int seq_len, int PAD,
+                     const float* d_logits,        // [BL, V]
+                     const float* state,        // [BL, HIDDEN]
+                     const float* hidden,       // [BL, HIDDEN]  post silu_mul
+                     const float* gate_pre,     // [BL, HIDDEN]  pre silu_mul (= Wg·state)
+                     const float* up_pre) {     // [BL, HIDDEN]  pre silu_mul (= Wu·state)
+    const int D = D_H;
+    const int HASH = HASH_FEATURES;
+    const int HIDDEN = D + HASH;
+    const int V_unit = m.V_unit;
 
     for (int n = 0; n < BL; ++n) {
-        float mx = logits[n*V_unit];
-        for (int v = 1; v < V_unit; ++v) if (logits[n*V_unit+v] > mx) mx = logits[n*V_unit+v];
-        float sum = 0;
-        for (int v = 0; v < V_unit; ++v) { probs[n*V_unit+v] = std::exp(logits[n*V_unit+v] - mx); sum += probs[n*V_unit+v]; }
-        for (int v = 0; v < V_unit; ++v) probs[n*V_unit+v] /= sum;
+        int id = inp[n];
+        if (id < 0 || id >= V_unit) return -1;
+    }
+    // 清零累计 grad
+    std::fill(m.grad_Wg.begin(),   m.grad_Wg.end(),   0.0f);
+    std::fill(m.grad_Wu.begin(),   m.grad_Wu.end(),   0.0f);
+    std::fill(m.grad_Wout.begin(), m.grad_Wout.end(), 0.0f);
+    std::fill(m.grad_Wbi.begin(),  m.grad_Wbi.end(),  0.0f);
+    m.grad_state.assign((size_t)BL * HIDDEN, 0.0f);
+
+    // 1) d_hidden[n, h] = sum_v d_logits[n, v] * Wout[v, h]
+    std::vector<float> d_hidden(BL * HIDDEN, 0.0f);
+    for (int n = 0; n < BL; ++n) {
+        for (int h = 0; h < HIDDEN; ++h) {
+            float s = 0;
+            for (int v = 0; v < V_unit; ++v) s += d_logits[n * V_unit + v] * m.W_sgl_out[v * HIDDEN + h];
+            d_hidden[n * HIDDEN + h] = s;
+        }
+    }
+
+    // 2) silu_back: d_gate_pre = d_hidden ⊙ up · silu'(g); d_up_pre = d_hidden ⊙ silu(g)
+    std::vector<float> d_gate_pre(BL * HIDDEN, 0.0f), d_up_pre(BL * HIDDEN, 0.0f);
+    for (int n = 0; n < BL; ++n) {
+        for (int i = 0; i < HIDDEN; ++i) {
+            float dh = d_hidden[n * HIDDEN + i];
+            float g  = gate_pre[n * HIDDEN + i];
+            float u  = up_pre[n * HIDDEN + i];
+            float sig = 1.0f / (1.0f + std::exp(-g));
+            float dsilg = sig * (1.0f + g * (1.0f - sig));  // 数值稳定 silu'(g)
+            d_gate_pre[n * HIDDEN + i] = dh * u * dsilg;
+            d_up_pre[n * HIDDEN + i]   = dh * (g * sig);
+        }
+    }
+
+    // 3) grad_Wg[i, j] += sum_n d_gate_pre[n, i] * state[n, j]
+    //    grad_Wu[i, j] += sum_n d_up_pre[n, i] * state[n, j]
+    //    grad_Wout[v, h] += sum_n d_logits[n, v] * hidden[n, h]
+    for (int i = 0; i < HIDDEN; ++i) {
+        for (int j = 0; j < HIDDEN; ++j) {
+            float sg = 0, su = 0;
+            for (int n = 0; n < BL; ++n) {
+                sg += d_gate_pre[n * HIDDEN + i] * state[n * HIDDEN + j];
+                su += d_up_pre[n * HIDDEN + i] * state[n * HIDDEN + j];
+            }
+            m.grad_Wg[i * HIDDEN + j] = sg;
+            m.grad_Wu[i * HIDDEN + j] = su;
+        }
+    }
+    for (int v = 0; v < V_unit; ++v) {
+        for (int h = 0; h < HIDDEN; ++h) {
+            float s = 0;
+            for (int n = 0; n < BL; ++n) s += d_logits[n * V_unit + v] * hidden[n * HIDDEN + h];
+            m.grad_Wout[v * HIDDEN + h] = s;
+        }
+    }
+
+    // 4) grad_Wbi[prev, v] += sum_n d_logits[n, v] where prev = (t>0 ? inp[n-1] : PAD)
+    for (int n = 0; n < BL; ++n) {
+        int t = n % seq_len;
+        int prev = (t > 0) ? inp[n - 1] : PAD;
+        for (int v = 0; v < V_unit; ++v) {
+            m.grad_Wbi[prev * V_unit + v] += d_logits[n * V_unit + v];
+        }
+    }
+
+    // 5) grad_state[n, j] = sum_i (d_gate_pre[n, i] * Wg[i, j] + d_up_pre[n, i] * Wu[i, j])
+    for (int n = 0; n < BL; ++n) {
+        for (int j = 0; j < HIDDEN; ++j) {
+            float s = 0;
+            for (int i = 0; i < HIDDEN; ++i) {
+                s += d_gate_pre[n * HIDDEN + i] * m.W_sgl_gate[i * HIDDEN + j];
+                s += d_up_pre[n * HIDDEN + i] * m.W_sgl_up[i * HIDDEN + j];
+            }
+            m.grad_state[n * HIDDEN + j] = s;
+        }
+    }
+
+    return 0;
+}
+
+// ============================================================================
+//  [V21-Phase6] 工具: 由 logits+targets 计算 d_logits = probs - 1[target]
+//  probs 已是 softmax 输出, 复制 d_logits 缓冲。
+// ============================================================================
+inline void compute_d_logits(const float* probs, const int* targets, int BL, int V_unit, float* d_logits) {
+    for (int n = 0; n < BL; ++n) {
+        for (int v = 0; v < V_unit; ++v) d_logits[n * V_unit + v] = probs[n * V_unit + v];
+        int t = targets[n];
+        if (t >= 0 && t < V_unit) d_logits[n * V_unit + t] -= 1.0f;
     }
 }
 
 // ============================================================================
 //  主程序
 // ============================================================================
+
+void apply_model_adam(M& m,float lr,float b1,float b2,float bc1,float bc2,float eps) {
+    auto apply=[&](std::vector<float>& w,std::vector<float>& mom,std::vector<float>& var,const std::vector<float>& grad) {
+        for(size_t i=0;i<w.size();++i) {
+            if(!std::isfinite(grad[i])) throw std::runtime_error("Nonfinite gradient");
+            float g=std::min(1.f,std::max(-1.f,grad[i]));
+            mom[i]=b1*mom[i]+(1-b1)*g; var[i]=b2*var[i]+(1-b2)*g*g;
+            w[i]=std::min(2.f,std::max(-2.f,w[i]-lr*(mom[i]/bc1)/(std::sqrt(var[i]/bc2)+eps)));
+        }
+    };
+    apply(m.W_sgl_gate,m.W_sgl_gate_m,m.W_sgl_gate_v,m.grad_Wg);
+    apply(m.W_sgl_up,m.W_sgl_up_m,m.W_sgl_up_v,m.grad_Wu);
+    apply(m.W_sgl_out,m.W_sgl_out_m,m.W_sgl_out_v,m.grad_Wout);
+    apply(m.Wbi,m.Wbi_m,m.Wbi_v,m.grad_Wbi);
+}
 
 int main(int argc, char** argv) {
     std::printf("========================================\n");
@@ -849,8 +977,7 @@ int main(int argc, char** argv) {
     std::vector<float> xs(NL*BL*D), ys(NL*BL*D), alphas(NL*BL*D), gates_v(NL*BL*D);
     std::vector<trit> h_trit(BL*D);
     std::vector<hash_t> h_hash(BATCH);
-    // [V21-Phase4] 4 条独立 hash chains
-    std::vector<hash_t> h_hash1(BATCH), h_hash2(BATCH), h_hash3(BATCH);
+    // [V21-Phase6] 单链 hash 即可, 不再保留 h_hash1/2/3
     std::vector<float> trit_features(BL*D), hash_features(BL*HASH_FEATURES);
     std::vector<float> logits(BL*V_unit), probs(BL*V_unit), d_logits(BL*V_unit);
 
@@ -876,7 +1003,6 @@ int main(int argc, char** argv) {
 
             yao_forward(m, inpBL, BATCH, SEQ, PAD, D, NL, V_unit,
                     x, x_prev, y, alpha, h_trit, h_hash,
-                    h_hash1, h_hash2, h_hash3,
                     trit_features, hash_features, logits, probs,
                     xs, ys, alphas, gates_v);
 
@@ -893,10 +1019,7 @@ int main(int argc, char** argv) {
                     std::fwrite(logits.data(), 4, BL*V_unit, fd);
                     std::fwrite(trit_features.data(), 4, BL*D, fd);
                     std::fwrite(hash_features.data(), 4, BL*HASH_FEATURES, fd);
-                    std::fwrite(h_hash.data(), 4, BATCH, fd);    // dump h_hash (after loop)
-                    std::fwrite(h_hash1.data(), 4, BATCH, fd);
-                    std::fwrite(h_hash2.data(), 4, BATCH, fd);
-                    std::fwrite(h_hash3.data(), 4, BATCH, fd);
+                    std::fwrite(h_hash.data(), 4, BATCH, fd);    // [V21-Phase6] dump 单链 h_hash (BATCH)
                     std::fclose(fd);
                     std::printf("  [V21-Phase5] Dumped logits to %s (BL=%d, V=%d)\n", dump_path, BL, V_unit);
                 }
@@ -915,75 +1038,8 @@ int main(int argc, char** argv) {
                 return 0;
             }
 
-            // [V-数学模型] 完整验证
-
-            // [V-数学模型] 完整验证
-            {
-                // (1) softmax 概率和 ≈ 1
-                bool prob_ok = true;
-                float max_prob_err = 0;
-                for (int n = 0; n < BL; ++n) {
-                    float sum = 0;
-                    for (int v = 0; v < V_unit; ++v) sum += probs[n*V_unit+v];
-                    float err = std::fabs(sum - 1.0f);
-                    if (err > max_prob_err) max_prob_err = err;
-                    if (err > 1e-3f) prob_ok = false;
-                }
-                if (w == 0) std::printf("  [V-Math] softmax sum: max_err=%.2e %s\n", max_prob_err, prob_ok ? "PASS" : "FAIL");
-                
-                // (2) d_logits sum ≈ 0 (softmax + NLL 的梯度性质: sum of (probs - 1[target]) = 0)
-                if (w == 0) {
-                    float max_dl_err = 0;
-                    for (int n = 0; n < 5; ++n) {  // 检查前 5 个
-                        float sum = 0;
-                        for (int v = 0; v < V_unit; ++v) sum += probs[n*V_unit+v] - (tgtBL[n] == v ? 1.0f : 0.0f);
-                        float err = std::fabs(sum);
-                        if (err > max_dl_err) max_dl_err = err;
-                    }
-                    std::printf("  [V-Math] d_logits sum: max_err=%.2e %s\n", max_dl_err, max_dl_err < 1e-4 ? "PASS" : "FAIL");
-                }
-                
-                // (3) 每 100 windows 验证完整状态可逆
-                if ((w+1) % 100 == 0 || w == n_win-1) {
-                    // 取第 0 个 batch 的完整状态, 看是否能反向恢复
-                    int b_test = 0;
-                    // 备份
-                    std::vector<trit> trit_backup(BL*D);
-                    std::vector<hash_t> hash_backup(BATCH);
-                    std::vector<hash_t> hash1_backup(BATCH), hash2_backup(BATCH), hash3_backup(BATCH);
-                    memcpy(trit_backup.data(), h_trit.data(), sizeof(trit)*BL*D);
-                    memcpy(hash_backup.data(), h_hash.data(), sizeof(hash_t)*BATCH);
-                    memcpy(hash1_backup.data(), h_hash1.data(), sizeof(hash_t)*BATCH);
-                    memcpy(hash2_backup.data(), h_hash2.data(), sizeof(hash_t)*BATCH);
-                    memcpy(hash3_backup.data(), h_hash3.data(), sizeof(hash_t)*BATCH);
-
-                    // 反向 n=100 步 (恢复初始状态)
-                    int n_reverse = std::min((int)BATCH, 100);
-                    for (int t = n_reverse - 1; t >= 0; --t) {
-                        int id = inpBL[b_test*SEQ + t];
-                        int bucket = Q1::hash(id, Q1_B);
-                        // 反向 4 条 hash chains
-                        h_hash[b_test] = (h_hash[b_test] - (hash_t)id - 7u) * 0x3e0f83e1u;   // base 33
-                        h_hash1[b_test] = (h_hash1[b_test] - (hash_t)id - 11u) * 0x914c1badu; // base 37
-                        h_hash2[b_test] = (h_hash2[b_test] - (hash_t)id - 13u) * 0xc18f9c19u; // base 41
-                        h_hash3[b_test] = (h_hash3[b_test] - (hash_t)id - 17u) * 0x2fa0be83u; // base 43
-                        // 反向 trit
-                        for (int d = 0; d < D; ++d) {
-                            trit cur = trit_features[(b_test*SEQ+t)*D + d];
-                            if (t > 0) {
-                                trit prev_orig = trit_features[(b_test*SEQ+t-1)*D + d];
-                                trit embed = m.q1.trits[(bucket*Q1_K + 0)*D + d];
-                                trit expected = (trit)mod3((int)prev_orig + (int)embed);
-                                if (cur != expected) {
-                                    std::printf("  [V-Math] trit inconsistent at t=%d d=%d\n", t, d);
-                                }
-                            }
-                        }
-                    }
-                    std::printf("  [V-Math] reversibility check at win=%d: hash_recoverable %s\n", w+1, "verified");
-                }
-            }
-
+            // Correctness gates live in verify_v21_cpu.cpp and independent Python tests.
+            // Do not mutate forward state or print unconditional reversibility success here.
 
             // NLL loss
             float loss_nll = 0;
@@ -1003,45 +1059,19 @@ int main(int argc, char** argv) {
 
             float bc1 = 1 - std::pow(b1, (float)m.step), bc2 = 1 - std::pow(b2, (float)m.step);
 
-            // [V] Adam 更新 W
-            #pragma omp parallel for
-            for (int v = 0; v < V_unit; ++v) for (int d = 0; d < D; ++d) {
-                float g = 0;
-                for (int n = 0; n < BL; ++n) g += d_logits[n*V_unit+v] * trit_features[n*D+d];
-                if (g > 1) g = 1; if (g < -1) g = -1;
-                int idx = v*D + d;
-                m.W_m[idx] = b1*m.W_m[idx] + (1-b1)*g;
-                m.W_v[idx] = b2*m.W_v[idx] + (1-b2)*g*g;
-                float st = lr * (m.W_m[idx]/bc1) / (std::sqrt(m.W_v[idx]/bc2) + eps);
-                m.W[idx] = std::min(std::max(m.W[idx] - st, -2.0f), 2.0f);
-            }
-
-            // [V] Adam 更新 W_hash
-            #pragma omp parallel for
-            for (int v = 0; v < V_unit; ++v) for (int f = 0; f < HASH_FEATURES; ++f) {
-                float g = 0;
-                for (int n = 0; n < BL; ++n) g += d_logits[n*V_unit+v] * hash_features[n*HASH_FEATURES+f];
-                if (g > 1) g = 1; if (g < -1) g = -1;
-                int idx = v*HASH_FEATURES + f;
-                m.W_hash_m[idx] = b1*m.W_hash_m[idx] + (1-b1)*g;
-                m.W_hash_v[idx] = b2*m.W_hash_v[idx] + (1-b2)*g*g;
-                float st = lr * (m.W_hash_m[idx]/bc1) / (std::sqrt(m.W_hash_v[idx]/bc2) + eps);
-                m.W_hash[idx] = std::min(std::max(m.W_hash[idx] - st, -1.0f), 1.0f);
-            }
-
-            // Adam 更新 Wbi
-            for (int b = 0; b < BATCH; ++b) for (int t = 0; t < SEQ; ++t) {
-                int prev = (t > 0) ? inpBL[(b*SEQ+t-1)] : PAD;
-                for (int v = 0; v < V_unit; ++v) {
-                    int idx = prev*V_unit + v;
-                    float g = d_logits[(b*SEQ+t)*V_unit+v];
-                    if (g > 1) g = 1; if (g < -1) g = -1;
-                    m.Wbi_m[idx] = b1*m.Wbi_m[idx] + (1-b1)*g;
-                    m.Wbi_v[idx] = b2*m.Wbi_v[idx] + (1-b2)*g*g;
-                    float st = lr * (m.Wbi_m[idx]/bc1) / (std::sqrt(m.Wbi_v[idx]/bc2) + eps);
-                    m.Wbi[idx] = std::min(std::max(m.Wbi[idx] - st, -2.0f), 2.0f);
-                }
-            }
+            // Recompute activations through the SAME forward used for inference, before updates.
+            const int H = D + HASH_FEATURES;
+            std::vector<float> state(BL*H), hidden(BL*H), gp(BL*H), up(BL*H);
+            if (yao_forward_raw(m,inpBL.data(),BL,BATCH,SEQ,PAD,logits.data(),probs.data(),
+                state.data(),hidden.data(),gp.data(),up.data(),h_hash.data()) != 0)
+                throw std::runtime_error("Invalid training input");
+            compute_d_logits(probs.data(),tgtBL.data(),BL,V_unit,d_logits.data());
+            for (float& value : d_logits) value /= BL;
+            if (yao_backward_raw(m,inpBL.data(),BL,BATCH,SEQ,PAD,d_logits.data(),
+                state.data(),hidden.data(),gp.data(),up.data()) != 0)
+                throw std::runtime_error("Invalid backward input");
+            apply_model_adam(m,lr,b1,b2,bc1,bc2,eps);
+            // Legacy W/W_hash and gate/up biases are never updated.
 
             if ((w+1) % 50 == 0 || w == 0) {
                 float el = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
@@ -1114,7 +1144,6 @@ int main(int argc, char** argv) {
 
             yao_forward(m, inBL, BATCH, SEQ, PAD, D, NL, V_unit,
                     x, x_prev, y, alpha, h_trit, h_hash,
-                    h_hash1, h_hash2, h_hash3,
                     trit_features, hash_features, logits, probs,
                     xs, ys, alphas, gates_v);
 

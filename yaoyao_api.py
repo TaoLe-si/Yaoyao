@@ -12,8 +12,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 
-YAOYAO_EXE = "D:/TaoVm/yaoyao_gen.exe"
-MODEL_PATH = "D:/TaoVm/yaoyao_v09_best_loss311.bin"
+YAOYAO_EXE = "D:/TaoVm/tao_d256_api_state.exe"
+MODEL_PATH = "D:/TaoVm/tao_fixed_step50002.bin tao_context_supported.tcg tinystories_train.txt"
 
 app = FastAPI(title="Yaoyao OpenAI-compatible API", version="0.9.6")
 
@@ -43,7 +43,15 @@ async def start_server():
         return
     print(f"Starting persistent Yaoyao server: {YAOYAO_EXE}", flush=True)
     _server_proc = await asyncio.create_subprocess_exec(
-        YAOYAO_EXE, "--server", MODEL_PATH,
+        YAOYAO_EXE, "--server",
+        "D:/TaoVm/tao_fixed_step50002.bin",
+        "D:/TaoVm/tao_context_supported.tcg",
+        "D:/TaoVm/tao_coef_rts1_128.reader",
+        "D:/TaoVm/tinystories_train.txt",
+        "D:/TaoVm/experiments/d256_nibble64_baseline/train_tokens.bin",
+        "D:/TaoVm/tao_state_supported_v2_full.tds",
+        "D:/TaoVm/tao_alternating_step47002.bin",
+        "D:/TaoVm/experiments/d256_nibble64_baseline/multislice/slice_0.bin",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
@@ -100,11 +108,11 @@ async def chat_completions(req: ChatRequest):
                     break
                 line = line_bytes.decode('utf-8', errors='replace').strip()
                 if line.startswith("TOKEN "):
-                    parts = line.split(" ", 5)
-                    if len(parts) >= 6:
-                        word = parts[5] + " "
-                        step_ms = float(parts[3].rstrip("ms"))
-                        total_ms = float(parts[4].rstrip("ms"))
+                    parts = line.split(" ", 4)
+                    if len(parts) >= 5:
+                        word = parts[4].replace("\x01", " ") + " "
+                        step_ms = float(parts[2])
+                        total_ms = float(parts[3])
                         yield f"data: " + json.dumps({"id":chat_id,"object":"chat.completion.chunk","created":created,"model":req.model,"choices":[{"index":0,"delta":{"content":word},"finish_reason":None}],"timing":{"step_ms":step_ms,"total_ms":total_ms}}) + "\n\n"
                 elif line == "DONE":
                     break
@@ -129,9 +137,9 @@ async def chat_completions(req: ChatRequest):
             break
         line = line_bytes.decode('utf-8', errors='replace').strip()
         if line.startswith("TOKEN "):
-            parts = line.split(" ", 5)
-            if len(parts) >= 6:
-                response_text += parts[5] + " "
+            parts = line.split(" ", 4)
+            if len(parts) >= 5:
+                response_text += parts[4].replace("\x01", " ") + " "
         elif line == "DONE":
             break
         elif line.startswith("ERROR"):
