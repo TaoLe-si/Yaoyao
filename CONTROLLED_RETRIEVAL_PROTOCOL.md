@@ -10,4 +10,4 @@ StageB: same fixed trained readout, candidate state gates with joint originalTCG
 
 Acceptance: CPU/GPU state and logits parity on same examples, no artifacts overwriting production, dataset-overlap checks, balanced-label controls. Decisions based on actual evidence; do not expand horizon before meaningful retrieval gain is established.
 
-Current status: protocol only; training and search results NOT yet produced.
+Current status: dataset generation, three native CUDA linear readouts, production/no-key/swapped-key controls, and ascending/random distance searches executed. See CONTROLLED_RETRIEVAL_PROGRESS.md and CONTROLLED_SEARCH_RESULTS.md. Independent numeric verification remains separate acceptance evidence. Linear readout is a limited auxiliary probe, not replacement production head.
