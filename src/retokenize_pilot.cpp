@@ -1,0 +1,7 @@
+#define NOMINMAX
+#include "tokenizer_file.hpp"
+#include "pilot_reader.hpp"
+#include <cstdio>
+#include <sstream>
+void u32(std::ostream&o,uint32_t n){for(int j=0;j<4;++j)o.put(char(n>>(8*j)));}
+int main(){try{using namespace tao::data;std::string digest;auto b=tao::text::load_tokenizer("build/formal_tokenizer.bbp",digest);for(auto name:{"train","validation","test"}){std::ifstream in(std::string("build/pilot_")+name+".bin",std::ios::binary);auto docs=read_pilot(in);std::ostringstream bytes(std::ios::binary|std::ios::out);bytes.write("TLP2",4);bytes<<digest;size_t count=0,loss=0;for(auto&t:docs){std::vector<Token>out{{BOS,false}};size_t j=1;while(t[j].id!=EOS){bool a=t[j].id==ASSISTANT;out.push_back(t[j++]);std::string text;while(t[j].id<256)text.push_back(char(t[j++].id));auto ids=b.encode(text);if(b.decode(ids)!=text)throw std::runtime_error("roundtrip");for(auto id:ids)out.push_back({int(id),a});out.push_back(t[j++]);}u32(bytes,uint32_t(out.size()));for(auto tok:out){bytes.put(char(tok.id&255));bytes.put(char(tok.id>>8));bytes.put(char(tok.loss));++count;loss+=tok.loss;}}auto data=bytes.str();std::ofstream f(std::string("build/bpe_pilot_")+name+".bin",std::ios::binary);f.write(data.data(),data.size());f.close();if(!f)throw std::runtime_error("write");printf("%s docs=%zu tokens=%zu supervised=%zu SHA256=%s\n",name,docs.size(),count,loss,tao::text::sha256(data).c_str());}printf("tokenizer_SHA256=%s\n",digest.c_str());return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

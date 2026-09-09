@@ -1,0 +1,11 @@
+# Round6 branch factorization controlled study
+
+Factor16:16totalhidden split8gate/8content. Gate seesquery+4tokenwindow;contentsees4tokenwindowonly. Maskedconnections retains1065storageentriesbut961effectiveparameters (104masked);L2stillupdatesmaskedentries,not output. Branchheads connectonlyownhalf. Thus parameterbudget doesnotincrease buteffectivecapacitydecreases. Sameeventpairholdout/datagenerator/init2/3000Adam. Gradient3195coordsmax3.29436769531e-10,includeszero maskedderivatives.
+
+Seed123heldout100all (sharedbaseline72..79). Seed42~99.6..100,seed2026reverse90..92,mixed99+,separator100. Additionalseed7/999underfit diagnosticpool92.4/89.1;heldoutreverse~37..70,mixed~56..89,separatorhard100. Factorization notrobustwinner.
+
+Factor32capacitycontrol16gate+16content,totalstorage2121,effective1913 aftermasked208. Testedseeds7/123/999,notallfiveyet. Seenhardmostly100(seed123smallerrors);heldoutseed7reverse92.58,mixed97.7..99.2;seed12391..94,separator100;seed999all100. Increasingwidthhelpsunderfitbutdoesnotreliablyfixcomposition. Noequalwidthshared32controlyet so nofactorizationcausalclaim. NoCPUbenchmarkuntilcorrectness candidatepasses.
+
+Modelstillcontentobjectdependent evenafterqueryremoved;gatealsoownerdependent. Arbitrarypairholdout induces correlations,networkmayrelyonobjectidentityforownerprediction orownerforrelevance. Needfaultlocalization(gatevscontent oncounterexamples)beforestronger masks. Handmaskowner/objectsemanticcategories wouldsupplyoracle structure unavailablegeneraltext;mustlabelasmechanismupperboundiftried.
+
+Files diagnose_factor_write4.cpp,optimize_factor_write4.cpp,test_factor_write4_gradient.cpp;diagnose_factor32_write4.cpp,optimize_factor32_write4.cpp. NewFP64localweightsbuild/factor*. Goalactive.

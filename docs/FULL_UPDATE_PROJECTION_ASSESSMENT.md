@@ -1,0 +1,5 @@
+# Effective projection comparison
+
+Validatedbundleloader compares fullreference61 andfullcandidate61. 113ternarymatrices,total2symbolchanges across30,146,560matrixelements. Smallmastererrorscanchangeprojectorcutoff; cannotclaimbitwiseidenticaltrainedmodel. Scalesalsochange slightly; printednine-decimalRMS canroundtozero, notexactzero. Completepermatrixevidencebuild/full_update_effective_comparison.txt.
+
+Candidate speed41.36s versus64.81s fullupdate; checkpointstateerrorssmall, projectiondiscontinuitymustremainexplicit. No formaltrainingresume. Nextneedlogits/generationdriftcheckswithoutretraining andbetterprofiling/batchedexecution; no4000tpsorGPUfullutilizationclaim.

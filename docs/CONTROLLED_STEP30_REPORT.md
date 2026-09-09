@@ -1,0 +1,5 @@
+# Controlled schedule step30
+
+CPUvalidationNLL8.638622752 same23docs4906targets. Ninefixeddialogueturns4empty5repeatedChinese de character; allunusable. No generalcapabilityclaim. Controllerstatepersistedstep30,next40,lr.0005,best8.638622752,stale0; automatictrain->validation->dialogue->nexttrainsequence verified byfiles.
+
+Livecontrollerusesoriginalscalarreadableevaluator andoldlooptiming. controlled_dialogue_30.txt retainedunchanged, notAVX2benchmark. Preparedcontrolled_training_runner_avx2.mjs changesonlyfuture dialogueexeanduniquetimedlogname; sharedcontrollerstate/lock, MUSTNOTstartwhileoldcontrollerruns. LoadedNodeprogramdoesnotreloadsourcechanges. Newscriptnotstarted.

@@ -1,0 +1,5 @@
+#define TAO_DEVICE_ZERO_GRAD
+#define TAO_DEFER_BACKWARD_SYNC
+#include "batch_tape.cuh"
+#include <cstdio>
+int main(){using namespace tao::dual;try{BatchTape t;auto w=t.leaf(Vec(15,.2f)),x=t.leaf(Vec(20,.3f));auto y=t.linear_batch(w,x,3,5,4);Vec dy(12,1);check(cudaMemcpy(y->grad.p,dy.data(),48,cudaMemcpyHostToDevice));check(cudaDeviceSynchronize());cudaGraph_t g;cudaGraphExec_t e;check(cudaStreamBeginCapture(cudaStreamPerThread,cudaStreamCaptureModeThreadLocal));t.backward();check(cudaStreamEndCapture(cudaStreamPerThread,&g));check(cudaGraphInstantiate(&e,g,0));check(cudaGraphLaunch(e,cudaStreamPerThread));check(cudaStreamSynchronize(cudaStreamPerThread));for(float v:w->grad.host())if(std::abs(v-1.2f)>1e-6)return 1;for(float v:x->grad.host())if(std::abs(v-.6f)>1e-6)return 2;size_t nodes=0;check(cudaGraphGetNodes(g,nullptr,&nodes));printf("PASS backward capture nodes=%zu one launch gradients correct\n",nodes);check(cudaGraphExecDestroy(e));check(cudaGraphDestroy(g));return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 3;}}

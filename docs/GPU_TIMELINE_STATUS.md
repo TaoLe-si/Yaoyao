@@ -1,0 +1,5 @@
+# Timeline evidence status
+
+where.exe nsys exit1 notonPATH. glob discoveryfailedbecause ripgreplaunch unavailable. ThisdoesNOTproveNsightnotinstalled. NoGPUtimelinecollected, nooccupancy/utilizationclaim. Alternative useCUDAevents atactualforward/backwardboundaries andhostsubmitwalltime, distinguishdeviceelapsedincludesidlefromkernelbusytime; definitivekernel/APIbreakdownneedsCUPTI/Nsight.
+
+LatestvalidatedcandidateGPUhealth/pool/warp/RMS/tiledDX/deferredloss/deferredbackwardsync/asyncTapeD2D:38.542271s fullupdate against64.810441s reference. SameSCP/DSB asprecedingcandidate. Formaltrainingstillstopped. Optimizationgoalnotcomplete; batchdimensionstillserial4slots. Do notresumeonlybecause40%gainachieved.

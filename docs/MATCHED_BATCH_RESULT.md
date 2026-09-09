@@ -1,0 +1,3 @@
+# Matched optimized serial/batch comparison
+
+234actualpositions37targets,width64,4slots,formalshape step60bundle emptyinitialstates. Bothpool/asyncD2D/warp/RMS/tiledDX/deferbackwardsync; losscollection anddetachment/tapeclearinside timing. Serial2.085761s,batch.851770s (~2.45x singleobservation). Sameprintedlosssum306.154820919. Fullgradientmax0.000001430511474609375,relativeL21.325643840370618e-7. Distinctschedule/padding inherent; notcheckpointresume/fullaccumulation benchmark. Batchmetadataallocationoutside timedregion,serialBlockLossinside; microtimingnotperfectlyidenticalsetupscope. Noformalresume, need256width/restoredstates/memory/optimizerintegration.

@@ -1,0 +1,3 @@
+# First real-data batch comparison
+
+Formalshape step60effectivebundle,emptyinitialstates,startofdataset4slots,width64,234positions37targets. Serial3.086387s batch.870074s (~3.55x singleobservation). SerialusespoolandasyncD2D butoriginalmatvec/RMS/DX kernels; NOTcomparisonagainstbestoptimizedserialcandidate. Batchdoespaddedwork; serialskipsbackwardnosupervisionslot. Timesincludegraphcleanupdifferently(serialclearspertape;batchretainsuntilaftertimer), so cannotclaimcontrolledproductionendtoendspeedup. Sameactualtargetslossdiff1.431e-6. Gradientmax0.000003814697265625,relativeL28.482622246204343e-7,nonfinite0. Nooptimizerupdate. Needmatchedoptimizedserialandcleanup timing,fullwidth/checkpointstatesbeforeacceptance.

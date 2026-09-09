@@ -1,0 +1,5 @@
+# Actual boundary stop/save/reload
+
+Restored arch2step24 with inputsidecar TC1 .0005 224 1. GPUrestorationthenSAVEDyaoyao_controlled_step_24, CONTROL_STOP, exit0. NewSCP reloadedpreflight restored24,nextdoc426,slots4. Savedsidecar .000500000024 target224 stop0. No modelupdates inthischeck. Notproofmidtrainingstoplatency orcrashatomicity.
+
+Followupsourcefix readscontrolbeforepreflightandavoids same-stepoverwriteswhenresuming matchingcontrolledfilename. Filenamechecknotcryptographicidentity,loadedcheckpointalreadycheckscontents. No newlylaunchedtrainingthisround. Automaticvalidationcontrollerstillpending; do notclaimimplemented.

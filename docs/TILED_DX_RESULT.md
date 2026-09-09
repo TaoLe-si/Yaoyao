@@ -1,0 +1,3 @@
+# Input gradient tiled reduction
+
+Realstep60block148positions candidate pool+warp+parallelRMS+tiledDX1.562744s94.705positions/s. PreviousparallelRMS1.727646s;reference2.300772s. Singleobservations~32%lowerwalltimeversusreference,notutilizationproof. NLL8.901393929043. Gradientmax0.000003814697265625,relativeL25.223764416998314e-7,nonfinite0. Reductionorderchanges,notbitexact. Allformalweightsunchanged. Needfullaccumulatedupdate andrecurrentstate checksandprofilingbeforetrainingresume.

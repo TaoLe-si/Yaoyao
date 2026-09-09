@@ -1,0 +1,5 @@
+# Round20 actual formal-size GPU parameter update
+
+train_formal_first_step.cu fullapproved8/512/128/512/1024/16384,initialize713,sortedQAT realTLP2train firstdoc max256positions180supervised. NativeCUDAforward/backward/AdamW at explicit3e-6LR (first-step smoke, not implemented globalLRschedule),norm11.698907clipped1. Preupdate trainNLL9.973360. Oneupdate theneffectiveDSB2 build/yaoyao_formal_step1.dsb boundactualformalBPEdigest34463f0ac2baf1eb5df792c309a58ea458b109e1187225a0210ccbe89e883333. Not convergence,notvalidation,notmicrobatch4x8complete step. No mastercheckpoint persistedthisdriver,so MUSTNOT resume trainingfrominferencebundle. Nextlongtrainerneedscheckpoint/saveeveryboundedexecutionsegment. Tinyfirststepartifactengineeringmilestoneonly.
+
+bpe_pilot_reader.hpp parsesactualBPEvocab/messagegrammar/masks andfingerprint,doesnotappendlegacyEOS. ExistinglegacyPilotCursor mustnotconsumeTLP2directlybecausepopEOSassumption. Neednewcursoradapter withoutfakeEOS. FormalexportgeneratednoCPUtraining. Goalactive.

@@ -1,0 +1,9 @@
+# Round32 sigmoid residual control
+
+Replaceclip(.5+.25z,0,1)withnumericallystablesigmoid(z);derivativep(1-p). Atz0bothslopes.25;off-centerinitialp/biasdifferent,sameinit2notmatchedinitialretention. Architecture/weights/data/3000Adamsteps32batch/L2same. Exactgradient6411coordsmax3.69706503259e-10. Testlabel"sparse/awayfromclipping"inheritedstale wording,actualmodelissigmoidwithnokinks.
+
+Alltrainhard100;heldoutpass4/8versusclip5/8at3000. seed7shift0same73..87.5 failures;shift1new79..90 failures;shift2/3pass. seed123shift0/2pass,shift1~77..84fails,shift3~86..90fails. Soft/hardaccuraciesidenticalallprintedconditions;notproofidenticalstates. Classificationdiscrepancyreducedwithoutoverallgeneralizationgain.
+
+Conclusion exactclippingzero-gradientisnotsolecauseofbadcompositions. Sigmoidhasnonzerofiniteidealgradientbutcanstillvanish/saturate;notproofofglobaloptimization success. No adoptionormoretemperaturesearch. Evidence accumulatingforrepresentation/inductivebias/answer-supervisionunderdeterminationratherthan oneactivationfix. Considertrainingaugmentationstrictlywithinallowedpairs withinvarianceconstraint (nooracledecisionlabels),or explicitvariablebindingstate. Previousfactorizationcapacitytradeoffmustberespected. Goalactive.
+
+Filesdiagnose_sigmoid_expand.cpp,optimize_sigmoid_expand.cpp,test_sigmoid_expand_gradient.cpp. No productionchanges.

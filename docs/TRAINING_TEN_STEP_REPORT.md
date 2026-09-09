@@ -1,0 +1,3 @@
+# Formal training milestone: 10 updates
+
+Fixed architecture/tokenizer/data/mask/schedule unchanged. Step10 pre-update batchNLL9.3977180 supervised5581 positions6489. Evaluation same23validationdocs4906supervisedtargets asstep2;reportedactualresultinbuild/yaoyao_validation_step10.log. No test evaluation, no model/seed cherry-picking. Checkpointbuild/yaoyao_train_step_10.scp andCPUmodel.dsb. All priorsteps preserved. Need sustainedtrainingbeyond10,loss2.5notachieved. LastCPUgenerationstep3wasrepetitivefailedanswer;notclaimingabilityfromNLL. Nextvalidationstep20,unlessconcretefailureintervenes. Goalactive.

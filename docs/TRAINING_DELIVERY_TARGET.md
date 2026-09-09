@@ -1,0 +1,5 @@
+# 用户交付目标与评测口径
+
+用户希望明早看到基本媲美基础大模型的夭夭，loss收敛2.5或更小，取消逐项审批。作为持续执行目标，不承诺时间/能力必达。正式固定BPE16384，记录assistant目标平均交叉熵自然对数NLL：训练和验证分别报告，优先验证NLL<=2.5；不同词表/掩码不可直接比。现有23doc验证集仅pilot，能力对标不足，需另报告规模限制/实际生成。测试不调参。不得泄漏或调整口径追指标。GPU训练CPU解码，交付有效权重、tokenizer、配置/恢复信息、指标与生成示例；失败如实交付最后有效检查点。
+
+本轮已完成TLP2正式BPE重编码(非GPU训练)：train2015docs657053tokens398141supervised SHA256 ae634407c159805a58e73f6471fa46f6b7bed4b933a767386a813e70ae4d797a；validation23docs6413tokens4906supervised SHA256 69900a8acbb28b09296b13a08c76657aa6261c129e929d59bc83ad9d2f1447b0；test20docs5485tokens2840supervised SHA256 a27d5124be90de8914aebe5ecaa13ad8db2d2ef62ef76fbbf7c505c5a32194d1。输入文件含实际tokenizer指纹，无记录EOS。转换调用超时但产物完成，独立读取/范围/指纹检查通过，未重复转换。完整结构mask比对仍待loader。

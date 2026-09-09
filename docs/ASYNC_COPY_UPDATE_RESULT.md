@@ -1,0 +1,3 @@
+# Tape asynchronous copies
+
+Fullupdate60->61 same4408positions2344targets. TapeD2D cudaMemcpyAsync defaultstream candidate38.542271s versusstreamordered39.653341s,original64.810441s. AllSCPandDSBbytesidenticaltopriorcandidate=true. Singleobservations~40.5%walltimereductionfromoriginal,notfullutilizationproof. Noformalresume. CPUsubmissionandmanykernelsremain.

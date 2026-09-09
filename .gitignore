@@ -1,3 +1,4 @@
+# build and binaries
 *.bin
 *.parquet
 *.reader
@@ -6,7 +7,6 @@
 *.f32
 *.i32
 *.npz
-tinystories_*.txt
 *.exe
 *.obj
 *.o
@@ -15,12 +15,12 @@ tinystories_*.txt
 *.dll
 *.pdb
 *.ptx
+*.dsb
+*.scp
 build/
 *.log
 __pycache__/
 *.pyc
-CLEANUP_PLAN.json
-CLEANUP_RECEIPT.json
 .env
 .env.*
 *.pem
@@ -28,3 +28,10 @@ CLEANUP_RECEIPT.json
 .vscode/
 .idea/
 .DS_Store
+CLEANUP_PLAN.json
+CLEANUP_RECEIPT.json
+tinystories_*.txt
+session-extract/
+cuda_intermediate/
+NVIDIA Corporation/
+local/

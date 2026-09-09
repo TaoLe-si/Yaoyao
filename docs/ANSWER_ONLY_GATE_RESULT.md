@@ -1,0 +1,10 @@
+# Final-answer-only selective write experiment
+
+Native diagnose_answer_only_gate.cpp. Same81parameter float gate shape as supervised probe,initialized fresh;no relevance labels in loss. Structured queryobject known beforestream,eventobject+owner provided. Query/object onehot features only;gate never receivesowner. Memory8owner probabilities initializeduniform;update(1-p)*memory+p*onehot(owner). Loss=-log(final probability of targetowner). ExactBPTT through updates and gate. Hard inference threshold.5 writes scalarowner;initialunknown. Overwrite not reversible.
+
+Training512generated sequences/seed,noise0/1/2 eachside,optional required relevant update;2000fullbatchSGDlr.2 L2.0001. Three seeds42/123/2026. Random testseed9001+noise,512seq pernoise0,2,8,32,128. Same finite domain4objects8owners;test noise0/2may overlaptrain,no disjointness audit,so not pristine heldout-combination claim. Noise8+length outside training,independent draws;structured generator otherwise same. Both relevantand irrelevant events shareobject vocabulary,owner distractors randomized.
+
+Finite difference all81weights on one generated sequence/seed beforetraining:max4.37624478322e-10. TrainingCE1.511847904->.010421808;1.355087687->.007948011;1.438635374->.006768023.
+All3seeds alltested lengths softargmax/hardaccuracy100percent. Atnoise128eachside softCE.627103376/.496291817/.455561624 versusnoise0 .005125584/.003828572/.003251505. Soft leakage grows despite correctargmax;not arbitrarylength stability proof. Baselines keepfirst~46-50percent,alwayswrite~12-15percent fornoise>0.
+
+Conclusion:finite-domain gate can learn selective write from terminal answer loss without direct relevance labels,and compose over longerstreams. Does not demonstrate rawtoken parsing,pronouns,novelobjects,posthocquestions,multiobjectmemory,ternaryQAT,originalchainintegration or fullLLM generalization. Architecture supplied task-specific onehotowner memory and overwrite rule;not learned from scratch. No training checkpoint saved,online weights untouched,no speed claim.

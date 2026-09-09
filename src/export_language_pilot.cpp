@@ -1,0 +1,14 @@
+#include "conversation_partition.hpp"
+#include <arrow/api.h>
+#include <arrow/io/file.h>
+#include <parquet/arrow/reader.h>
+#include <fstream>
+#include <set>
+#include <cstdio>
+using namespace tao::data;
+void u32(std::ostream&o,uint32_t v){for(int i=0;i<4;++i)o.put(char((v>>(8*i))&255));}
+int main(){try{auto input=arrow::io::ReadableFile::Open("D:/Datasets/Infinity-Instruct/7M/train-00000-of-00075.parquet").ValueOrDie();auto reader=parquet::arrow::OpenFile(input,arrow::default_memory_pool()).ValueOrDie();std::shared_ptr<arrow::Table>table;auto status=reader->ReadTable(&table);if(!status.ok())throw std::runtime_error(status.ToString());table=table->CombineChunks().ValueOrDie();auto col=table->GetColumnByName("conversations");if(!col)throw std::runtime_error("column");auto lists=std::static_pointer_cast<arrow::ListArray>(col->chunk(0));auto messages=std::static_pointer_cast<arrow::StructArray>(lists->values());auto roles=std::static_pointer_cast<arrow::StringArray>(messages->GetFieldByName("from"));auto texts=std::static_pointer_cast<arrow::StringArray>(messages->GetFieldByName("value"));std::ofstream out[3];const char*names[]={"train","validation","test"};for(int k=0;k<3;++k){out[k].open(std::string("build/pilot_")+names[k]+".bin",std::ios::binary);out[k].write("TLP1",4);}std::set<uint64_t>seen;size_t docs[3]={},tokens[3]={},losses[3]={},rejected=0,duplicates=0;
+for(int64_t row=0;row<lists->length();++row){ // Uniform deterministic row subset, not first-N.
+ uint64_t mix=uint64_t(row)+0x9e3779b97f4a7c15ull;mix=(mix^(mix>>30))*0xbf58476d1ce4e5b9ull;mix=(mix^(mix>>27))*0x94d049bb133111ebull;mix^=mix>>31;if(mix%100>=2)continue;
+ std::vector<Message>m;bool valid=!lists->IsNull(row);size_t bytes=0;for(int64_t j=lists->value_offset(row);valid&&j<lists->value_offset(row)+lists->value_length(row);++j){if(roles->IsNull(j)||texts->IsNull(j)){valid=false;break;}auto role=roles->GetString(j);if(role!="human"&&role!="gpt"){valid=false;break;}auto text=texts->GetString(j);bytes+=text.size();m.push_back({role=="gpt",text});}if(!valid||m.empty()||bytes>65536){++rejected;continue;}uint64_t id=fingerprint(m);if(!seen.insert(id).second){++duplicates;continue;}std::vector<Message>prompts;for(const auto&x:m)if(!x.assistant)prompts.push_back(x);int split=int(partition(fingerprint(prompts.empty()?m:prompts)));auto t=encode(m);u32(out[split],uint32_t(t.size()));for(auto x:t){out[split].put(char(x.id&255));out[split].put(char(x.id>>8));out[split].put(char(x.loss));losses[split]+=x.loss;}++docs[split];tokens[split]+=t.size();}
+for(int k=0;k<3;++k){out[k].close();if(!out[k])throw std::runtime_error("output");printf("%s docs=%zu tokens=%zu supervised=%zu\n",names[k],docs[k],tokens[k],losses[k]);}printf("rejected=%zu duplicate_hashes=%zu\n",rejected,duplicates);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

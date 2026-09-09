@@ -1,0 +1,12 @@
+#pragma once
+#include "dual_model_bundle.hpp"
+namespace tao::dual {
+struct CompactBundleData {Config c;struct Matrix{std::vector<int8_t>q;Vec scale;};std::map<std::string,Matrix>matrices;std::map<std::string,Vec>vectors;};
+inline CompactBundleData read_compact_bundle(const std::string&path,const std::string&tokenizer){
+std::ifstream f(path,std::ios::binary|std::ios::ate);auto length=f.tellg();if(length<28||length>512ll*1024*1024)throw std::runtime_error("bundle length");f.seekg(0);std::string bytes(size_t(length),0);f.read(bytes.data(),bytes.size());if(!f||bytes.substr(0,4)!="DSB2")throw std::runtime_error("bundle header");
+auto u64=[&](size_t p){uint64_t v=0;for(int i=0;i<8;++i)v|=uint64_t((unsigned char)bytes.at(p+i))<<(8*i);return v;};auto mn=u64(4),pn=u64(12);if(mn>1024*1024||pn<28||mn>bytes.size()-28||pn!=bytes.size()-28-mn||bundle_hash(bytes.substr(28))!=u64(20))throw std::runtime_error("bundle length/checksum");
+size_t pos=28+mn;auto byte=[&](){if(pos>=bytes.size())throw std::runtime_error("truncated");return unsigned((unsigned char)bytes[pos++]);};auto u32=[&](){uint32_t v=0;for(int i=0;i<4;++i)v|=byte()<<(8*i);return v;};auto fp=[&](){uint32_t v=u32();float x;std::memcpy(&x,&v,4);if(!std::isfinite(x))throw std::runtime_error("nonfinite");return x;};
+if(bytes.substr(pos,4)!="DSM1")throw std::runtime_error("model magic");pos+=4;CompactBundleData out;auto&c=out.c;c.layers=u32();c.d=u32();c.s=u32();c.m=u32();c.e=u32();c.vocab=u32();c.validate();if(c.layers>64||c.d>8192||c.s>8192||c.m>8192||c.e>32768||c.vocab>262144)throw std::runtime_error("bounds");uint64_t count=0;for(auto&t:schema(c))count+=t.elements();if(count>100000000||model_bytes(c)!=pn||bytes.substr(28,mn)!=bundle_manifest(c,tokenizer))throw std::runtime_error("schema/identity");
+for(auto&t:schema(c)){if(!t.ternary){Vec v(t.elements());for(float&x:v)x=fp();out.vectors.emplace(t.name,std::move(v));continue;}CompactBundleData::Matrix m;m.q.resize(t.elements());m.scale.resize(t.rows);for(unsigned r=0;r<t.rows;++r){m.scale[r]=fp();if(m.scale[r]<=0)throw std::runtime_error("scale");for(unsigned j=0;j<t.cols;j+=4){unsigned b=byte();for(unsigned k=0;k<4;++k){unsigned code=(b>>(2*k))&3;if(code==3||(j+k>=t.cols&&code))throw std::runtime_error("symbol/padding");if(j+k<t.cols)m.q[size_t(r)*t.cols+j+k]=code==0?0:code==1?1:-1;}}}out.matrices.emplace(t.name,std::move(m));}if(pos!=bytes.size())throw std::runtime_error("trailing");return out;
+}
+}

@@ -1,0 +1,7 @@
+# Allocation and execution profiling scope
+
+Current real block2.35s,forward~.94/backward1.27/teardown.146. Localwarp/directaddimprovements didnotimprovewholeblock. Next instrument Device ctor/dtor walltime andcallcounts peractualblock underoptinmacro; allocation timingincludesimplicitCUDAwaiting,notpureallocatorcost. Preserveuniquegradientdump. Compareprofilewithuninstrumentedbaselinewithoutclaimsmallpercentdifferencesmeaningful.
+
+Next decision: iflargeallocationcalls/hostoverheadconfirmed usepersistentarenaandstaticgraph ratherthanasyncAPIalone; ifdevicekernelsdominate usecuBLAS/batchedGEMM andfusedbackward. Batchdimensionmustpreserve4independentstatesandsharedaccumulatedgradients,mask/paddingandresetsemantics; nochangedbatchmetric.
+
+No training resumed. Attemptedinstrumentationtoolprogram syntaxfailedbeforeexecution; no sourceinstrumentationorperformanceevidenceproducedthisround.

@@ -1,0 +1,3 @@
+# Real recurrent block comparison
+
+Checkpointstep60,148supervisedpositions actualforward/backward. No updates/checkpointwrites. Reference2.347094s,warp2.484468s;bothNLL8.901393874271. Fullgradientmaxabs0.000003814697265625,relativeL21.8556056830335429e-7,nonfinite0. DumpIOexcludedtiming. Singlepass, no demonstratedendtoendgain despiteisolatedkernelspeedup. Do notenablewarpdefaultorresumeformaltraining. CPUlaunch/allocation/backwardandnormalizationcostsrequireprofiling; cannotattributewholebottleneckfromthistestalone. Originalcheckpointsuntouched,STOPretained.

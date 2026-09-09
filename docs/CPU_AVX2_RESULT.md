@@ -1,0 +1,3 @@
+# Full model AVX2 opt-in
+
+Samearch2step24effectivebundle,64fixedinputtokens,alllayers/logits,stateincluded; scalar45.957positions/s(1.392619s),AVX2 143.924positions/s(.444678s),~3.13x singlepassobservations. Not conversationalgenerationbenchmarkor4000tpsreplication. Logitsmax7.15255737e-6,finalstatemax1.22189522e-6; floatingreductionorderchanges,notbitexact. FMA notused. TAO_CPU_AVX2compileflag optin; legacy/GPUbuildsunchanged. CPUfeaturefallbacknotimplemented,requiresAVX2capableCPU. Test64teacherforcedtokensfixed,notselectedforgoodoutputs. Old4000recordunlocated. Main matricesstillFP32 memory;allocation/stringlookupsremain.

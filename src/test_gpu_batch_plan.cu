@@ -1,0 +1,4 @@
+#define TAO_DEVICE_ZERO_GRAD
+#include "gpu_batch_plan.cuh"
+#include <cstdio>
+int main(){try{using namespace tao::dual;tao::data::BatchPlan p;p.slots=2;p.timesteps=2;p.positions=3;p.supervised=2;p.items={{1,2,true,true,true},{3,4,true,true,false},{2,5,true,false,true},{0,0,false,false,false}};GpuBatchPlan plan(p,261);auto y=std::make_shared<GradNode>(Vec(522,0));plan.seed(y,0);plan.seed(y,1);auto loss=plan.loss.host();if(std::abs(loss[0]-std::log(261.f))>1e-6||loss[1]!=0||std::abs(loss[2]-loss[0])>1e-6||loss[3]!=0)return 1;p.items[3].loss=true;bool rejected=false;try{GpuBatchPlan bad(p,261);}catch(...){rejected=true;}if(!rejected)return 2;printf("PASS whole-block loss upload time slices padding and invalid mask rejection\n");return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 3;}}

@@ -1,0 +1,3 @@
+# Full-shape optimizer GPU isolation
+
+171 tensors, formal Config initialized seed713, deterministic synthetic gradients, supervised148, one GPUupdate. Includes Adam/master/effectiveprojection/zero_grad, excludesdumpIO. Original .214627s; devicehealth/clip .041033s (~5.23x optimizer-only), normboth3.1058991. Complete dumps 482975744 bytes each, changedfloats=0, maxabs=0, nonfinite=0. Nottrainedcheckpoint, notactualBPTTgradient, notendtoendtrainingbenchmark. Originaltrainingstep70-110s, saved~.174s here cannotjustifyclaimwholetrainingfast. Matrix/token execution remains dominant candidate, needprofile. STOP remains, noformaltrainingresumed. Dumps arediagnosticsnotmodelcheckpoints.

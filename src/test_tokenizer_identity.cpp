@@ -1,0 +1,4 @@
+#define NOMINMAX
+#include "tokenizer_file.hpp"
+#include <cstdio>
+int main(){try{using namespace tao::text;if(sha256("abc")!="ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")throw std::runtime_error("SHA known vector");ByteBpe b;b.fit({"banana banana","native tokenizer"},8);auto bytes=serialize_tokenizer(b);std::ofstream f("build/tokenizer_fixture.bbp",std::ios::binary);f.write(bytes.data(),bytes.size());f.close();std::string digest;auto loaded=load_tokenizer("build/tokenizer_fixture.bbp",digest);if(loaded.merges!=b.merges||digest!=sha256(bytes))throw std::runtime_error("roundtrip");int reject=0;for(auto bad:{bytes.substr(0,bytes.size()-1),bytes+"x",std::string("BAD!")}){try{parse_tokenizer(bad);}catch(const std::runtime_error&){++reject;}}if(reject!=3)throw std::runtime_error("malformed");printf("PASS tokenizer file SHA256=%s rejection_cases=3\n",digest.c_str());return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

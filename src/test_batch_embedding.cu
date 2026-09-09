@@ -1,0 +1,4 @@
+#define TAO_DEVICE_ZERO_GRAD
+#include "batch_tape.cuh"
+#include <cstdio>
+int main(){using namespace tao::dual;try{BatchTape t;Vec v(35);for(int i=0;i<35;++i)v[i]=float(i);auto w=t.leaf(v);auto y=t.embedding_batch(w,{2,2,0,6},5);Vec seed(20);for(int i=0;i<20;++i)seed[i]=float(i+1);check(cudaMemcpy(y->grad.p,seed.data(),80,cudaMemcpyHostToDevice));t.backward();auto out=y->value.host(),dw=w->grad.host();unsigned ids[4]={2,2,0,6};Vec expected(35,0);for(int s=0;s<4;++s)for(int j=0;j<5;++j){if(out[s*5+j]!=v[ids[s]*5+j])return 1;expected[ids[s]*5+j]+=seed[s*5+j];}if(dw!=expected)return 2;bool rejected=false;try{t.embedding_batch(w,{7},5);}catch(...){rejected=true;}if(!rejected)return 3;printf("PASS repeated-token embedding gather scatter and invalid token rejection\n");return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 4;}}

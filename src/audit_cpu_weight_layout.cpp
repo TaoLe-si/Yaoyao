@@ -1,0 +1,5 @@
+#define TAO_INPUT_SCALE
+#include "cpu_compact_bundle.hpp"
+#include <cstdio>
+#include <map>
+int main(){using namespace tao::dual;try{auto m=read_compact_bundle("build/yaoyao_graph_step_360.dsb","34463f0ac2baf1eb5df792c309a58ea458b109e1187225a0210ccbe89e883333");size_t total=0,nnz=0,blocks=0,zero=0,rows=0,scales=0;for(auto&t:schema(m.c))if(t.ternary){auto&a=m.matrices.at(t.name);size_t nz=0,z=0,b=0;std::map<unsigned,size_t>hist;for(float s:a.scale){unsigned u;std::memcpy(&u,&s,4);++hist[u];}for(auto q:a.q)nz+=q!=0;for(unsigned r=0;r<t.rows;++r)for(unsigned j=0;j+8<=t.cols;j+=8){bool all=true;for(int k=0;k<8;++k)all&=a.q[size_t(r)*t.cols+j+k]==0;++b;z+=all;}printf("%s elements=%zu density=%.6f zero8=%.6f unique_scales=%zu rows=%u\n",t.name.c_str(),a.q.size(),double(nz)/a.q.size(),double(z)/b,hist.size(),t.rows);total+=a.q.size();nnz+=nz;blocks+=b;zero+=z;rows+=t.rows;scales+=hist.size();}printf("TOTAL elements=%zu nnz=%zu density=%.6f zero8=%zu blocks8=%zu zero8_fraction=%.6f unique_scales_sum=%zu rows=%zu\n",total,nnz,double(nnz)/total,zero,blocks,double(zero)/blocks,scales,rows);return 0;}catch(const std::exception&e){puts(e.what());return 1;}}

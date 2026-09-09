@@ -1,0 +1,7 @@
+# GPU fixed validation migration in progress
+
+Authorized: routine fixed validation onGPU EVERY10 optimizerupdates, within trainer using resident effective ternaryweights and independent evaluationstate; only final counters/NLL transferred. RoutineCPUvalidation removed after validated boundary migration; no automaticCPUfallback. Preserve100step checkpoint cadence and100step LR decision cadence unless separately changed. ExistingCPUcheckpoint validation evidence used for migration parity, not recurringCPUevaluation. Separate training and validation losses retained. Same fixed23docs4906supervised and arch2 semantics. CPU/GPU frozencheckpoint parity gate before controller switch. Existing active Nodecontroller cannot hotreload source; switch only after tracked safe trainerboundary, preserve optimizer/cursor/checkpoints and log identities. No competing live GPUbenchmark.
+
+Current inspected state: lastEval900 NLL6.712686833, best6.648595694,stale1,target2000,next1000. This indicates validation has not monotonically improved despite lower minibatch trainingloss. Migration improves evaluation execution, not model quality by itself.
+
+Current training hotpath already collects small scalar loss summaries; fullCPUweight export occurs at checkpoints. Saving historical checkpoints remains required, so not all device/host transfers can be removed. CPUevaluation is computation on exportedmodel, not fullweight pingpong every trainingstep.

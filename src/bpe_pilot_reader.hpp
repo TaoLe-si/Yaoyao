@@ -1,0 +1,5 @@
+#pragma once
+#include "pilot_reader.hpp"
+namespace tao::data {
+inline std::vector<std::vector<Token>> read_bpe_pilot(std::istream&in,const std::string&expected){char header[68];in.read(header,68);if(!in||std::string(header,4)!="TLP2"||std::string(header+4,64)!=expected)throw std::runtime_error("BPE dataset identity");std::vector<std::vector<Token>>docs;while(in.peek()!=EOF){uint32_t n=0;for(int i=0;i<4;++i)n|=getbyte(in)<<(8*i);if(n<3||n>1000000)throw std::runtime_error("record length");std::vector<Token>t;for(uint32_t i=0;i<n;++i){unsigned lo=getbyte(in),hi=getbyte(in),mask=getbyte(in);int id=int(lo|(hi<<8));if(id>=16384||mask>1)throw std::runtime_error("token");t.push_back({id,bool(mask)});}if(t[0].id!=BOS||t[0].loss)throw std::runtime_error("BOS");size_t p=1;while(p<t.size()){if((t[p].id!=USER&&t[p].id!=ASSISTANT)||t[p].loss)throw std::runtime_error("role");bool a=t[p++].id==ASSISTANT;while(p<t.size()&&(t[p].id<256||t[p].id>=261)){if(t[p++].loss!=a)throw std::runtime_error("mask");}if(p>=t.size()||t[p].id!=TURN_END||t[p].loss!=a)throw std::runtime_error("turn");++p;}docs.push_back(std::move(t));}return docs;}
+}

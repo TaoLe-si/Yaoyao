@@ -1,0 +1,5 @@
+# Round17 occurrence-indexed tokenizer fitting
+
+byte_bpe_incremental.hpp represents each message as linked nodes and pair->ordered occurrence sets; maxheapfrequency/tielexicographic, lazy staleentry removal, selected occurrences processleft-to-right, onlyneighborcountsupdated. Referencefit tie/overlap convention retained. test_incremental_bpe.cpp40deterministic randomizedcorpora withaaaa/abab/banana/emptymessages comparesALL64merge entries plusroundtrip,passed. This is newalgorithmcorrectnessnotrepeatmodeltest.
+
+Formal41.4MBcorpusnotfityet. Currentstd::set/mapoccurrenceallocation likelyseveralGiB for41Mnodes plusheap stale entries; rawN12bytes/node~497MB, treeoccurrence~tensbytes/node and overhead significant. Needboundedmemoryimplementation ormeasureavailableRAMbeforelaunch,notclaimscalablebecauseincremental. Signedintnodeindexlimitsandhugecorpusboundsnotyetguarded. CPUtokenizerfittingallowed,notCPUmodeltraining. Avoid blindlylaunchlongjobunmanaged. Nextformalfitmustproducefull16123mergesandartifactSHA fromfrozencorpus,notreplacecorpuswithpilot. Goalactive.

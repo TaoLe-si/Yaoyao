@@ -1,0 +1,9 @@
+#pragma once
+#include "batched_slot_plan.hpp"
+#include "gpu_batch_loss.cuh"
+namespace tao::dual {
+struct GpuBatchPlan {size_t slots,steps;unsigned vocab;Device targets,masks,loss;std::shared_ptr<Device>inputs,active,reset;
+GpuBatchPlan(const tao::data::BatchPlan&p,unsigned v):slots(p.slots),steps(p.timesteps),vocab(v),targets(p.items.size()),masks(p.items.size()),loss(p.items.size()){if(!slots||!steps||p.items.size()!=slots*steps||!v)throw std::runtime_error("batch plan shape");static_assert(sizeof(unsigned)==sizeof(float));std::vector<unsigned>t(p.items.size()),m(p.items.size());Vec iv(p.items.size()),av(p.items.size()),rv(p.items.size());size_t positions=0,supervised=0;for(size_t i=0;i<p.items.size();++i){auto&a=p.items[i];if(a.input>=v||a.target>=v||(!a.active&&(a.loss||a.reset)))throw std::runtime_error("batch plan token or mask");if(a.input>16777216u)throw std::runtime_error("input precision");iv[i]=float(a.input);av[i]=a.active;rv[i]=a.active&&a.reset;positions+=a.active;supervised+=a.loss;t[i]=a.target;m[i]=a.loss;}if(positions!=p.positions||supervised!=p.supervised)throw std::runtime_error("batch plan counts");inputs=std::make_shared<Device>(iv);active=std::make_shared<Device>(av);reset=std::make_shared<Device>(rv);check(cudaMemcpy(targets.p,t.data(),t.size()*4,cudaMemcpyHostToDevice));check(cudaMemcpy(masks.p,m.data(),m.size()*4,cudaMemcpyHostToDevice));}
+void seed(Node y,size_t time){if(time>=steps||y->value.n!=slots*vocab)throw std::runtime_error("batch loss shape");ds_ce_batch<<<slots,256>>>(y->value.p,y->grad.p,loss.p+time*slots,vocab,reinterpret_cast<const unsigned*>(targets.p)+time*slots,reinterpret_cast<const unsigned*>(masks.p)+time*slots);check(cudaGetLastError());}
+};
+}

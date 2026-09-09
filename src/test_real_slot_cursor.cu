@@ -1,0 +1,6 @@
+#include "dual_sequence_slots.cuh"
+#include "dual_state_initialization.hpp"
+#include "pilot_slot_cursor.hpp"
+#include <fstream>
+#include <cstdio>
+int main(){try{using namespace tao::dual;std::ifstream f("build/pilot_train.bin",std::ios::binary);auto docs=tao::data::read_pilot(f);tao::data::PilotCursor cursor(std::move(docs),4);Config c;c.layers=1;c.d=4;c.s=2;c.m=3;c.e=8;c.vocab=261;SortedGpuTrainer trainer(initialize(c,713));SequenceSlots states(trainer,4);size_t n=0,positions=0;double loss=0;for(int round=0;round<8;++round)for(size_t slot=0;slot<4;++slot){tao::data::Work work;if(!cursor.take(slot,256,work))continue;states.begin(slot,work.reset);size_t local=0;auto&t=cursor.docs[work.doc];for(size_t i=work.begin;i<work.end;++i){if(t[i].id==tao::data::EOS)throw std::runtime_error("record EOS leaked");auto y=trainer.graph.step(t[i-1].id);loss+=seed_loss(y,t[i].id,t[i].loss);local+=t[i].loss;++positions;}states.finish(local!=0);n+=local;}if(!n)throw std::runtime_error("no supervision");trainer.update(n);printf("PASS real_slots=4 rounds=8 positions=%zu supervised=%zu update=%u loss=%.6f next_doc=%zu\n",positions,n,trainer.steps,loss/n,cursor.next);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

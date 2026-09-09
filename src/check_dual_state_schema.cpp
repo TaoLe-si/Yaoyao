@@ -1,0 +1,4 @@
+#include "dual_state_config.hpp"
+#include <cstdio>
+#include <set>
+int main(){try{tao::dual::Config c;uint64_t matrix=0,floats=0,scales=0,packed=0;std::set<std::string>names;auto ts=tao::dual::schema(c);for(auto&t:ts){if(!names.insert(t.name).second)throw std::runtime_error("duplicate tensor");if(t.ternary){matrix+=t.elements();scales+=t.rows;packed+=uint64_t(t.rows)*((uint64_t(t.cols)+3)/4);}else floats+=t.elements();}if(matrix!=30146560||floats!=39424||scales!=65536)throw std::runtime_error("budget mismatch");printf("PASS tensors=%zu matrix=%llu float_parameters=%llu scales=%llu inference_payload_bytes=%llu state_bytes=%llu\n",ts.size(),(unsigned long long)matrix,(unsigned long long)floats,(unsigned long long)scales,(unsigned long long)(packed+4*(floats+scales)),(unsigned long long)(4ull*c.layers*(c.s+c.m)));return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

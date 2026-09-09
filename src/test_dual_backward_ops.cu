@@ -1,0 +1,10 @@
+#include "dual_state_cuda_backward.cuh"
+#include <cstdio>
+#include <functional>
+using namespace tao::dual;
+int main(){try{size_t checks=0;double worst=0;auto verify=[&](Vec&x,const Vec&grad,std::function<double()>loss){for(size_t i=0;i<x.size();++i){float orig=x[i];x[i]=orig+.001f;double a=loss(),hi=x[i];x[i]=orig-.001f;double b=loss(),lo=x[i];x[i]=orig;double num=(a-b)/(hi-lo),err=std::abs(num-grad[i]);if(err>2e-4*(1+std::abs(num)))throw std::runtime_error("derivative");worst=std::max(worst,err);++checks;}};
+Vec x{-.7f,.2f,1.1f},dy{.3f,-.8f,.2f},gamma{.8f,1.2f,.6f},zero(3);Device X(x),DY(dy),G(gamma),DX(zero),DG(zero);ds_rms_backward<<<1,1>>>(X.p,G.p,DY.p,DX.p,DG.p,3);check(cudaGetLastError());auto rmsloss=[&](){double ss=0,z=0;for(float v:x)ss+=double(v)*v;for(int i=0;i<3;++i)z+=dy[i]*gamma[i]*double(x[i])/std::sqrt(ss/3+1e-5);return z;};verify(x,DX.host(),rmsloss);verify(gamma,DG.host(),rmsloss);
+Device DS(zero);ds_silu_backward<<<1,32>>>(X.p,DY.p,DS.p,3);check(cudaGetLastError());verify(x,DS.host(),[&](){double z=0;for(int i=0;i<3;++i)z+=dy[i]*double(x[i])/(1+std::exp(-double(x[i])));return z;});
+Vec u{.4f,-.3f,.8f},g{-2.f,0.f,2.f};Device U(u),Gate(g),DO(zero),DU(zero),DGate(zero);ds_update_backward<<<1,32>>>(X.p,U.p,Gate.p,DY.p,DO.p,DU.p,DGate.p,3);check(cudaGetLastError());auto update=[&](){double z=0;for(int i=0;i<3;++i)z+=dy[i]*(x[i]+(std::tanh(double(u[i]))-x[i])/(1+std::exp(-double(g[i]))));return z;};verify(x,DO.host(),update);verify(u,DU.host(),update);verify(g,DGate.host(),update);
+Vec w{.1f,.4f,-.2f,.7f,-.9f,.5f},outgrad{.6f,-.4f};Device W(w),Out(outgrad),DW(Vec(6)),Din(zero);ds_linear_dx<<<1,32>>>(W.p,Out.p,Din.p,2,3);ds_linear_dw<<<1,32>>>(X.p,Out.p,DW.p,2,3);check(cudaGetLastError());auto linear=[&](){double z=0;for(int i=0;i<2;++i)for(int j=0;j<3;++j)z+=double(outgrad[i])*w[i*3+j]*x[j];return z;};verify(x,Din.host(),linear);verify(w,DW.host(),linear);
+printf("PASS CUDA local derivatives=%zu max_abs=%.9g\n",checks,worst);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

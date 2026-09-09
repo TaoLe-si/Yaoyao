@@ -1,0 +1,5 @@
+# AVX2 full dialogue timing
+
+Samearch2step24 and9fixedturns, CPUAVX2compiledoptin. Actualreadable replies identicalto scalar run(7empty,2repeatedpunctuation). Two64tokenresponsesfirst-to-last63intervalthroughput111.318/111.353token/s versuspreviousscalar46.486/46.654. Singlemeasurementeachnotstatisticalbenchmark,correctnessofgreedyoutputsverifiedonlythese9turns. Fixedteacherforced143.924positions/s isdifferentworkload,notcontradiction. No4000claim.
+
+Built cpu_resident_avx2.exe separately; originalworkerpreserved. ControllercurrentlyuseslegacyCPUevaluator, notchangedmidrunningprocess. Newdialoguelogbuild/dialogue_step24_avx2.txt. Continueperformanceworkwithoutchangingmodelmathormaskingqualityfailure.

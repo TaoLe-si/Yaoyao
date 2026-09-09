@@ -1,0 +1,5 @@
+#define main probe_main
+#include "diagnose_token_write.cpp"
+#undef main
+#include <fstream>
+int main(int argc,char**argv){unsigned seed=argc>1?std::stoul(argv[1]):42;std::string opt=argc>2?argv[2]:"adam";Net net(seed);std::ifstream f("build/token_write_"+opt+"_"+std::to_string(seed)+".weights",std::ios::binary);if(!f.read((char*)net.w.data(),sizeof(net.w)))return 1;int positive=0,negative=0,content=0;double pmin=1,pmax=0;for(int q=0;q<4;++q)for(int o=0;o<4;++o)for(int owner=0;owner<8;++owner){int ix[5]={q,4+12,17+4+owner,30+o,43};double h[16];for(int j=0;j<16;++j){double a=0;for(int i:ix)a+=net.w[j*44+i];h[j]=std::tanh(a);}double z[9];for(int k=0;k<9;++k){z[k]=net.w[704+k*17+16];for(int j=0;j<16;++j)z[k]+=net.w[704+k*17+j]*h[j];}double p=1/(1+std::exp(-z[0]));if(q==o){positive+=p>=.5;content+=std::max_element(z+1,z+9)-z-1==owner;pmin=std::min(pmin,p);}else{negative+=p<.5;pmax=std::max(pmax,p);}}printf("seed=%u optimizer=%s delimiter relevant_write=%d/32 irrelevant_skip=%d/96 relevant_content=%d/32 min_relevant_p=%.6f max_irrelevant_p=%.6f\n",seed,opt.c_str(),positive,negative,content,pmin,pmax);}

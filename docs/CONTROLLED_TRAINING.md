@@ -1,0 +1,7 @@
+# Boundary control implementation
+
+New train_yaoyao_controlled.cu preserves master/Adam/states/cursors from arch2 checkpoint (no warmstart reset); new identity controlledv1, separateoutputprefix. Reads <input.scp>.control eachoptimizerboundary. Format TC1 learning_rate absolute_target stopFlag. Defaults5e-4 andloadedstep+200. Saveat10steps/end/stop andoninvalidcontrol; actualusedLRlogged. Sidecar output.scp.control storesLRandtarget,stop0forresume. Sidecar+scp are NOTatomicpair; explicitlycheckbothbefore resume. Filemissingdefaults; useatomicrenamecontrolupdates toavoidpartialread. STOP_TRAINING alsohonored. Currentrunningcapability32binaryunchanged, no duplicate run.
+
+Example TC1 0.0005 224 0; reduce to0.00025 basedfixedvalidationplateau; TC1 0.00025 224 1 requestsboundarysaveexit. Everyupdateboundarynotmidbackprop,so latencyoneupdate. AbruptOSkillstilllosesunsavedwork; cannotpromise crashproof. Compiled; controlparser defaults/valid/invalid checks passed. ActualGPUstop-save-reload smoke notyetexecuted whilediagnosticownsGPU.
+
+Proposed fulltraining policy: peak5e-4 candidate, fixedvalidationevery10updates, improvement>=.02 resets patience;3consecutivecheckswithoutthatimprovement halveLR floor3e-5. Regressions/nonfinitepromptinspection/stop,notautomaticincrease. ValidationNLL<=2.5 triggerssaveandqualityreview,notgeneralcapabilitysuccess. Controller presentlymanualfileinterface; automaticvalidation-drivencontroller NOT implemented. No claimlargedataset necessarilyrequireslargerLR.
