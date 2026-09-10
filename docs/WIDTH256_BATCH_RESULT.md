@@ -1,3 +1,0 @@
-# Width256 batch comparison
-
-Formalshape step60effectiveweights datasetstart4slots width256;647actualpositions377targets. Optimizedserial6.532982s,batch3.637841s(~1.80x singleobservation),losssumboth3249.518473625. Allgradientmax0.0000152587890625,relativeL22.5384541266171357e-7,finite. AfterdetachfreeGPUmemory serial6861881344 batch6585057280,total8585216000. NOTpeakmemorymeasurement; cannot inferworstcaseheadroom. Emptyinitialstates notSCPresume, nooptimizerupdate. Nextrestorestates/cursors andsharedoptimizerintegration. Formaltraining remainsstopped.

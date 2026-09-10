@@ -1,6 +1,0 @@
-#include "tao_local_association.hpp"
-#include <cuda_runtime.h>
-#include <cstdio>
-void ck(cudaError_t e){if(e!=cudaSuccess)throw std::runtime_error(cudaGetErrorString(e));}
-__global__ void calc(const float*r,const float*v,float*out,int n){int i=blockIdx.x*blockDim.x+threadIdx.x;if(i<n)out[i]=float(tao::local::action_element(r[i],v[i],i%3-1,.25,.25));}
-int main(){try{int n=30003;std::vector<float>r(n),v(n),got(n);for(int i=0;i<n;++i){r[i]=float(i%101-50)*.125f;v[i]=float(i%73-36)*.25f;}float*dr,*dv,*out;ck(cudaMalloc(&dr,n*4));ck(cudaMalloc(&dv,n*4));ck(cudaMalloc(&out,n*4));ck(cudaMemcpy(dr,r.data(),n*4,cudaMemcpyHostToDevice));ck(cudaMemcpy(dv,v.data(),n*4,cudaMemcpyHostToDevice));calc<<<(n+255)/256,256>>>(dr,dv,out,n);ck(cudaGetLastError());ck(cudaMemcpy(got.data(),out,n*4,cudaMemcpyDeviceToHost));for(int i=0;i<n;++i){double expected=i%3==0?r[i]:i%3==1?.75*double(r[i])+.25*double(v[i]):double(r[i])+.25*double(v[i]);if(!std::isfinite(got[i])||got[i]!=float(expected))throw std::runtime_error("CPU GPU action mismatch");}ck(cudaFree(dr));ck(cudaFree(dv));ck(cudaFree(out));printf("PASS CUDA30003 action elements vs independent CPU formulas exact;10001 per action\n");return 0;}catch(const std::exception&e){fprintf(stderr,"FAIL %s\n",e.what());return 1;}}

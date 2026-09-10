@@ -144,9 +144,11 @@ class Evaluator {
             state_update<<<(c.m*slots+127)/128,128,0,0>>>(m,u,g,it,c.m,slots);
             linear(p+"read.s",s,r,c.d,c.s);linear(p+"read.m",m,tmp,c.d,c.m);add(r,tmp,c.d);
             norm(r,p+"read.norm",tmp,c.d);add(x,tmp,c.d);
+#ifndef TAO_NO_FFN
             norm(x,p+"ff.norm",tmp,c.d);linear(p+"ff.up",tmp,f,c.e,c.d);
             ds_silu<<<(c.e*slots+127)/128,128,0,0>>>(f,c.e*slots);
             linear(p+"ff.down",f,tmp,c.d,c.e);add(x,tmp,c.d);
+#endif
         }
         norm(x,"final.norm",tmp,c.d);linear("embedding",tmp,out,c.vocab,c.d);add_bias(out,"vocab.bias",c.vocab);
         ce<<<slots,256,0,0>>>(out,it,doc_totals.p,c.vocab);

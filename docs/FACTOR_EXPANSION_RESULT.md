@@ -1,9 +1,0 @@
-# Round27 block-separated residual experiment
-
-Model8gate+8content input,32expansion split16+16,down16split8+8;headgateonlyfirst8/contentonlylast8;contentinputexcludesquery;bothresidualmatricesblockdiagonal. No types/boundaryoracle. Same2137storedweights but1521effective(2137-32query-72head-512crossblock). UnusedweightsstillL2updated. This is reducedcapacity+factorization+queryinvariance,notisolatedhead separation.
-
-ExactBPTT6411coordinate finite differences max3.77577274134e-10. Same3000Adamstepsbatch32/init2/twoseedsfourpartitions. Result only1/8cellsallheldoutconditionshard100 (123shift0),sharedresidual5/8. seed7all4fail;traininghard.9785/.9707/.7383/.9258. seed123training1/.9414/.998/.998;heldoutshift2/3near98..100butnotfullpass. Trainingfailure meanscannotattributealllossestoheldoutcompositionalgeneralization. No adaptivehyperparametersearchorchoosingfavorablepartition.
-
-Conclusion do notadoptthissplitdefault;cannotclaimallfactorizedarchitecturesbad. Fullwidthindependentbrancheswouldcostmoreandmightremovebottleneck butunverified. Bestanswer-onlycandidate remains sharedresidual expansion,notfullyrobust. Next boundedtrainingcontrol should compareadditionaltrainingbothmodels OR lessrestrictivehead-onlyseparation;chooseonepriorprotocol,notperseedbest. Auxiliaryboundaryroute stillseparatelysuccessfulfinitegrammarbutextrasupervisiondifferent. Goalactive.
-
-Filesdiagnose_factor_expand.cpp,optimize_factor_expand.cpp,test_factor_expand_gradient.cpp. Checkpointsbuild/factor_expand_partition_SHIFT_SEED.weights. No productionchanges.

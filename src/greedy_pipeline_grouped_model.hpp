@@ -92,7 +92,11 @@ auto st=group<4>({p+"s.candidate.x",p+"s.candidate.s",p+"s.gate.x",p+"s.gate.s"}
 auto u=std::move(st[0]),a=std::move(st[2]);add(u,st[1]);add(u,w.at(p+"s.candidate.bias"));add(a,st[3]);add(a,w.at(p+"s.gate.bias"));for(size_t j=0;j<s.size();++j)s[j]+=sigmoid(a[j])*(std::tanh(u[j])-s[j]);
 auto mt=group<6>({p+"m.candidate.x",p+"m.candidate.s",p+"m.candidate.m",p+"m.gate.x",p+"m.gate.s",p+"m.gate.m"},{&xn,&s,&m,&xn,&s,&m},c.m);
 auto v=std::move(mt[0]),g=std::move(mt[3]);add(v,mt[1]);add(v,mt[2]);add(v,w.at(p+"m.candidate.bias"));add(g,mt[4]);add(g,mt[5]);add(g,w.at(p+"m.gate.bias"));for(size_t j=0;j<m.size();++j)m[j]+=sigmoid(g[j])*(std::tanh(v[j])-m[j]);
-auto rt=group<2>({p+"read.s",p+"read.m"},{&s,&m},c.d);auto r=std::move(rt[0]);add(r,rt[1]);add(x,norm(r,p+"read.norm"));auto f=linear(p+"ff.up",norm(x,p+"ff.norm"),c.e);for(float&z:f)z*=sigmoid(z);add(x,linear(p+"ff.down",f,c.d));}
+auto rt=group<2>({p+"read.s",p+"read.m"},{&s,&m},c.d);auto r=std::move(rt[0]);add(r,rt[1]);add(x,norm(r,p+"read.norm"));
+#ifndef TAO_NO_FFN
+auto f=linear(p+"ff.up",norm(x,p+"ff.norm"),c.e);for(float&z:f)z*=sigmoid(z);add(x,linear(p+"ff.down",f,c.d));
+#endif
+}
 return x;
 }
 

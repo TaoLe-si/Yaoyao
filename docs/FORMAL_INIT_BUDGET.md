@@ -1,5 +1,0 @@
-# Round7 formal shape initialization and allocation
-
-dual_state_initialization.hpp implements approved fan-in normal FP32master init, s gatebias0/m gatebias-2, candidatebias0,vocabbias0,norm1/readnorm1sqrt2L,downsd1sqrt2LE exactlyonce. Uses std::normal_distribution MSVC implementation;seedalone notcrossplatformbitreproducibility,initialcheckpointmustpersist. No QATprojectionvariancecompensation. Actualformalconfig30185984trainableparameters includingbias/norm. Allfinitechecked,gatebiaschecked;distributionstatisticsnotretested.
-
-audit_dual_formal_budget.cu allocated5fullFP32arrays575.752MiB onGPU. freebefore7068MiB/freeafter6488MiB accountingallocatorrounding. Theyrepresentmaster/effective/gradient/m/v raw capacity only;no actualtrainer initialized,noactivation/tape/batchbuffer/projectionworkspace. ThereforeNOT8GiBtrainingfitproof. RAIIreleaseprocessfinished. FormalinitgeneratedonCPU(noCPUtraining);trainingremainsCUDA. Next projectionmustreplaceO(cols^2)perrowreference withrank-equivalentefficientCUDA sorting and gradient reductionhosttransfers before formal smoke. No randomarchitecturesearch. Goalactive.

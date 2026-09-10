@@ -1,5 +1,0 @@
-# Round58 four-symbol lookup prototype
-
-residual_packed_lut.hpp readsonebytefor4weights,signlookupfloat{0,1,-1,0},sum+=sign*x;retainsillegal11check. Bias/inputlookupunchanged. This usesmultiplicationagain (0/+-1)toavoiddata-dependentpositive/negativebranches;do notclaimmultiply-freekernel. Noexpansionwholeweights,1100bytepayloadunchanged,tiny4floatstaticLUT. Prototype supportsfixedn16/32 dot,notgenericnnonmultiple4. Mutablepublicbitsstillrisk.
-
-All3954960prefixanswersmatchFP64reference across12QATmodelsoriginal+changed. No bitwiseactivationproof. Pairedtiming3seedsshift0QAT/193noise32/7x200O2AVX2: FP64/LUT .791399/1.634750,.817240/1.690896,.792760/1.670561us. ~2.07..2.11xslowerthanexpandedFP64,improvementoverpreviousbranchpacked2.56..2.69butdifferentroundnotdirect3waymeasurement. NoLLMCPUclaim. Currentpackedstorageadvantagebutexecutionnotcompetitive;coulddecodeonceatloadforhotnarrowmodelifmemorybudgetallows. Persistingcompressedweightsdoesnotrequirecomputingpacked. SIMDfuturewouldchangeaccumulationrequiresregression. Goalactive. Filesresidual_packed_lut.hpp,test_packed_lut_prefix.cpp,benchmark_residual_lut.cpp.

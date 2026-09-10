@@ -1,7 +1,0 @@
-# Early stopping correction
-
-User requests higherLRconsideration andloss-basedstop. Fixed32QAprobeLR3e-4 reachesNLL2.43at15,.0769at30,.003at61. Evidence supportsnotlearningdead; doesnotprovethatLRoptimal. RunningoldbinaryPID30204hasnofile-basedstoporcheckpointuntilend, so replacingcodecannotstopit safely. No kill/no duplicate experiment.
-
-Future diagnostic capability32_early.cu: NLL<=.1 for3consecutiveupdates thenCPUdecodeandexport;100cap. This thresholdisforfixedtrainingcapacitydiagnosticONLY; no needdriveNLLtozero. Sourcecreatednotcompiled/executed.
-
-Generaltraining: trainNLLaloneisnotearlystoppingcriterion. UseunchangedassistantvalidationNLL<=2.5 aslosstargetplusgenerationchecks; plateaupatience shouldbe preregisteredbefore nextrun ratherthancontinuallytuned onvalidation. HigherLR5e-4or1e-3isacandidateexperimentnotaconfirmedfix; donotchangeLRmidthiscapacityexperiment.

@@ -1,5 +1,0 @@
-# Allocation API comparison
-
-Same checkpoint controlledstep60, same first supervised block148positions/148targets, forward+backward no optimizer update no outputweights. Scalarallocation2.397766s(61.724positions/s),cudaMallocAsync/freeAsync2.470536s(59.906positions/s). Singlepassperimplementation, no demonstratedgain; notenabledforformaltraining. No numericalgradientcomparison yet. Firstattemptsreturnedwithoutprofilebecausesidecartarget60equalsloadedstep60; these producedno measurements. Sidecartemporarily61forprofilethenrestored60;STOP_TRAININGretained. CUDAallocationdefaultpoolsettingsunchanged; no blanketclaimmempooloptimized.
-
-Next priorityactualmatrixkernelsandgradient kernels, costbreakdownandbatchedexecution ratherthanblindAPIchanges. No formaltrainingresume.

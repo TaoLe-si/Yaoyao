@@ -1,3 +1,0 @@
-# Deferred loss full update
-
-Samecheckpoint60,4408positions2344targets,4slots8rounds. Combinedcandidatewithdeferredloss41.210185s versuscandidate41.357698s, difference~.36%notstrongspeedupevidence. NLL8.2983973 norm.905890. CandidateanddeferreddiagnosticSCPandDSBbyteidentical. Noformalresume. LossblockflushstaysGPU,collectoncebeforeoptimizerafterallblocks; nonfinitecannotreachupdatewithoutcheck. Otherbackwardsynchronizationremains. diagnostic_deferred_update.cu profileoptionnotintendedaslossprofiler, onlysingleupdateverification. Stopsignalremains.

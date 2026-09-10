@@ -1,3 +1,0 @@
-# Optional four-accumulator trial
-
-TAO_CPU_AVX2_UNROLL optionalmacro in cpu_dot_avx2.hpp. Fullmodel64positionsscalar45.989tps,unroll107.542tps,.595115s;maxlogits6.19888306e-6 state7.89761543e-7. Previoussingleaccumulator143.924tps butseparatetimingunderpotentialCPUcontention,so notcontrolledsame-runcomparison. No evidenceofimprovement; NOTenabledinresidentworkerorcontroller. Preserveoptinforfutureprofile,do notclaimoptimizationwin. No repeatedbenchmark undertaken. CPUvalidationprocessincontrollerwasactive,possiblycompetesforcache/bandwidth; noattributionproven.

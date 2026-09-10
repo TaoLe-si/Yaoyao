@@ -1,5 +1,0 @@
-# Round23 formal step3 and CPU delivery path
-
-Resumedstep2,step3 positions4483 supervised2314 preupdateNLL10.0184680 lr.000299930631 norm3.319250. Savedstep3.scp/.dsb. No revalidation(set intervalafterstep10 next). Actualdecode_yaoyao.cpp loadsformalBPEdigest-boundbundle,legalBOS/USERprompt/TURN_END/ASSISTANT prefix,greedy32max,blocksrole tokens,consumesselectedtokens includingendonce,rawbyteoutputfile.
-
-Prompt Hello,introduce yourself (actualincludes spaces asCLI): generated32tokens .638440s~50.1tok/s excludingload/tokenizer/prefill,unoptimizedCPUscalarFP32model,onecasehotweightsnotrobustbenchmark. Didnotendnaturally. Text repeats You are tasked with creating a and then repeated =. ThisdoesnotanswerpromptandNOTfunctionalchatability. SomelearnedlongBPEtokenscanalreadyrepresententirephrase,soEnglish-lookingoutputnotproofreasoningortrainingprogress. Outputrawbytesbuild/yaoyao_decode_output.bin,hexlogpreservesinvalidUTF8withoutclaimingvalid. Tokenizerdecoderexpandsallgeneratedtokensatend(notstreamingUTF8display). Fixed32tokenlimittruncationflagnotnaturalEOS. Goalactive.

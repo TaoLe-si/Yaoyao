@@ -1,9 +1,0 @@
-# Round10 asymmetric capacity and fixed curriculum
-
-Asymmetric factor24 has16gate/8content,storage1593 effective1425(masked168),vsfactor16storage1065effective961. Gate fullcontext/query,contentnoquery. Same3000stepindependentonlinepairholdoutprotocol/init2. Exactgradient4779coordsmax3.17226748342e-10. Seeds7/123/2026diagnosticpool94.7/77.9/100percent. Heldoutreverse46..51/61..63/93..94;not robustsolution. Morecapacitychangesrandomparameterdrawalignmentandcompute,noequalparametercausalclaim. Noadoption.
-
-Curriculum testedoriginalfactor8+8:500initialstepsnoise0 then2500stepsnoise0..2,total3000same32batch,nopairs. ContinuesdataRNG,changeddistributionandtokenbudget(lowerwarmupcost),notstrictsamestreamcontrol. Seeds7allheldout100;123dramaticunderfit72.46pool,heldoutlong24..36;2026reverse~87..89,mixed96..98,separator100. No universalbenefit. Zero-noisewarmupcouldencouragealwayswriteandlaterpooradaptation,hypothesisonlynotinstrumented.
-
-Conclusion:do notexpandhyperparametergrid orselectperseedwinner. Factorbranchsplit alone unproven,queryknown8classmemory remainsnarrow. Neednextdistinctstructuredinvariance diagnostic withclearoracleboundary ortrainablebindingmechanism;current failures not proof attentionneeded. Prior successfulsharedinit2route retainedbackup.
-
-Newfiles diagnose_factor24_write4.cpp,optimize_factor24_write4.cpp,test_factor24_gradient.cpp,optimize_curriculum_factor4.cpp;weightsbuild/factor24_write4_SEED.weights,build/curriculum_factor4_SEED.weights. Goalactive;20roundlimitnotpromisesuccess.

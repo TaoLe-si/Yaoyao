@@ -1,5 +1,0 @@
-#define TAO_DEVICE_ZERO_GRAD
-#include "batch_slot_bridge.cuh"
-#include "dual_state_initialization.hpp"
-#include <cstdio>
-int main(){using namespace tao::dual;try{SortedGpuTrainer tr(initialize(Config{2,16,8,16,32,261},713));SequenceSlots slots(tr,4);for(int k=0;k<4;++k)for(int l=0;l<2;++l){Vec s(8,float(k+l+1)),m(16,float(10+k+l));check(cudaMemcpy(slots.s[k][l]->value.p,s.data(),s.size()*4,cudaMemcpyHostToDevice));check(cudaMemcpy(slots.m[k][l]->value.p,m.data(),m.size()*4,cudaMemcpyHostToDevice));}BatchTrainGraph b(tr.graph.c,4,tr.graph.w);bridge_slots(b,slots,true);detach_batch(b);bridge_slots(b,slots,false);for(int k=0;k<4;++k)for(int l=0;l<2;++l){for(float v:slots.s[k][l]->value.host())if(v!=k+l+1)return 1;for(float v:slots.m[k][l]->value.host())if(v!=10+k+l)return 2;}for(auto&kv:b.w)if(kv.second!=tr.graph.w.at(kv.first))return 3;printf("PASS GPU state packing/unpacking and shared parameter identity\n");return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 4;}}

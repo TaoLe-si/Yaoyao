@@ -1,5 +1,0 @@
-#include "dual_state_sorted_trainer.cuh"
-#include "dual_state_initialization.hpp"
-#include <chrono>
-#include <cstdio>
-int main(){try{using namespace tao::dual;SortedGpuTrainer t(initialize(Config{},713));size_t free,total,minfree;check(cudaMemGetInfo(&free,&total));minfree=free;auto start=std::chrono::steady_clock::now();double loss=0;for(int i=0;i<256;++i){auto y=t.graph.step(unsigned(i%256));loss+=seed_loss(y,unsigned((i+1)%256),true,1.f/256);if((i+1)%64==0){check(cudaMemGetInfo(&free,&total));minfree=std::min(minfree,free);printf("positions=%d free_MiB=%.3f\n",i+1,double(free)/1048576);fflush(stdout);}}auto mid=std::chrono::steady_clock::now();t.graph.tape.backward();auto end=std::chrono::steady_clock::now();t.detach();printf("PASS block256 forward_s=%.3f backward_s=%.3f min_free_MiB=%.3f diagnostic_loss=%.6f\n",std::chrono::duration<double>(mid-start).count(),std::chrono::duration<double>(end-mid).count(),double(minfree)/1048576,loss);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

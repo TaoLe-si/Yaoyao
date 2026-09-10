@@ -1,0 +1,5 @@
+# No-FFN fresh production policy
+Architecture dual-state-3-noffn-input-sqrt-d,8 layers d512 s128 m512, no FFN tensors or forward; frozen BPE16384. Fresh initialization seed20260911, zero Adam and recurrent states. Never load prior weights.
+GPU graph4 slots x8 replays x256; fixed GPU validation each optimizer update, target2000; checkpoint100 plus initial step0. lr warmup100 to.00025 then cosine1500..2000 floor.00005. Fixed log build/noffn_fresh.log; output build/noffn_fresh. Graceful pause build/STOP_NOFFN; preserve global STOP_TRAINING.
+Saved experimental learning mode:100 clean steps then mixed transformations improved symbolic sealed tests54.46% to88.84% (two seeds). Real corpus adaptation:100 steps on intact docs<=256 tokens then full accepted corpus; no semantic reorder or corruption. This adaptation is NOT validated equivalent to symbolic augmentation. Source data and frozen validation retained, historical training state discarded.
+CPU executable build/cpu_noffn.exe requires new operator/schema DSB; old decoder rejects new schema.

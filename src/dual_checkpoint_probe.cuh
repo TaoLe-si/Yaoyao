@@ -1,9 +1,0 @@
-#pragma once
-#include "dual_state_trainer.cuh"
-#include <fstream>
-namespace tao::dual {
-// Internal same-build checkpoint probe, not the portable public model format.
-inline void save_probe(GpuTrainer&t,const std::string&path){if(!t.graph.tape.reverse.empty())throw std::runtime_error("detach before save");std::ofstream f(path,std::ios::binary);f.write("DCP0",4);f.write((char*)&t.graph.c,sizeof(Config));f.write((char*)&t.steps,sizeof(t.steps));auto put=[&](Device&d){auto v=d.host();f.write((char*)v.data(),v.size()*4);};for(auto&s:t.spec){put(*t.master.at(s.name));put(*t.moment.at(s.name));put(*t.variance.at(s.name));}for(unsigned i=0;i<t.graph.c.layers;++i){put(t.graph.s[i]->value);put(t.graph.m[i]->value);}if(!f)throw std::runtime_error("checkpoint write");}
-inline void load_probe(GpuTrainer&t,const std::string&path){std::ifstream f(path,std::ios::binary);char magic[4];Config c;unsigned steps;f.read(magic,4);f.read((char*)&c,sizeof(c));f.read((char*)&steps,sizeof(steps));auto a=c,b=t.graph.c;if(!f||std::string(magic,4)!="DCP0"||a.layers!=b.layers||a.d!=b.d||a.s!=b.s||a.m!=b.m||a.e!=b.e||a.vocab!=b.vocab)throw std::runtime_error("checkpoint header");auto get=[&](Device&d){Vec v(d.n);f.read((char*)v.data(),v.size()*4);if(!f)throw std::runtime_error("truncated checkpoint");for(float x:v)if(!std::isfinite(x))throw std::runtime_error("nonfinite checkpoint");check(cudaMemcpy(d.p,v.data(),v.size()*4,cudaMemcpyHostToDevice));};t.detach();for(auto&s:t.spec){get(*t.master.at(s.name));get(*t.moment.at(s.name));get(*t.variance.at(s.name));}for(unsigned i=0;i<c.layers;++i){get(t.graph.s[i]->value);get(t.graph.m[i]->value);}if(f.peek()!=EOF)throw std::runtime_error("checkpoint trailing");t.steps=steps;t.project();t.zero_grad();}
-inline CpuModel effective_cpu(GpuTrainer&t){CpuModel out(t.graph.c);for(auto&s:t.spec)out.w.at(s.name)=t.graph.w.at(s.name)->value.host();return out;}
-}

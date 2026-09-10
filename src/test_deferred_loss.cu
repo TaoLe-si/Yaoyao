@@ -1,3 +1,0 @@
-#include "gpu_deferred_loss.cuh"
-#include <cstdio>
-int main(){using namespace tao::dual;try{DeferredLoss loss(4);float a[4]={1.25f,2.5f,.125f,4};for(int k=0;k<3;++k){check(cudaMemcpy(loss.block.values.p,a,16,cudaMemcpyHostToDevice));loss.block.used=4;loss.flush();}double v=loss.collect();if(v!=23.625||loss.collect()!=0)return 1;a[0]=std::numeric_limits<float>::infinity();check(cudaMemcpy(loss.block.values.p,a,16,cudaMemcpyHostToDevice));loss.block.used=4;bool rejected=false;try{loss.collect();}catch(...){rejected=true;}if(!rejected)return 2;printf("PASS threeblock accumulation=%.3f reset and nonfinite rejection\n",v);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 3;}}

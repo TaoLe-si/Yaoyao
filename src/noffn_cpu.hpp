@@ -1,11 +1,12 @@
 #pragma once
-#include "dual_state_config.hpp"
+#include "dual_state_cpu.hpp"
 #include <map>
 #include <cmath>
 #ifdef TAO_CPU_AVX2
 #include "cpu_dot_avx2.hpp"
 #endif
-namespace tao::dual {
+namespace tao::noffn {
+using tao::dual::Config;using tao::dual::schema;
 using Vec=std::vector<float>;
 struct LayerState{Vec s,m;};
 struct CpuModel{
@@ -13,7 +14,7 @@ Config c;std::map<std::string,Vec>w;
 #ifdef TAO_CPU_AVX2
 bool fast=true;
 #endif
-explicit CpuModel(Config cfg):c(cfg){for(auto&t:schema(c))w.emplace(t.name,Vec(t.elements(),0));}
+explicit CpuModel(Config cfg):c(cfg){for(auto&t:schema(c))if(t.name.find(".ff.")==std::string::npos)w.emplace(t.name,Vec(t.elements(),0));}
 std::vector<LayerState> initial()const{return std::vector<LayerState>(c.layers,LayerState{Vec(c.s),Vec(c.m)});}
 Vec linear(const std::string&name,const Vec&x,uint32_t rows)const{const auto&a=w.at(name);if(a.size()!=uint64_t(rows)*x.size())throw std::runtime_error("matrix shape");Vec y(rows);
 #ifdef TAO_CPU_AVX2
@@ -30,11 +31,7 @@ for(float&v:x)v*=std::sqrt(float(c.d));
 for(uint32_t l=0;l<c.layers;++l){auto p="layer."+std::to_string(l)+".";auto xn=norm(x,p+"input.norm");auto&s=state[l].s;auto&m=state[l].m;
 auto temp=[&](const std::string&branch){Vec z=linear(p+branch+".x",xn,c.s);add(z,linear(p+branch+".s",s,c.s));add(z,w.at(p+branch+".bias"));return z;};auto u=temp("s.candidate"),a=temp("s.gate");for(size_t j=0;j<s.size();++j)s[j]+=sigmoid(a[j])*(std::tanh(u[j])-s[j]);
 auto memory=[&](const std::string&branch){Vec z=linear(p+branch+".x",xn,c.m);add(z,linear(p+branch+".s",s,c.m));add(z,linear(p+branch+".m",m,c.m));add(z,w.at(p+branch+".bias"));return z;};auto v=memory("m.candidate"),g=memory("m.gate");for(size_t j=0;j<m.size();++j)m[j]+=sigmoid(g[j])*(std::tanh(v[j])-m[j]);
-auto r=linear(p+"read.s",s,c.d);add(r,linear(p+"read.m",m,c.d));add(x,norm(r,p+"read.norm"));
-#ifndef TAO_NO_FFN
-auto f=linear(p+"ff.up",norm(x,p+"ff.norm"),c.e);for(float&z:f)z*=sigmoid(z);add(x,linear(p+"ff.down",f,c.d));
-#endif
-}
+auto r=linear(p+"read.s",s,c.d);add(r,linear(p+"read.m",m,c.d));add(x,norm(r,p+"read.norm"));}
 auto logits=linear("embedding",norm(x,"final.norm"),c.vocab);add(logits,w.at("vocab.bias"));return logits;
 }
 };

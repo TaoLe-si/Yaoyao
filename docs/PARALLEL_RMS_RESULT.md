@@ -1,3 +1,0 @@
-# Parallel RMS candidate
-
-256threadRMSforward/backward withpool+warp. Fullrealblockgradientmax0.000003814697265625,relativeL22.941266100871374e-7,nonfinite0. Optinnotdefault, referencepathpreserved. Noformalupdate. Runtimeoutputinconversationauthoritative. Fullupdate/longsequence testsandperformanceprofile stillneededbeforetrainingresume.

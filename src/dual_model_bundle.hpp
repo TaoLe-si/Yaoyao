@@ -2,7 +2,9 @@
 #include "dual_model_stream.hpp"
 #include <sstream>
 #include <filesystem>
-#ifdef TAO_INPUT_SCALE
+#ifdef TAO_NO_FFN
+#define TAO_OPERATOR_ID "dual-state-3-noffn-input-sqrt-d"
+#elif defined(TAO_INPUT_SCALE)
 #define TAO_OPERATOR_ID "dual-state-2-input-sqrt-d"
 #else
 #define TAO_OPERATOR_ID "dual-state-1"

@@ -1,5 +1,0 @@
-#define NOMINMAX
-#include "tokenizer_file.hpp"
-#include "bpe_pilot_reader.hpp"
-#include <cstdio>
-int main(){try{std::string hash;tao::text::load_tokenizer("build/formal_tokenizer.bbp",hash);for(auto split:{"train","validation"}){std::ifstream f(std::string("build/bpe_pilot_")+split+".bin",std::ios::binary);auto docs=tao::data::read_bpe_pilot(f,hash);size_t supervised=0,ends=0,turns=0,empty=0,first_end=0,body=0;for(auto&doc:docs){for(size_t i=1;i<doc.size();++i){auto t=doc[i];supervised+=t.loss;ends+=t.loss&&t.id==tao::data::TURN_END;if(t.id==tao::data::ASSISTANT){++turns;if(i+1>=doc.size())throw std::runtime_error("role at end");if(doc[i+1].id==tao::data::TURN_END)++empty;first_end+=doc[i+1].id==tao::data::TURN_END;}if(t.loss&&t.id!=tao::data::TURN_END)++body;}}printf("%s docs=%zu assistant_turns=%zu empty_turns=%zu supervised=%zu body_targets=%zu end_targets=%zu end_fraction=%.9f first_target_end_fraction=%.9f\n",split,docs.size(),turns,empty,supervised,body,ends,double(ends)/supervised,double(first_end)/turns);}return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

@@ -1,7 +1,0 @@
-#define NOMINMAX
-#include "tokenizer_file.hpp"
-#include "dual_model_bundle.hpp"
-#include <chrono>
-#include <cstdio>
-#include <limits>
-int main(int argc,char**argv){try{if(argc!=3)throw std::runtime_error("usage model prompt");std::string hash;auto tokenizer=tao::text::load_tokenizer("build/formal_tokenizer.bbp",hash);auto model=tao::dual::load_bundle(argv[1],hash);auto state=model.initial();std::vector<uint32_t>prefix{256,257};auto body=tokenizer.encode(argv[2]);prefix.insert(prefix.end(),body.begin(),body.end());prefix.push_back(259);prefix.push_back(258);tao::dual::Vec logits;for(auto t:prefix)logits=model.step(t,state);auto start=std::chrono::steady_clock::now();std::vector<uint32_t>generated;bool ended=false;for(int i=0;i<32;++i){for(unsigned blocked:{256u,257u,258u})logits[blocked]=-std::numeric_limits<float>::infinity();unsigned token=std::max_element(logits.begin(),logits.end())-logits.begin();if(token==259||token==260){model.step(token,state);ended=true;break;}generated.push_back(token);logits=model.step(token,state);}auto text=tokenizer.decode(generated);std::ofstream out("build/yaoyao_decode_output.bin",std::ios::binary);out.write(text.data(),text.size());printf("CPU generation tokens=%zu ended=%d seconds=%.6f output_hex=",generated.size(),ended,std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count());for(unsigned char c:text)printf("%02x",c);printf("\n");return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

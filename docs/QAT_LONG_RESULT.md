@@ -1,7 +1,0 @@
-# Round53 bounded doubled QAT training
-
-Two seeds7/123 shifts0/3,3k->6kfromsameinitialization/data/quota schedule;notresumeeffectiveweights. Rarepairquota64stillreleasedfirst~2800steps,unchangedcount,additionalordinaryonlinecontexts3ksteps. SameLR.003/L2/Adamnoreset/defaultthreshold. Examines extraordinarytraining afterrarecoverage,notfullybalanceddata-exposuredoubling. All2x2runsreported,notfull12.
-
-6ktrainmonitor7shift0.998,7shift3.994,123both1. Targetdiagnostichardfullpass1/4 (123shift0)vs3k1/4(7shift0);successmoves,notuniformimprovement. Longtest detailedtooloutput;cannotinfermonotonictrainingbenefit. No perseedcheckpointselection. Needstop blinddurationchanges.
-
-Nextdirectquantizedrepresentationmargin/noisyweightstability orhard-updatelearning controls moremeaningful;hardSTEgradientnotexactandmustbeexplicit. Coreternaryrequirementunmet. Fileoptimize_qat_long.cpp,eval_qat_long.cpp;separateweights. Goalactive.

@@ -1,7 +1,0 @@
-# Fixed real-QA capacity probe
-
-Full formal arch2 ternaryGPUtraining, CPUgreedydecode; masterwarmstartarch2step20 withresetAdam/states. First4eligibletrainrecords sources9,10,14,42 (<64total tokens,2..24answer tokens),fixedbeforefitting,35supervisedtargets/update.100updates constant3e-4, ordinaryendallowed, no minlength. No heldoutevaluation. Before:4emptyoutputs. Final all4exactreference reproduction withnaturalTURN_END; trainingNLL8.034482970(step1preupdate) to.000450679(step100preupdate). CPUgreedy firstprob .99925..99945.
-
-Establishes capacity tofitanddistinguish these4prompts, functioningend-to-end gradient/ternaryupdate/generationonthiscase. DOESNOTestablishgeneralization, robustconditionalreasoning, instructionfollowing or independentvalidationNLL<=2.5. Tinysetmemorizationonly; intentionally notformalmodelreplacement. Finalbuild/capability_probe_final.dsb isolated, do notcontinuetrainfullcorpusfromoverfitartifact. Formalrunpausedsafelyarch2step24saved, no liveGPUtrainingafterprobecompletion.
-
-Userreference corrections: vocab16384uniformln9.70406, not1024; arch2warmup4updates peakreachedstep4,not23/100; warmstartsource63shapessame/operatorsinputscalechanged anddocumented; gradientnorm alonecannotexcludeweaklayergradients. Constant3e-4alreadyfitsfixedQA so cannotclaimLRnecessarilytoolow. Fullcurriculumdiversity/exposure/updaterate nowpriorityhypotheses, notverifiedrootcause.

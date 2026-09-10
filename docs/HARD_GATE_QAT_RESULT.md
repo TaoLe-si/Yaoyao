@@ -1,7 +1,0 @@
-# Round54 hard-forward gate with surrogate backward
-
-Newdiagnose_hardgate_expand c.softp=clip(.5+.25z),c.p=1[z>=0]. Forwardmemory=(1-p)m+p*v exactskip/replace,contentsoftmaxkept. Backward gate dp*.25insideSOFTclippinginterval,zerooutside;memorygradientmultiply1-hardp,contentgradienthardp. SeparateweightSTErowternarysameasQATbaseline. This is heuristicdoubleSTE,notexactgradientofdiscontinuousforward. No finitedifferenceclaim. 3ksteps,4fixedcells7/123 shifts0/3,quota64/data91357/defaultthreshold.
-
-Trainmonitorhard54.10/54.69/50.98/52.73%;diagnosticheldconditionsmanynear0. Frozenlongoriginal48/768 updated49/768 vssoftgateQAT722/719 matched4cells. Hard/referenceagreement768/768,so grossfailure nothardinferenceport. EvalusesoldsoftmodelreferenceHARDoutputwhichstillmatchesperstepthreshold,nottrainingloss reference. No capacity/gradcorrectnessproof forsurrogate.
-
-Hardwrites cuttemporalcreditpastacceptedwrite;hardzero preventscontentgradwhenclosed;misalignedsurrogatedp canstarvelearning. Plausiblemechanismnotmeasuredcausaltraceyet. Directhardforwardfromstartdoesnotlearnadequately,do notadopt. No moreautomaticSTEvariantswithoutclearprotocol. Needcandidateassessment/structuralcapacityorbettertrainingobjective;currentternaryruntimegoalnotachieved. Goalactive. Filesdiagnose_hardgate_expand.cpp,optimize_qat_hardgate.cpp,eval_qat_hardgate.cpp. Originalcheckpointsretained.

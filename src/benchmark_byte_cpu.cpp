@@ -1,8 +1,0 @@
-#define TAO_CPU_AVX2
-#define TAO_INPUT_SCALE
-#include "dual_model_bundle.hpp"
-#include "byte_cpu_model.hpp"
-#include <chrono>
-#include <cstdio>
-#include <algorithm>
-int main(){using namespace tao::dual;try{auto a=load_bundle("build/yaoyao_graph_step_360.dsb","34463f0ac2baf1eb5df792c309a58ea458b109e1187225a0210ccbe89e883333");ByteCpuModel b(a);auto sa=a.initial(),sb=b.initial();float max=0;unsigned token=256;for(int i=0;i<16;++i){auto x=a.step(token,sa),y=b.step(token,sb);for(size_t j=0;j<x.size();++j){if(!std::isfinite(y[j]))throw std::runtime_error("nonfinite");max=std::max(max,std::abs(x[j]-y[j]));}for(size_t l=0;l<sa.size();++l){for(size_t j=0;j<sa[l].s.size();++j)max=std::max(max,std::abs(sa[l].s[j]-sb[l].s[j]));for(size_t j=0;j<sa[l].m.size();++j)max=std::max(max,std::abs(sa[l].m[j]-sb[l].m[j]));}token=unsigned(std::max_element(x.begin(),x.end())-x.begin());if(token!=unsigned(std::max_element(y.begin(),y.end())-y.begin()))throw std::runtime_error("argmax mismatch");}printf("CHECK fullmodel steps=16 logits_state_max=%.9g\n",max);if(max!=0)return 2;auto bench=[](auto&model){auto state=model.initial();unsigned t=256;auto start=std::chrono::steady_clock::now();for(int i=0;i<128;++i){auto y=model.step(t,state);t=unsigned(std::max_element(y.begin(),y.end())-y.begin());}return 128/std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};double baseline=bench(a),candidate=bench(b);printf("FULL_GREEDY forced128_no_eos_stop fp32_tps=%.3f byte_tps=%.3f ratio=%.3f gpu_training_concurrent=1\n",baseline,candidate,candidate/baseline);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 1;}}

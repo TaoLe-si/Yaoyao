@@ -1,3 +1,0 @@
-# Bounded device reuse result
-
-Optin TAO_DEVICE_POOL, singlehostthread/defaultstreamonly. Exactsizecache512MiBcap; releasecacheswithoutCUDAfree, same-streamorderingrequiredforreuse; nocompatibilityclaimmulti-stream/multithread. Actualcheckpoint60/148supervisedblock2.271709s versuspriorinstrumentedreference2.300772s (~1.3%, notstrongspeedupevidence). AllocationAPIwalltime.004246s free.002620s versus.184841/.141508; reducingblockingcanmovequeuewaitingelsewhere, donotaddsavedAPItimeasendtoendsavings. Poolcumulativehits79688 misses138857 cached307273728bytes(alsoincludesrestoreandpriorcontextblock). Fullgradientsbitwiseequal=true. NLLunchanged8.901393874271. Notdefault, noformaltrainingresume. Needcombinedscheduling/kernelanalysis; memoryreusealoneinsufficient.

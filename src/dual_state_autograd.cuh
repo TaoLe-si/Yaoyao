@@ -80,6 +80,10 @@ Node step(unsigned token){if(token>=c.vocab)throw std::invalid_argument("token")
 #ifdef TAO_INPUT_SCALE
 x=tape.scaled(x,std::sqrt(float(c.d)));
 #endif
-for(unsigned l=0;l<c.layers;++l){auto p="layer."+std::to_string(l)+".";auto xn=tape.norm(x,w.at(p+"input.norm"));auto branch=[&](std::string name,bool mem){unsigned n=mem?c.m:c.s;auto z=tape.add(tape.linear(w.at(p+name+".x"),xn,n),tape.linear(w.at(p+name+".s"),s[l],n));if(mem)z=tape.add(z,tape.linear(w.at(p+name+".m"),m[l],n));return tape.add(z,w.at(p+name+".bias"));};auto u=branch("s.candidate",false),a=branch("s.gate",false);s[l]=tape.update(s[l],u,a);auto v=branch("m.candidate",true),g=branch("m.gate",true);m[l]=tape.update(m[l],v,g);auto r=tape.add(tape.linear(w.at(p+"read.s"),s[l],c.d),tape.linear(w.at(p+"read.m"),m[l],c.d));x=tape.add(x,tape.norm(r,w.at(p+"read.norm")));auto f=tape.silu(tape.linear(w.at(p+"ff.up"),tape.norm(x,w.at(p+"ff.norm")),c.e));x=tape.add(x,tape.linear(w.at(p+"ff.down"),f,c.d));}return tape.add(tape.linear(w.at("embedding"),tape.norm(x,w.at("final.norm")),c.vocab),w.at("vocab.bias"));}
+for(unsigned l=0;l<c.layers;++l){auto p="layer."+std::to_string(l)+".";auto xn=tape.norm(x,w.at(p+"input.norm"));auto branch=[&](std::string name,bool mem){unsigned n=mem?c.m:c.s;auto z=tape.add(tape.linear(w.at(p+name+".x"),xn,n),tape.linear(w.at(p+name+".s"),s[l],n));if(mem)z=tape.add(z,tape.linear(w.at(p+name+".m"),m[l],n));return tape.add(z,w.at(p+name+".bias"));};auto u=branch("s.candidate",false),a=branch("s.gate",false);s[l]=tape.update(s[l],u,a);auto v=branch("m.candidate",true),g=branch("m.gate",true);m[l]=tape.update(m[l],v,g);auto r=tape.add(tape.linear(w.at(p+"read.s"),s[l],c.d),tape.linear(w.at(p+"read.m"),m[l],c.d));x=tape.add(x,tape.norm(r,w.at(p+"read.norm")));
+#ifndef TAO_NO_FFN
+auto f=tape.silu(tape.linear(w.at(p+"ff.up"),tape.norm(x,w.at(p+"ff.norm")),c.e));x=tape.add(x,tape.linear(w.at(p+"ff.down"),f,c.d));
+#endif
+}return tape.add(tape.linear(w.at("embedding"),tape.norm(x,w.at("final.norm")),c.vocab),w.at("vocab.bias"));}
 };
 }

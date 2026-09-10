@@ -1,9 +1,0 @@
-# Round29 frozen gate intervention
-
-6k sharedresidual weights2seedsx4partitions,uniform thresholds-2,-1,0,1,2. New RNG194372+syntax,64seqperformat noise32;counterfactuallastowner+4 staysheldout,grammarcopied. Sameinputsperthreshold. threshold0parity1536/1536;nonzeroparity0meansNOTtested againstreference,notfailure.
-
-threshold0seed7shift0 165/192original161updated;seed123shift3 170/164;other6cells192/192. threshold-1repairs7shift0to192/192 andpreserves6passingcells;123shift3still182/187. threshold-2causesfailuresinpreviouslygood7shift1,123shift1etc. Higherthresholdsincrease misses. No single testedthresholdpassesallcells.
-
-Interpretation:gateconservatism contributes,notproofallremainingerrorscontentorcapacity. Gate/contentcounterfactual forcedwrites needed todisentangle. -1 was examined ondiagnosticheldoutdata,so cannotdeclareindependentcalibratedsuccess orchangeproductiondefault. No training/weightschanged. This also showsstrongerrejectionisnotalwaysbetter;previouspositivebiasrobustnessstudy addressed differentcheckpoint/task regime. Cannotcombinebestthresholdperseed.
-
-Nextcandidate:train soft/hard alignment ormarginwithfinalanswersonly anduniformprotocol;avoid thresholdfishing. Existingstrongsoft/hardmismatchmeansloss/decode mismatch matters. NoLLM/QATclaim. Filesresidual_write_threshold.hpp,eval_residual_threshold.cpp. Goalactive.

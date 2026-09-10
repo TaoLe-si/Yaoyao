@@ -1,3 +1,0 @@
-#include "gpu_health_reduce.cuh"
-#include <cstdio>
-int main(){using namespace tao::dual;try{Vec v(1003);double expected=0;for(size_t i=0;i<v.size();++i){v[i]=float(int(i%23)-11)/7;double z=double(v[i])/13;expected+=z*z;}Device d(v);GpuHealth h;h.add(d,false,13);double actual=h.finish();if(std::abs(actual-expected)>1e-10)return 1;v[22]=std::numeric_limits<float>::infinity();Device bad(v);h.reset();h.add(bad);bool rejected=false;try{h.finish();}catch(...){rejected=true;}if(!rejected)return 2;printf("PASS normalized norm expected=%.12f gpu=%.12f nonfinite rejected\n",expected,actual);return 0;}catch(const std::exception&e){printf("FAIL %s\n",e.what());return 3;}}

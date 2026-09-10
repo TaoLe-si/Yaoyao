@@ -1,7 +1,0 @@
-# Round30 label-free gate polarization
-
-Added .01/T sum p(1-p) to finalanswerCE sharedresidual model. Same2137params,3000Adamstepsbatch32init2/L2.0001,2seeds4partitions. Exactgradientgateadds.01/T*(1-2p) withinclippinginterval;finite difference6411coords max9.82275496185e-10. Notstraight-through estimator/notexacthardtraining. Penaltyencouragesextremeswithoutknowingcorrectdecision;zeroatclippedendpoints.
-
-Alltrainhard100. Fullheldoutpass5/8,samecountasunregularized3000. seed7shift0unchangedhard73..87.5;other7shiftsall100. seed123shift0/2all100;shift1worsehard77.34..95.70 vsoldseparator89.45andothers100;shift3mixedsomeimprovementbutseparatorhardsame73.83..74.22. No broadrobustnessgain. Printed CE NOW includespenalty! Do notcompareprintedCEdirectlyaslanguageNLLorbaselineCE.
-
-Decision:do notadopt thisregularizerorhuntcoefficientsjusttofixchosenheldoutcells. Confidentdecisionnotnecessarilycorrect. Previousinference thresholdsoft-hardgapdoesnotimplyunsupervisedpolarizationalignmentisadequate. Next shouldtestcausaldiagnosticcontent/timinginterventions,orstate architecturebeyondfixedwindow;avoidendlesshyperparameterloop. No productionchanges. Outputsdiagnose_margin_expand.cpp,optimize_margin_expand.cpp,test_margin_expand_gradient.cpp. Goalactive.
