@@ -114,10 +114,10 @@ $$
 \alpha_{S}^{\ast}=\frac{\sum_{i\in S}|w_i|}{|S|},\qquad J^{\ast}(S)=\lVert w\rVert_{2}^{2}-\frac{\left(\sum_{i\in S}|w_i|\right)^{2}}{|S|}.
 $$
 
-固定集合大小 $k$ 时，取绝对值最大的 $k$ 项。排序 $a_1\ge\cdots\ge a_n$，记前缀和 $A_k$：
+固定集合大小 $k$ 时，取绝对值最大的 $k$ 项。排序 $a_1\ge\cdots\ge a_n$，记前缀和 $A_k$；从 $1,\ldots,n$ 中选择满足下式的最小下标 $k^{\ast}$：
 
 $$
-A_k=\sum_{i=1}^{k}a_i,\qquad k^{\ast}=\operatorname{arg\,max}_{1\le k\le n}\frac{A_k^{2}}{k},\qquad \alpha^{\ast}=\frac{A_{k^{\ast}}}{k^{\ast}}.
+A_k=\sum_{i=1}^{k}a_i,\qquad \frac{A_{k^{\ast}}^{2}}{k^{\ast}}=\max_{1\le k\le n}\frac{A_k^{2}}{k},\qquad \alpha^{\ast}=\frac{A_{k^{\ast}}}{k^{\ast}}.
 $$
 
 实现按绝对值降序、列索引升序排序；分数相同保留较小k。零权重仍为零；全零行尺度设1，有效权重仍为零。这是实数算术下的权重重构最优解，CUDA实现使用浮点；不保证任务损失最优。
