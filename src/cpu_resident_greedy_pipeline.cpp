@@ -19,7 +19,7 @@ int main(int argc,char**argv){try{
    tao::dual::g_rep.pen=strtof(args[++i].c_str(),nullptr); cliPen=true; }
   else if(args[i]=="--rep-win"){ if(i+1>=args.size())throw std::runtime_error("--rep-win needs a value");
    unsigned long w=std::strtoul(args[++i].c_str(),nullptr,10);
-   if(w==0||w>64)throw std::runtime_error("--rep-win range 1..64");
+   if(w>64)throw std::runtime_error("--rep-win range 0..64 (0=whole reply)");
    tao::dual::g_rep.win=unsigned(w); cliWin=true; }
   else if(!args[i].empty()&&args[i][0]=='-')throw std::runtime_error("unknown option "+args[i]);
   else modelpath=args[i];

@@ -62,7 +62,7 @@ mutable bool vnni_=false;
 // 诊断专用（默认关闭）：把输出头的行数截到 k，用于分离「每行固定开销」与「每 MAC/字节开销」。
 // 会改变预测与 checksum，禁止用于生产。
 mutable uint32_t head_limit_=0;
- // 推理端重复惩罚：非空时从 token r 的 logit 扣减 head_adj_[r]。
+ // 推理端重复惩罚：head_adj_[r]>0 时为 token r 的惩罚因子（正 logit 除、负 logit 乘）；0=不惩罚。
  // 借用指针，调用方保证生存期；nullptr = 关闭（与原实现逐位一致）。
  mutable const float* head_adj_=nullptr;
 // 01 号文档 #2（论文 Hierarchical Sparse Indexer 迁移）：两段式候选池词表头。
@@ -339,7 +339,7 @@ public:
                     value+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];
                 // Deliberate float assignment boundary matches linear then add.
                 value+=bias[r];
-                if(head_adj_)value-=head_adj_[r];
+                if(head_adj_){const float a=head_adj_[r];if(a>0.f)value=(value>=0.f)?(value/a):(value*a);}
                 observe(r,value);
                 // Check ALL rows, even excluded role IDs, without early exit.
                 if(!std::isfinite(value)){local.nonfinite=true;continue;}
