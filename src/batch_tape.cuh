@@ -6,6 +6,9 @@
 #include "gpu_batch_rms.cuh"
 #include "gpu_batch_select.cuh"
 #include "gpu_batch_embedding.cuh"
+#ifndef TAO_BASELINE_GEMM
+#include "gpu_batched_matvec_slots.cuh"
+#endif
 #ifdef TAO_BATCH_CUBLAS
 #include "gpu_batch_cublas.cuh"
 #endif
@@ -25,6 +28,9 @@ Node bias_batch(Node x,Node b,unsigned slots){if(!slots||!b->value.n||x->value.n
 Node linear_batch(Node w,Node x,unsigned rows,unsigned cols,unsigned slots){if(!slots||!rows||!cols||x->value.n!=size_t(slots)*cols||w->value.n!=size_t(rows)*cols)throw std::runtime_error("batch linear shape");auto y=std::make_shared<GradNode>(size_t(rows)*slots);
 #ifdef TAO_BATCH_CUBLAS
 auto engine=blas;engine->forward(w->value.p,x->value.p,y->value.p,rows,cols,slots);
+#elif !defined(TAO_BASELINE_GEMM)
+if(!launch_bmv_tiled(w->value.p,x->value.p,y->value.p,int(rows),int(cols),int(slots)))
+    ds_batched_matvec<<<dim3((rows+3)/4,slots),128>>>(w->value.p,x->value.p,y->value.p,rows,cols,slots);
 #else
 ds_batched_matvec<<<dim3((rows+3)/4,slots),128>>>(w->value.p,x->value.p,y->value.p,rows,cols,slots);
 #endif
@@ -32,6 +38,9 @@ check(cudaGetLastError());reverse.push_back([=](){
 #ifdef TAO_BATCH_CUBLAS
 engine->backward(w->value.p,x->value.p,y->grad.p,x->grad.p,w->grad.p,rows,cols,slots);
 #else
+#ifndef TAO_BASELINE_GEMM
+if(!launch_dx_tiled(w->value.p,y->grad.p,x->grad.p,int(rows),int(cols),int(slots)))
+#endif
 ds_batch_dx<<<dim3((cols+31)/32,slots),dim3(32,8)>>>(w->value.p,y->grad.p,x->grad.p,rows,cols);ds_batch_dw<<<(size_t(rows)*cols+127)/128,128>>>(x->value.p,y->grad.p,w->grad.p,rows,cols,slots);
 #endif
 });return y;}

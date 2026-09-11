@@ -2,15 +2,26 @@
 #include "batch_tape.cuh"
 namespace tao::dual {
 struct BatchTrainGraph {Config c;unsigned slots;BatchTape tape;std::map<std::string,Node>w;std::vector<Node>s,m;
-BatchTrainGraph(const CpuModel&cpu,unsigned count):c(cpu.c),slots(count){if(!slots)throw std::invalid_argument("batch slots");for(auto&kv:cpu.w)w[kv.first]=tape.leaf(kv.second);for(unsigned l=0;l<c.layers;++l){s.push_back(tape.zero_device(size_t(slots)*c.s));m.push_back(tape.zero_device(size_t(slots)*c.m));}}
-BatchTrainGraph(Config cfg,unsigned count,const std::map<std::string,Node>&shared):c(cfg),slots(count),w(shared){if(!slots)throw std::invalid_argument("batch slots");for(auto&t:schema(c))if(!w.count(t.name)||w.at(t.name)->value.n!=t.elements())throw std::runtime_error("shared parameter shape");for(unsigned l=0;l<c.layers;++l){s.push_back(tape.zero_device(size_t(slots)*c.s));m.push_back(tape.zero_device(size_t(slots)*c.m));}}
+BatchTrainGraph(const CpuModel&cpu,unsigned count):c(cpu.c),slots(count){if(!slots)throw std::invalid_argument("batch slots");for(auto&kv:cpu.w)w[kv.first]=tape.leaf(kv.second);for(unsigned l=0;l<c.layers;++l){s.push_back(tape.zero_device(size_t(slots)*c.s));m.push_back(tape.zero_device(size_t(slots)*c.memory_size()));}}
+BatchTrainGraph(Config cfg,unsigned count,const std::map<std::string,Node>&shared):c(cfg),slots(count),w(shared){if(!slots)throw std::invalid_argument("batch slots");for(auto&t:schema(c))if(!w.count(t.name)||w.at(t.name)->value.n!=t.elements())throw std::runtime_error("shared parameter shape");for(unsigned l=0;l<c.layers;++l){s.push_back(tape.zero_device(size_t(slots)*c.s));m.push_back(tape.zero_device(size_t(slots)*c.memory_size()));}}
 Node step(const std::vector<unsigned>&tokens,const std::vector<bool>&active,const std::vector<bool>&reset){if(tokens.size()!=slots||active.size()!=slots||reset.size()!=slots)throw std::runtime_error("batch step shape");Vec av(slots),rv(slots);for(unsigned k=0;k<slots;++k){av[k]=active[k];rv[k]=active[k]&&reset[k];}auto mask=std::make_shared<Device>(av),restart=std::make_shared<Device>(rv);Vec token_values;for(unsigned id:tokens){if(id>=c.vocab||id>16777216u)throw std::runtime_error("token");token_values.push_back(float(id));}auto index=std::make_shared<Device>(token_values);return step_device(index,mask,restart,0);}
 Node step_device(std::shared_ptr<Device>index,std::shared_ptr<Device>mask,std::shared_ptr<Device>restart,size_t offset){auto x=tape.embedding_device(w.at("embedding"),index,offset,slots,c.d);
 #ifdef TAO_INPUT_SCALE
 x=tape.scaled(x,std::sqrt(float(c.d)));
 #endif
 auto linear=[&](const std::string&name,Node v,unsigned rows,unsigned cols){return tape.linear_batch(w.at(name),v,rows,cols,slots);};
-for(unsigned l=0;l<c.layers;++l){auto p="layer."+std::to_string(l)+".";auto old_s=s[l],old_m=m[l];s[l]=tape.select_device(old_s,tape.zero_device(size_t(slots)*c.s),restart,offset,slots);m[l]=tape.select_device(old_m,tape.zero_device(size_t(slots)*c.m),restart,offset,slots);auto xn=tape.norm_batch(x,w.at(p+"input.norm"),slots);auto branch=[&](std::string name,bool mem){unsigned n=mem?c.m:c.s;auto z=tape.add(linear(p+name+".x",xn,n,c.d),linear(p+name+".s",s[l],n,c.s));if(mem)z=tape.add(z,linear(p+name+".m",m[l],n,c.m));return tape.bias_batch(z,w.at(p+name+".bias"),slots);};auto u=branch("s.candidate",false),a=branch("s.gate",false);s[l]=tape.select_device(old_s,tape.update(s[l],u,a),mask,offset,slots);auto v=branch("m.candidate",true),g=branch("m.gate",true);m[l]=tape.select_device(old_m,tape.update(m[l],v,g),mask,offset,slots);auto r=tape.add(linear(p+"read.s",s[l],c.d,c.s),linear(p+"read.m",m[l],c.d,c.m));x=tape.add(x,tape.norm_batch(r,w.at(p+"read.norm"),slots));
+for(unsigned l=0;l<c.layers;++l){auto p="layer."+std::to_string(l)+".";auto old_s=s[l],old_m=m[l];s[l]=tape.select_device(old_s,tape.zero_device(size_t(slots)*c.s),restart,offset,slots);m[l]=tape.select_device(old_m,tape.zero_device(size_t(slots)*c.memory_size()),restart,offset,slots);auto xn=tape.norm_batch(x,w.at(p+"input.norm"),slots);auto branch=[&](std::string name,bool mem){unsigned n=mem?c.m:c.s;auto z=tape.add(linear(p+name+".x",xn,n,c.d),linear(p+name+".s",s[l],n,c.s));if(mem)z=tape.add(z,linear(p+name+".m",m[l],n,c.m));return tape.bias_batch(z,w.at(p+name+".bias"),slots);};auto u=branch("s.candidate",false),a=branch("s.gate",false);s[l]=tape.select_device(old_s,tape.update(s[l],u,a),mask,offset,slots);
+#ifdef TAO_DELTA_MEM
+{const unsigned dk=c.dk,dv=c.m;
+ auto kk=linear(p+"mem.key",xn,dk,c.d),qq=linear(p+"mem.query",xn,dk,c.d),vv=linear(p+"mem.value",xn,dv,c.d);
+ auto khat=tape.l2norm(kk,slots,dk);
+ auto beta=tape.sigmoid(tape.bias_batch(linear(p+"mem.beta",xn,1,c.d),w.at(p+"mem.beta.bias"),slots));
+ auto dm=tape.delta(m[l],khat,qq,vv,beta,slots,dv,dk);
+ m[l]=tape.select_device(old_m,dm.first,mask,offset,slots);
+ x=tape.add(x,tape.norm_batch(tape.add(linear(p+"read.s",s[l],c.d,c.s),dm.second),w.at(p+"read.norm"),slots));}
+#else
+auto v=branch("m.candidate",true),g=branch("m.gate",true);m[l]=tape.select_device(old_m,tape.update(m[l],v,g),mask,offset,slots);auto r=tape.add(linear(p+"read.s",s[l],c.d,c.s),linear(p+"read.m",m[l],c.d,c.m));x=tape.add(x,tape.norm_batch(r,w.at(p+"read.norm"),slots));
+#endif
 #ifndef TAO_NO_FFN
 auto f=tape.silu(linear(p+"ff.up",tape.norm_batch(x,w.at(p+"ff.norm"),slots),c.e,c.d));x=tape.add(x,linear(p+"ff.down",f,c.d,c.e));
 #endif

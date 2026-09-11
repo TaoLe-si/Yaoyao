@@ -1,0 +1,107 @@
+# Tiny closed no-FFN probe corpus.
+# Assistant answers start immediately. No 好的-prefix. UTF-8.
+# DOC starts a conversation. U/A lines are user/assistant turns.
+
+DOC
+U 你好，请用一句话介绍自己。
+A 我是夭夭。
+
+DOC
+U 只输出数字：1加1等于多少？
+A 2
+
+DOC
+U 中国的首都是哪里？请只回答城市名。
+A 北京
+
+DOC
+U 把“我喜欢学习”翻译成英语。
+A I like studying.
+
+DOC
+U 请按顺序输出：苹果、香蕉、橙子。不要添加其他文字。
+A 苹果、香蕉、橙子
+
+DOC
+U 小明有3个苹果，又买了2个，一共有几个苹果？
+A 5
+
+DOC
+U 请用一句话解释为什么白天能看到太阳。
+A 白天地球朝向太阳。
+
+DOC
+U 我的名字叫小林，我喜欢蓝色。请记住。
+A 记住了，你叫小林，喜欢蓝色。
+U 我叫什么名字？喜欢什么颜色？
+A 小林，蓝色。
+
+DOC
+U 你好
+A 你好。
+
+DOC
+U 一年有几个月？
+A 12
+
+DOC
+U 水的化学式是什么？
+A H2O
+
+DOC
+U 太阳从哪边升起？
+A 东边
+
+DOC
+U 法国的首都是哪里？
+A 巴黎
+
+DOC
+U 3乘以4等于多少？
+A 12
+
+DOC
+U 地球绕着什么转？
+A 太阳
+
+DOC
+U 中文的“谢谢”用英语怎么说？
+A Thank you.
+
+DOC
+U 冰是什么变成的？
+A 水结冰。
+
+DOC
+U 我想学做饭。
+A 可以从炒鸡蛋开始。
+U 需要什么材料？
+A 鸡蛋、油和盐。
+U 火候呢？
+A 中小火，边炒边推。
+U 熟了怎么看？
+A 蛋白凝固就可以出锅。
+
+DOC
+U 推荐一本书。
+A 《西游记》。
+U 作者是谁？
+A 吴承恩。
+U 主要讲什么？
+A 孙悟空保护唐僧去西天取经。
+U 有多少回？
+A 一百回。
+
+DOC
+U 我想去北京旅游。
+A 可以先去故宫。
+U 故宫在哪？
+A 北京中心，天安门附近。
+U 需要门票吗？
+A 需要提前预约。
+U 附近吃什么？
+A 烤鸭。
+U 还有别的景点吗？
+A 长城和颐和园。
+U 谢谢。
+A 不客气。

@@ -34,8 +34,8 @@ std::ifstream f("build/bpe_pilot_train.bin",std::ios::binary);
 std::string raw((std::istreambuf_iterator<char>(f)),{});
 auto dh=tao::text::sha256(raw);std::istringstream input(raw);
 auto docs=tao::data::read_bpe_pilot(input,th);
-SortedGpuTrainer tr(initialize(Config{},713));SequenceSlots slots(tr,4);
-tao::data::PilotCursor cursor(std::move(docs),4,false);
+SortedGpuTrainer tr(initialize(Config{},713));SequenceSlots slots(tr,32);
+tao::data::PilotCursor cursor(std::move(docs),32,false);
 auto legacy_identity=checkpoint_identity(tr.graph.c,dh,th,200)+"arch2-warmstart63-reset-adam-state-data-warmup4-cosine196\n";
 auto identity=checkpoint_identity(tr.graph.c,dh,th,200)+"arch2-controlled-v1-external-lr\n";
 {auto expected=capture(slots,cursor);SlotSnapshot snap;try{snap=load_slot_file(argv[1],identity,expected,cursor);}catch(const std::runtime_error&e){if(std::string(e.what())!="length"&&std::string(e.what())!="identity")throw;snap=load_slot_file(argv[1],legacy_identity,expected,cursor);}restore(snap,slots,cursor);}
@@ -86,7 +86,7 @@ if(validate_only){
     printf("VALIDATE_ONLY_OK validation_step=%u repeats=2 exact_NLL_equal=1 capture_equal=1 effective_optimizer_slots_equal=1 no_updates_no_writes=1 snapshot_sha256=%s\n",
         tr.steps,tao::text::sha256(before).c_str());fflush(stdout);return 0;
 }
-ReusableBatchGraph replay(tr,4,256);DeferredLoss block_loss(1024);
+ReusableBatchGraph replay(tr,32,32);DeferredLoss block_loss(1024);
 unsigned saved=tr.steps;
 auto save=[&](){if(saved==tr.steps)return;auto stem=std::string("build/")+DIAGNOSTIC_PREFIX+std::to_string(tr.steps);if(std::filesystem::exists(stem+".scp")||std::filesystem::exists(stem+".dsb"))throw std::runtime_error("refuse checkpoint overwrite");save_slot_file(capture(slots,cursor),stem+".scp",identity);CpuModel cpu(tr.graph.c);for(auto&kv:cpu.w)kv.second=tr.graph.w.at(kv.first)->value.host();save_bundle(cpu,stem+".dsb",th);std::ofstream meta(stem+".scp.control");meta.precision(9);meta<<"TC1 "<<control.lr<<" "<<control.target<<" 0\n";meta.close();if(!meta)throw std::runtime_error("control sidecar write");saved=tr.steps;printf("SAVED step=%u stem=%s\n",saved,stem.c_str());fflush(stdout);};
 size_t supervised_dataset=0;for(auto&doc:cursor.docs)for(size_t i=1;i<doc.size();++i)supervised_dataset+=doc[i].loss;if(!supervised_dataset)throw std::runtime_error("no supervised data");
@@ -99,7 +99,7 @@ if(exhausted){cursor.next=0;for(auto&c:cursor.slots)c=tao::data::Cursor{};printf
 if(std::filesystem::exists("build/STOP_TRAINING")){save();printf("STOP optimizer boundary\n");break;}
 auto update_start=std::chrono::steady_clock::now();
 size_t n=0,positions=0;double loss=0;
-for(int r=0;r<8;++r){auto plan=tao::data::take_batch(cursor,256);if(!plan.timesteps)continue;replay.run(plan,slots);accumulate_loss<<<1,1>>>(replay.data.loss.p,replay.data.loss.n,block_loss.total,block_loss.bad);n+=plan.supervised;positions+=plan.positions;}
+for(int r=0;r<8;++r){auto plan=tao::data::take_batch(cursor,32);if(!plan.timesteps)continue;replay.run(plan,slots);accumulate_loss<<<1,1>>>(replay.data.loss.p,replay.data.loss.n,block_loss.total,block_loss.bad);n+=plan.supervised;positions+=plan.positions;}
 if(!n){printf("NO_UPDATE no supervised targets\n");continue;}
 loss=block_loss.collect();
 

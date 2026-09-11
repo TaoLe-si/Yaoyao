@@ -1,0 +1,37 @@
+1  remember->记住了，你叫马超，喜欢猫。
+2  recall->马超，猫。
+3  remember->记住了，你叫郭静，喜欢银色。
+4  recall->郭静，银色。
+5  remember->记住了，你叫小林，喜欢狗。
+6  recall->小林，狗。
+7  remember->记住了，你叫小马，喜欢黑色。
+8  recall->小马，黑色。
+9  remember->记住了，你叫小孙，喜欢狗。
+10  recall->小孙，狗。
+11  remember->记住了，你叫孙丽，喜欢鱼。
+12  recall->孙丽，鱼。
+13  list->北京、钟表、成都
+14  list->粉色、橙子、香蕉、猫、椅子
+15  list->蓝色、鸡、鱼
+16  list->北京、钟表、香蕉、书包、地图
+17  repeat->我喜欢杭州。
+18  repeat->桌子上有7个苹果。
+19  repeat->小陈在看书。
+20  repeat->草莓和桃子都很好。
+21  word->4
+22  word->13
+23  word->5
+24  word->12
+25  word->12
+26  word(prod)->5
+27  expr->?
+28  expr->?
+29  expr->?
+30  expr->?
+31  expr->?
+32  cap->柏林
+33  cap->首尔
+34  (unseen fact)
+35  new topic 钢琴
+36  new topic 书法
+37  production 9 (in-corpus)

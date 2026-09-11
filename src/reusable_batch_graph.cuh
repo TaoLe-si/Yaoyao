@@ -18,9 +18,9 @@ if(p.slots!=data.slots||p.timesteps>data.steps||states.active!=-1)throw std::run
 auto padded=p;padded.timesteps=data.steps;padded.items.resize(data.steps*data.slots);GpuBatchPlan upload(padded,data.vocab);
 auto copy=[](Device&a,Device&b){check(cudaMemcpyAsync(a.p,b.p,a.n*4,cudaMemcpyDeviceToDevice,0));};
 copy(*data.inputs,*upload.inputs);copy(*data.active,*upload.active);copy(*data.reset,*upload.reset);copy(data.targets,upload.targets);copy(data.masks,upload.masks);
-for(unsigned l=0;l<batch.c.layers;++l){check(cudaMemsetAsync(initial_s[l]->grad.p,0,initial_s[l]->grad.n*4));check(cudaMemsetAsync(initial_m[l]->grad.p,0,initial_m[l]->grad.n*4));for(unsigned k=0;k<batch.slots;++k){check(cudaMemcpyAsync(initial_s[l]->value.p+k*batch.c.s,states.s[k][l]->value.p,batch.c.s*4,cudaMemcpyDeviceToDevice,0));check(cudaMemcpyAsync(initial_m[l]->value.p+k*batch.c.m,states.m[k][l]->value.p,batch.c.m*4,cudaMemcpyDeviceToDevice,0));}}
+for(unsigned l=0;l<batch.c.layers;++l){check(cudaMemsetAsync(initial_s[l]->grad.p,0,initial_s[l]->grad.n*4));check(cudaMemsetAsync(initial_m[l]->grad.p,0,initial_m[l]->grad.n*4));for(unsigned k=0;k<batch.slots;++k){check(cudaMemcpyAsync(initial_s[l]->value.p+k*batch.c.s,states.s[k][l]->value.p,batch.c.s*4,cudaMemcpyDeviceToDevice,0));check(cudaMemcpyAsync(initial_m[l]->value.p+k*batch.c.memory_size(),states.m[k][l]->value.p,batch.c.memory_size()*4,cudaMemcpyDeviceToDevice,0));}}
 check(cudaGraphLaunch(executable,cudaStreamPerThread));
-for(unsigned l=0;l<batch.c.layers;++l)for(unsigned k=0;k<batch.slots;++k){check(cudaMemcpyAsync(states.s[k][l]->value.p,batch.s[l]->value.p+k*batch.c.s,batch.c.s*4,cudaMemcpyDeviceToDevice,0));check(cudaMemcpyAsync(states.m[k][l]->value.p,batch.m[l]->value.p+k*batch.c.m,batch.c.m*4,cudaMemcpyDeviceToDevice,0));}
+for(unsigned l=0;l<batch.c.layers;++l)for(unsigned k=0;k<batch.slots;++k){check(cudaMemcpyAsync(states.s[k][l]->value.p,batch.s[l]->value.p+k*batch.c.s,batch.c.s*4,cudaMemcpyDeviceToDevice,0));check(cudaMemcpyAsync(states.m[k][l]->value.p,batch.m[l]->value.p+k*batch.c.memory_size(),batch.c.memory_size()*4,cudaMemcpyDeviceToDevice,0));}
 }
 };
 }

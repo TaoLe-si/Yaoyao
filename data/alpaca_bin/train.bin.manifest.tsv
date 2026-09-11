@@ -1,0 +1,9 @@
+status	complete
+format	TLP2
+policy	tiny-closed-probe;human-written;no-holdout-in-train
+docs	48418
+tokens	7861929
+supervised	6996724
+utf8_bytes	31111055
+tokenizer_sha256	2b578dab3f8aba7e087ee8c7c83336e0fb53d22eb1be598122b43e5d105a273e
+bin_sha256	21b3dfcd629cee2f919587f84aa46ae61b914ea856764ffffeeb58aabdfa40bf

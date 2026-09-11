@@ -32,7 +32,9 @@ static __global__ void plus(float*a,const float*b,int n){int i=blockIdx.x*blockD
 static __global__ void bias(float*a,const float*b,int n,int slots){int i=blockIdx.x*blockDim.x+threadIdx.x;if(i<n*slots)a[i]+=b[i%n];}
 static __global__ void state_update(float*s,const float*u,const float*g,const Item*items,int n,int slots){
     int i=blockIdx.x*blockDim.x+threadIdx.x;
-    if(i<n*slots&&items[i/n].active)s[i]+=ds_sigmoid(g[i])*(tanhf(u[i])-s[i]);
+    // 【R4 统一 · doc 24】验证前向必须与训练前向（ds_update）用同一激活，
+    // 否则验证 NLL 与训练 NLL 系统性偏离，会把"算子不一致"误读成"过拟合"。
+    if(i<n*slots&&items[i/n].active)s[i]+=ds_act_sigmoid(g[i])*(ds_act_tanh(u[i])-s[i]);
 }
 // Stable double log-sum-exp, one block/document. Never creates or writes gradients.
 static __global__ void ce(const float*z,const Item*items,Totals*totals,int vocab){

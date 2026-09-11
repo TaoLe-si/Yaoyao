@@ -1,0 +1,6 @@
+# Held-out paraphrases. Not in train.bin. CPU-only generalization probes.
+U 中国首都在哪？
+U 一加一等于几？
+U 请介绍一下你自己。
+U 3个苹果再买2个是几个？
+U 谢谢用英语怎么说？
