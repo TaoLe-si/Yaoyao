@@ -35,3 +35,4 @@ session-extract/
 cuda_intermediate/
 NVIDIA Corporation/
 local/
+.dsh-analysis/
