@@ -40,32 +40,32 @@ Schema 里的 `mem.key` / `mem.query` / `mem.value` 是关联记忆的**写方�
 
 共享嵌入 $E\in\mathbb{R}^{V\times d}$（三值，第 $j$ 行尺度 $\alpha_j$）。入口缩放与 RMSNorm：
 
-$$
-x_t^{(0)}=\sqrt{d}\;E_{z_t,:}^{\mathrm{T}},\qquad
-R_\gamma(u)=\gamma\odot u\,\rho,\qquad
-\rho=\Bigl(\tfrac{1}{n}\|u\|_2^2+10^{-5}\Bigr)^{-1/2}.
-$$
+```math
+x_t^{(0)}=\sqrt{d} E_{z_t,:}^{\mathrm{T}},\qquad
+R_\gamma(u)=\gamma\odot u \rho,\qquad
+\rho=\Bigl(\tfrac{1}{n}\lVert u\rVert_2^2+10^{-5}\Bigr)^{-1/2}.
+```
 
 每层入口 $h_t=R_{\gamma_{\mathrm{in}}}(x_t^{(\ell)})$。$\sqrt{d}$ 把三值行从 $O(1)$ 抬到与通道维匹配的 RMS 量级，对应注意力里 $1/\sqrt{d_k}$ 的**反向**方差控制，而不是注意力本身。
 
 ### 2.2 短状态：门控凸组合
 
-$$
+```math
 u_t=W_{sx}h_t+W_{ss}s_{t-1}+b_s,\qquad
 a_t=G_{sx}h_t+G_{ss}s_{t-1}+b_{gs},
-$$
+```
 
-$$
+```math
 s_t=s_{t-1}+\sigma(a_t)\odot\bigl(\tanh(u_t)-s_{t-1}\bigr)
 =(1-\sigma(a_t))\odot s_{t-1}+\sigma(a_t)\odot\tanh(u_t).
-$$
+```
 
 部署默认用三阶 Padé 并夹紧（训练器同一式，见第 6 节）：
 
-$$
+```math
 \widehat{\tanh}(x)=\frac{x(27+x^2)}{27+9x^2},\quad |x|>3\Rightarrow\pm 1;\qquad
 \widehat{\sigma}(x)=\tfrac12\bigl(1+\widehat{\tanh}(x)\bigr).
-$$
+```
 
 记忆写入强度 $\beta_t$ 仍用**精确** sigmoid（数值域 $(0,1)$，不走 Padé）。
 
@@ -73,48 +73,48 @@ $$
 
 每层一张运行时矩阵 $M\in\mathbb{R}^{m\times d_k}$，会话开始 $M_0=0$。由同一 $h_t$ 投影：
 
-$$
+```math
 k_t=W_k h_t\in\mathbb{R}^{d_k},\quad
 q_t=W_q h_t\in\mathbb{R}^{d_k},\quad
 v_t=W_v h_t\in\mathbb{R}^{m},\quad
 \beta_t=\sigma\bigl(\langle w_\beta,h_t\rangle+b_\beta\bigr)\in(0,1).
-$$
+```
 
 键归一化、秩一写入、再读出：
 
-$$
-\hat k_t=\frac{k_t}{\|k_t\|_2+10^{-6}},\qquad
+```math
+\hat k_t=\frac{k_t}{\lVert k_t\rVert_2+10^{-6}},\qquad
 a_t=M_{t-1}\hat k_t,
-$$
+```
 
-$$
+```math
 M_t=M_{t-1}+\beta_t(v_t-a_t)\hat k_t^{\mathrm{T}},\qquad
 o_t=M_t q_t.
-$$
+```
 
 逐行即 $M_t[i,:]=M_{t-1}[i,:]+\beta_t(v_t[i]-a_t[i])\,\hat k_t$。这是 **H2R / delta-rule 关联记忆**，不是注意力：$\hat k$ 是写地址，$q$ 是读地址，$v$ 是载荷，$\beta$ 是这一步的写入学习率。
 
 解码实现用代数恒等式把「先算 $M\hat k$、再写、再算 $Mq$」收成对每行一次扫描：
 
-$$
-o_t=M_{t-1}q_t+\beta_t(v_t-M_{t-1}\hat k_t)\,(\hat k_t^{\mathrm{T}}q_t).
-$$
+```math
+o_t=M_{t-1}q_t+\beta_t(v_t-M_{t-1}\hat k_t) (\hat k_t^{\mathrm{T}}q_t).
+```
 
 $M$ 的流量从 3 次降为 2 次；行互不相交，任意线程划分与串行 **bitwise 一致**。
 
 ### 2.4 读出、残差、词表头
 
-$$
+```math
 r_t=W_{rs}s_t+o_t,\qquad
 x_t^{(\ell+1)}=x_t^{(\ell)}+R_{\gamma_{\mathrm{read}}}(r_t).
-$$
+```
 
 无 FFN。$L$ 层后绑定嵌入作分类头：
 
-$$
-\ell_t=E\,R_{\gamma_f}\bigl(x_t^{(L)}\bigr)+b_v,\qquad
+```math
+\ell_t=E R_{\gamma_f}\bigl(x_t^{(L)}\bigr)+b_v,\qquad
 p(z_{t+1}=j\mid z_{\le t})=\frac{e^{\ell_{t,j}}}{\sum_i e^{\ell_{t,i}}}.
-$$
+```
 
 贪心解码 **不物化** 整段 logits，只在行上做 argmax。特殊号 256/257/258（BOS/USER/ASSISTANT）永不作为生成 token。
 
@@ -140,9 +140,9 @@ $$
 
 设 $s_0=0$，激活为 $\widehat{\sigma}\in(0,1)$、$|\widehat{\tanh}|\le 1$（夹紧区取等）。则对一切 $t$ 与坐标 $j$，
 
-$$
+```math
 |s_t[j]|\le 1.
-$$
+```
 
 **证明.** 对 $t$ 归纳。$t=0$ 显然。坐标互不耦合，只看标量 $s\leftarrow(1-\sigma)s+\sigma u$，其中 $\sigma\in(0,1)$、$|u|\le 1$。这是 $s$ 与 $u$ 的凸组合，故 $|s'|\le\max(|s|,|u|)\le 1$。∎
 
@@ -150,31 +150,31 @@ $$
 
 ### 定理 2（写入是一步加权最小二乘梯度）
 
-记 $f(M)=\frac12\|M\hat k_t-v_t\|_2^2$。则
+记 $f(M)=\frac12\lVert M\hat k_t-v_t\rVert_2^2$。则
 
-$$
+```math
 \nabla_M f=(M\hat k_t-v_t)\hat k_t^{\mathrm{T}},\qquad
 M_t=M_{t-1}-\beta_t\nabla_M f\big|_{M_{t-1}}.
-$$
+```
 
 **证明.** 对矩阵变量，$\mathrm{d}f=\langle M\hat k-v,\,(\mathrm{d}M)\hat k\rangle=\langle(M\hat k-v)\hat k^{\mathrm{T}},\,\mathrm{d}M\rangle$，即得梯度。代入增量规则右边 $\beta_t(v-M\hat k)\hat k^{\mathrm{T}}=-\beta_t\nabla_M f$。∎
 
 **推论.** $\beta_t(h_t)$ 是输入调制的**逐步学习率**。沿写地址的读出：
 
-$$
-M_t\hat k_t=(1-\beta_t\tau)M_{t-1}\hat k_t+\beta_t\tau\,v_t,\qquad
-\tau=\hat k_t^{\mathrm{T}}\hat k_t=\frac{\|k_t\|_2^2}{(\|k_t\|_2+\varepsilon)^2}.
-$$
+```math
+M_t\hat k_t=(1-\beta_t\tau)M_{t-1}\hat k_t+\beta_t\tau v_t,\qquad
+\tau=\hat k_t^{\mathrm{T}}\hat k_t=\frac{\lVert k_t\rVert_2^2}{(\lVert k_t\rVert_2+\varepsilon)^2}.
+```
 
-$\varepsilon=10^{-6}\ll\|k\|$ 时 $\tau\approx 1$，该方向以比例 $\beta_t$ 被拉向 $v_t$。
+$\varepsilon=10^{-6}\ll\lVert k\rVert$ 时 $\tau\approx 1$，该方向以比例 $\beta_t$ 被拉向 $v_t$。
 
 ### 定理 3（正交地址不互扰）
 
 若 $\hat k_t\perp \hat k'$，则对任意 $M_{t-1}$：
 
-$$
+```math
 M_t\hat k'=M_{t-1}\hat k'.
-$$
+```
 
 **证明.** $M_t\hat k'=M_{t-1}\hat k'+\beta_t(v_t-M_{t-1}\hat k_t)(\hat k_t^{\mathrm{T}}\hat k')$，正交使第二项为零。等式不依赖 $\varepsilon$。∎
 
@@ -184,9 +184,9 @@ $$
 
 每层状态 $|s|+|M|=128+512\cdot 64=32{,}896$ 个 float。两层合计 257 KiB。每 token 乘加（一层）：
 
-$$
-2(sd+s^2)+d(2d_k+m)+2m\,d_k+ds=655{,}360.
-$$
+```math
+2(sd+s^2)+d(2d_k+m)+2m d_k+ds=655{,}360.
+```
 
 拆开：短状态候选/门 $2(sd+s^2)$，$k,q,v$ 投影 $d(2d_k+m)$，融合写读 $2m\,d_k$，`read.s` 为 $ds$。
 
@@ -196,11 +196,11 @@ $$
 
 对 master 行 $w\in\mathbb{R}^n$，
 
-$$
-\min_{\alpha\ge 0,\;q\in\lbrace -1,0,1\rbrace^n}\|w-\alpha q\|_2^2.
-$$
+```math
+\min_{\alpha\ge 0, q\in\lbrace -1,0,1\rbrace^n}\lVert w-\alpha q\rVert_2^2.
+```
 
-固定非零支撑 $S$ 时，$\alpha_S^\ast=\frac1{|S|}\sum_{i\in S}|w_i|$，最优值 $J^\ast(S)=\|w\|_2^2-(\sum_{i\in S}|w_i|)^2/|S|$。故全局最优等价于在 $|w|$ 降序前缀上最大化 $A_k^2/k$。实现按幅值降序、下标升序的 bitonic 排序取最小最优 $k^\ast$（等值取更短支撑）。这是实数算术下该行的全局最优，不是启发式舍入。
+固定非零支撑 $S$ 时，$\alpha_S^\ast=\frac1{|S|}\sum_{i\in S}|w_i|$，最优值 $J^\ast(S)=\lVert w\rVert_2^2-(\sum_{i\in S}|w_i|)^2/|S|$。故全局最优等价于在 $|w|$ 降序前缀上最大化 $A_k^2/k$。实现按幅值降序、下标升序的 bitonic 排序取最小最优 $k^\ast$（等值取更短支撑）。这是实数算术下该行的全局最优，不是启发式舍入。
 
 反传对离散 $q$ 用 identity STE：$\partial\mathcal L/\partial w^{\mathrm{master}}\approx\partial\mathcal L/\partial w^{\mathrm{eff}}$，$w^{\mathrm{eff}}=\mathrm{diag}(\alpha)q$。磁盘上的 2-bit 符号只是序列化；Adam 走 float master。
 
@@ -208,13 +208,13 @@ $$
 
 由 schema 直接加和：
 
-$$
+```math
 P_{\mathrm{tern}}=Vd+L\bigl[2(sd+s^2)+2d_k d+md+ds\bigr]=9{,}502{,}720,
-$$
+```
 
-$$
+```math
 P_{\mathrm{flt}}=V+d+L(2s+d+1+2d)=20{,}482,\qquad P=9{,}523{,}202.
-$$
+```
 
 ---
 
@@ -224,15 +224,15 @@ $$
 
 监督掩码 $\mu_t\in\{0,1\}$（仅助手侧 token），$N=\sum_t\mu_t$：
 
-$$
+```math
 \mathcal L=-\frac1N\sum_t\mu_t\log p(z_{t+1}\mid z_{\le t}).
-$$
+```
 
 对 logits 的梯度即 masked softmax 交叉熵：
 
-$$
+```math
 \frac{\partial\mathcal L}{\partial \ell_{t,j}}=\frac{\mu_t}{N}\bigl(p_{t,j}-\mathbf{1}[j=z_{t+1}]\bigr).
-$$
+```
 
 实现见 `ds_ce_batch`：无监督槽位梯度为 0，有监督槽位做稳定 log-sum-exp。
 
@@ -244,7 +244,7 @@ $$
 
 ### 4.3 优化器
 
-AdamW，$\beta_1=0.9$、$\beta_2=0.999$，主权重衰减 $0.01$（仅三值 master），$\varepsilon=10^{-8}$。梯度先按监督计数与全局 L2 范数归一，再可叠加 `TAO_GRAD_CLIP`（默认 1.0：若 $\|g\|>c$ 则等效缩小步长）。学习率：20 步线性 warmup，然后从 `TAO_LR_DECAY_START` 起余弦到 `TAO_LR_MIN`。
+AdamW，$\beta_1=0.9$、$\beta_2=0.999$，主权重衰减 $0.01$（仅三值 master），$\varepsilon=10^{-8}$。梯度先按监督计数与全局 L2 范数归一，再可叠加 `TAO_GRAD_CLIP`（默认 1.0：若 $\lVert g\rVert>c$ 则等效缩小步长）。学习率：20 步线性 warmup，然后从 `TAO_LR_DECAY_START` 起余弦到 `TAO_LR_MIN`。
 
 三值矩阵每步：`master --AdamW--> master'`，再 `project_sorted` 得到生效权重 $w^{\mathrm{eff}}$ 供下一前向。STE 把对 $w^{\mathrm{eff}}$ 的梯度记到 master。
 
