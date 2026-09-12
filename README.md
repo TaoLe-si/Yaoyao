@@ -10,6 +10,8 @@
 
 Schema 里的 `mem.key` / `mem.query` / `mem.value` 是关联记忆的**写方向、读方向、载荷**，不是注意力头。
 
+发布权重与词表在 [`release/`](release/)（约 2.5 MB 的 DSB2 + `tok_qa.bbp`）。试跑见第 9 节，训练配比见第 10 节。
+
 ---
 
 ## 1. 配置与参数
@@ -370,21 +372,103 @@ KV cache 是注意力解码的主成本。我们把该论点推到端点：**没
 
 硬件：AMD Ryzen 9 7940H（Zen 4，AVX-512）+ RTX 4070 Laptop 8 GB。
 
-**v1 过夜课**（`build/L1_qa_cot`，已冻结、不覆盖）：APE 2.5 万 + alpaca 1.5 万 + 逐位加减，3200 步，NLL 约 2.9–3.5。评测（`tok_qa.bbp`，8 线程）：
+**v1 过夜课**（`release/L1_qa_cot_v1.dsb`，已冻结、不覆盖）：APE 2.5 万 + alpaca 1.5 万 + 逐位加减，3200 步，末步 NLL 约 2.9–3.5。评测（`tok_qa.bbp`，8 线程，旧 presence 惩罚）：
 
-- 问答 held-out 200：空回复 0%；乱码 1%；**复读 50%**（旧 presence 惩罚）；bigram F1 **0.008**。
-- CoT held-out 280：格式（「思考 / 计算 / 答案」）几乎总有；APE 精确命中 14%；个位加法 2.5%。
+- 问答 held-out 200：空回复 0%；乱码 1%；**复读 50%**；bigram F1 **0.008**。
+- CoT held-out 280：格式（「思考 / 计算 / 答案」）几乎总有；APE 精确 14%；个位加法 2.5%。
 - 病根：APE 模板占比过高，9.5M 把「思考：计算…」当成万能回复；算术格式对、得数不对。
 
-**解码修复后**（频率惩罚 + 3-gram + 连写收束，同一 v1 权重）：held-out 复读 **50% → 0%**。内容错误仍在，因为那是权重问题。
+**解码修复后**（频率惩罚 + 3-gram + 连写收束，同一 v1 权重）：held-out 复读 **50% → 0%**。内容错误仍在，那是权重问题。
 
-**v2 重训**（`build/L1_qa_cot_v2`，进行中，不覆盖 v1）：alpaca **3.6 万** + 短 APE **8 千** + 五种问法的 1–20 加减；7 片 × 400 = 2800 步；词表仍为 `tok_qa.bbp`。不混 wiki/code。至 2026-09-12 晚约 step 2350 / 2800，NLL 约 4.1–4.6。
+**v2 重训**（`release/L1_qa_cot_v2.dsb`，不覆盖 v1）：alpaca **3.6 万** + 短 APE **8 千** + 五种问法的 1–20 加减；7 片 × 400 = 2800 步；末步 NLL 约 **4.50**。词表仍为 `tok_qa.bbp`。不混 wiki/code。
 
-9.5M 的诚实预期：学格式、短问答、短 CoT 轨迹；不是 APE 应用题大师，也不是开放域知识模型。
+- 问答 200：空 0%；乱码 3.5%；复读 **0%**；bigram F1 **0.0125**；长度比 0.989。
+- CoT 280：空 0；复读 0；含思考链 262/280；APE 精确 **25/200（12.5%）**；个位加减 **3/80（3.8%）**。
+- 内容仍弱：日常问答常串题、串模板；CoT 轨迹格式在、算术多数错。alpaca 加重没有把 APE 句式从日常问答里拆干净。
+
+9.5M 的诚实预期：学格式、短回复、短 CoT 外壳；不是应用题能力，也不是开放域知识。
+
+本机 CPU 贪心（v1 权重，8 线程，512 forced）：均值约 **5.08×10³ tok/s**。外推：同等算子、本机 DDR5-5200，约 **5.3×10⁸** 参数可维持 100 tok/s（int8 核、带宽墙）；Qwen3.8-27B 那种 27B 有效文本权重对齐后约 **2 tok/s**。词频把权重拆进 L3 救不了全词表头和每步必用的层矩阵。稀疏分支留到后续，本版不做。
 
 ---
 
-## 9. 构建与入口
+## 9. 发布权重
+
+检查点是 DSB2，不是 Hugging Face `safetensors`。与 `build/` 里的训练输出是同一份拷贝；不要覆盖 `build/L1_qa_cot` 或 `build/L1_qa_cot_v2`。
+
+| 文件 | SHA256（前 8 位） | 说明 |
+|---|---|---|
+| [`release/tok_qa.bbp`](release/tok_qa.bbp) | `13fd68ba` | 问答 BPE，16,123 merges。解码必配。 |
+| [`release/L1_qa_cot_v2.dsb`](release/L1_qa_cot_v2.dsb) | `77674df5` | **当前推荐**。2800 步，约 2.5 MB。 |
+| [`release/L1_qa_cot_v1.dsb`](release/L1_qa_cot_v1.dsb) | `71febe99` | 冻结对照。APE 偏重，模板劫持明显。 |
+| [`release/SHA256SUMS.txt`](release/SHA256SUMS.txt) | | 完整摘要。 |
+
+```bat
+scripts\build_h2r_cpu.bat
+set TAO_TOKENIZER=%CD%\release\tok_qa.bbp
+set TAO_CPU_THREADS=8
+build\h2r_cpu.exe release\L1_qa_cot_v2.dsb --max-out 256
+```
+
+stdin 一行一问；`/reset` 清循环状态，`/quit` 退出。完整校验见 `release/SHA256SUMS.txt`。
+
+---
+
+## 10. 训练指导
+
+针对 **9.5M、本算子、8 GB 笔记本 GPU**。目标是可复现的问答+短 CoT，不是把夭夭训成 Qwen。
+
+**形状。** 锁 `L=2,d=512,s=128,m=512,dk=64,V=16384`。`e=1024` 只为序列化兼容，本算子无 FFN。不要为了「更像大模型」加层或加宽：4070 Laptop 8 GB 上再叠 wiki/code 或把 $`d`$ 拉到几千，会先爆显存和吞吐，而不是先长能力。
+
+**词表。** 用发布的 `tok_qa.bbp`（digest `13fd68ba…dd75`）。默认冻结；只有设 `TAO_ALLOW_TOKENIZER=1` 才允许换表。问答课不要重训 BPE。检查点与词表必须成对，解码器按 bundle 里的 digest 校验。
+
+**R4。** 训练与解码必须同一激活：默认三阶 Padé（`fast_act`）。一边 `TAO_FAST_ACT=0`、另一边不设 `-DTAO_TRAIN_EXACT_ACT` 会静默把权重训到另一套非线性上。
+
+**目录。** `train_shards` 的 OUT 已存在则失败退出。不要覆盖 `build/L1_qa_cot`、`build/L1_qa_cot_v2` 或 `data/qa_cot*`。新跑开新目录。
+
+**语料配比（已踩过的坑）。**
+
+| | v1（勿再复用当主课） | v2（当前脚本） |
+|---|---:|---:|
+| alpaca-zh 问答 | 15000 | **36000** |
+| APE210K「计算」+「答案」 | 25000 | **8000**（答案截到 360 字） |
+| 1–20 逐位加减 | 一种问法 | **五种问法** |
+| wiki / code | 不混 | 不混 |
+
+v1 的失败模式是 APE 句式变成万能回复。v2 把日常问答加重之后，复读靠解码器压到 0，但内容仍差：9.5M 记不住应用题，也绑不稳当前问句。下一步若继续训，优先 **更干净的短问答、少模板、多种问法**，不要靠堆 APE 条数。
+
+数据流：对话 jsonl → `build_corpus --format jsonl --dialogue-out`（TLP2 分片）→ `train_shards`。助手位才计损失。建议每片约 6500 篇、每片 400 步。
+
+**优化器（v2 实测）。** AdamW $`\beta_1=0.9,\beta_2=0.999`$，主权重衰减 0.01；`TAO_LR=0.001`；20 步线性 warmup；`TAO_LR_DECAY_START=400`、`TAO_LR_DECAY_STEPS=2800`、`TAO_LR_MIN=1e-5`；`TAO_GRAD_CLIP=1.0`。`TAO_OPT_OFFLOAD=0`，`TAO_OPT_STATE=1`。槽位/宽度 `32 32`。换片后 NLL 跳一下是正常的。
+
+一键（拒绝覆盖已有 OUT）：
+
+```bat
+scripts\run_qa_cot_v2.bat
+```
+
+手工：
+
+```
+train_shards SHARD_DIR TOKENIZER.bbp OUT_DIR STEPS_PER_SHARD [SLOTS WIDTH] [RESUME_DIR]
+```
+
+**评测。** 不要看训练 NLL 单独下结论。
+
+```bat
+set TAO_TOKENIZER=%CD%\release\tok_qa.bbp
+set TAO_CPU_THREADS=8
+node scripts\eval_real.mjs release\L1_qa_cot_v2.dsb data\qa_cot_v2\heldout_qa.jsonl 200
+node scripts\eval_cot.mjs release\L1_qa_cot_v2.dsb data\qa_cot_v2\heldout_cot.jsonl
+```
+
+看空回复、乱码、复读、bigram F1，以及 CoT 是否真算对，而不是只看「思考：」出现没有。
+
+**不要做的。** 把 Transformer 的 KQV / KV cache / CSA2 / 层次稀疏注意力接到本算子上。`mem.key/query/value` 是关联记忆的写方向、读方向、载荷。稀疏（按命中率把权重拆进 L3）是后续研究，本版没有实现。
+
+---
+
+## 11. 构建与入口
 
 工具链：MSVC + nvcc（`sm_89`），C++17。
 
@@ -397,19 +481,18 @@ KV cache 是注意力解码的主成本。我们把该论点推到端点：**没
 | `scripts/run_qa_cot_v2.bat` | v2 问答+CoT 训练（拒绝覆盖已有 OUT） |
 
 ```
-train_shards SHARD_DIR TOKENIZER.bbp OUT_DIR STEPS_PER_SHARD [SLOTS WIDTH] [RESUME_DIR]
 h2r_cpu MODEL.dsb [--rep-pen F] [--max-out N]
 ```
 
 环境变量（节选）：`TAO_TOKENIZER`、`TAO_ALLOW_TOKENIZER`、`TAO_CPU_THREADS`、`TAO_VNNI`、`TAO_FAST_ACT`、`TAO_LR`、`TAO_LR_DECAY_START`、`TAO_LR_DECAY_STEPS`、`TAO_GRAD_CLIP`、`TAO_REP_PEN`、`TAO_MAX_OUT`。
 
-`data/` 与 `build/` 默认 gitignore。检查点是 DSB2 包，不是 Hugging Face `safetensors`。
+`data/` 与 `build/` 默认 gitignore；`release/*.dsb` 与 `release/tok_qa.bbp` 入库。
 
 GitHub：`main` 为本 0.1.1 算子。此前远程上的 0.2 量级探索线保留在分支 [`legacy`](https://github.com/TaoLe-si/Yaoyao/tree/legacy)。
 
 ---
 
-## 10. 版本
+## 12. 版本
 
-- **0.1.1** — `dual-state-4-noffn-delta-mem-input-sqrt-d`：delta 矩阵记忆取代向量记忆；$`L=8\to 2`$；Padé 激活统一（R4）；CPU 头 VNNI / `vnni8` / 缓冲复用；固定 $`s|M`$ 对齐进 L2 + 词表头 NTA；生成端频率重复惩罚（无窗口）。
+- **0.1.1** — `dual-state-4-noffn-delta-mem-input-sqrt-d`：delta 矩阵记忆取代向量记忆；$`L=8\to 2`$；Padé 激活统一（R4）；CPU 头 VNNI / `vnni8` / 缓冲复用；固定 $`s|M`$ 对齐进 L2 + 词表头 NTA；生成端频率重复惩罚（无窗口）；发布 v1/v2 检查点。
 - **0.1.0** — `dual-state-3-noffn-input-sqrt-d`：门控向量双状态，无 FFN。

@@ -16,6 +16,7 @@
 *.pdb
 *.ptx
 *.dsb
+!release/*.dsb
 *.scp
 build/
 data/
