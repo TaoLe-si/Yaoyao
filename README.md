@@ -1,6 +1,6 @@
 # 夭夭 Yaoyao 0.1.1
 
-夭夭是原生 C++ / CUDA **三值双状态语言模型**。它**不是 Transformer**：没有 softmax 注意力，没有序列 \(QK^{\mathsf T}V\)，没有随上下文增长的 KV cache。
+夭夭是原生 C++ / CUDA **三值双状态语言模型**。它**不是 Transformer**：没有 softmax 注意力，没有序列 \(QK^{\mathrm{T}}V\)，没有随上下文增长的 KV cache。
 
 正式算子名：`dual-state-4-noffn-delta-mem-input-sqrt-d`。
 
@@ -41,7 +41,7 @@ Schema 里的 `mem.key` / `mem.query` / `mem.value` 是关联记忆的**写方�
 共享嵌入 \(E\in\mathbb{R}^{V\times d}\)（三值，第 \(j\) 行尺度 \(\alpha_j\)）。入口缩放与 RMSNorm：
 
 $$
-x_t^{(0)}=\sqrt{d}\;E_{z_t,:}^{\mathsf T},\qquad
+x_t^{(0)}=\sqrt{d}\;E_{z_t,:}^{\mathrm{T}},\qquad
 R_\gamma(u)=\gamma\odot u\,\rho,\qquad
 \rho=\Bigl(\tfrac{1}{n}\|u\|_2^2+10^{-5}\Bigr)^{-1/2}.
 $$
@@ -88,7 +88,7 @@ a_t=M_{t-1}\hat k_t,
 $$
 
 $$
-\boxed{M_t=M_{t-1}+\beta_t(v_t-a_t)\hat k_t^{\mathsf T}},\qquad
+M_t=M_{t-1}+\beta_t(v_t-a_t)\hat k_t^{\mathrm{T}},\qquad
 o_t=M_t q_t.
 $$
 
@@ -97,7 +97,7 @@ $$
 解码实现用代数恒等式把「先算 \(M\hat k\)、再写、再算 \(Mq\)」收成对每行一次扫描：
 
 $$
-o_t=M_{t-1}q_t+\beta_t(v_t-M_{t-1}\hat k_t)\,(\hat k_t^{\mathsf T}q_t).
+o_t=M_{t-1}q_t+\beta_t(v_t-M_{t-1}\hat k_t)\,(\hat k_t^{\mathrm{T}}q_t).
 $$
 
 \(M\) 的流量从 3 次降为 2 次；行互不相交，任意线程划分与串行 **bitwise 一致**。
@@ -153,17 +153,17 @@ $$
 记 \(f(M)=\frac12\|M\hat k_t-v_t\|_2^2\)。则
 
 $$
-\nabla_M f=(M\hat k_t-v_t)\hat k_t^{\mathsf T},\qquad
+\nabla_M f=(M\hat k_t-v_t)\hat k_t^{\mathrm{T}},\qquad
 M_t=M_{t-1}-\beta_t\nabla_M f\big|_{M_{t-1}}.
 $$
 
-**证明.** 对矩阵变量，\(\mathrm{d}f=\langle M\hat k-v,\,(\mathrm{d}M)\hat k\rangle=\langle(M\hat k-v)\hat k^{\mathsf T},\,\mathrm{d}M\rangle\)，即得梯度。代入增量规则右边 \(\beta_t(v-M\hat k)\hat k^{\mathsf T}=-\beta_t\nabla_M f\)。∎
+**证明.** 对矩阵变量，\(\mathrm{d}f=\langle M\hat k-v,\,(\mathrm{d}M)\hat k\rangle=\langle(M\hat k-v)\hat k^{\mathrm{T}},\,\mathrm{d}M\rangle\)，即得梯度。代入增量规则右边 \(\beta_t(v-M\hat k)\hat k^{\mathrm{T}}=-\beta_t\nabla_M f\)。∎
 
 **推论.** \(\beta_t(h_t)\) 是输入调制的**逐步学习率**。沿写地址的读出：
 
 $$
 M_t\hat k_t=(1-\beta_t\tau)M_{t-1}\hat k_t+\beta_t\tau\,v_t,\qquad
-\tau=\hat k_t^{\mathsf T}\hat k_t=\frac{\|k_t\|_2^2}{(\|k_t\|_2+\varepsilon)^2}.
+\tau=\hat k_t^{\mathrm{T}}\hat k_t=\frac{\|k_t\|_2^2}{(\|k_t\|_2+\varepsilon)^2}.
 $$
 
 \(\varepsilon=10^{-6}\ll\|k\|\) 时 \(\tau\approx 1\)，该方向以比例 \(\beta_t\) 被拉向 \(v_t\)。
@@ -176,7 +176,7 @@ $$
 M_t\hat k'=M_{t-1}\hat k'.
 $$
 
-**证明.** \(M_t\hat k'=M_{t-1}\hat k'+\beta_t(v_t-M_{t-1}\hat k_t)(\hat k_t^{\mathsf T}\hat k')\)，正交使第二项为零。等式不依赖 \(\varepsilon\)。∎
+**证明.** \(M_t\hat k'=M_{t-1}\hat k'+\beta_t(v_t-M_{t-1}\hat k_t)(\hat k_t^{\mathrm{T}}\hat k')\)，正交使第二项为零。等式不依赖 \(\varepsilon\)。∎
 
 因此 \(M\) 是 **以 key 方向为地址的有限关联存储**：可写、可覆写、容量由 \(d_k\) 维球面的可分辨方向与碰撞决定，**不是无限记忆**，也不是「压缩版注意力」。
 
@@ -185,18 +185,19 @@ $$
 每层状态 \(|s|+|M|=128+512\cdot 64=32{,}896\) 个 float。两层合计 257 KiB。每 token 乘加（一层）：
 
 $$
-\underbrace{2(sd+s^2)}_{\text{短状态候选/门}}+\underbrace{d(2d_k+m)}_{\text{k,q,v 投影}}+\underbrace{2m\,d_k}_{\text{融合写读}}+\underbrace{ds}_{\text{read.s}}
-=655{,}360.
+2(sd+s^2)+d(2d_k+m)+2m\,d_k+ds=655{,}360.
 $$
 
-词表头 \(Vd=8{,}388{,}608\)，约占逐步计算的 **86%**。上下文变长时这两项都不涨。训练是分块 TBPTT：块内 \(O(\text{块长})\)，状态在块边界作为槽位状态延续，不存 KV。
+拆开：短状态候选/门 \(2(sd+s^2)\)，\(k,q,v\) 投影 \(d(2d_k+m)\)，融合写读 \(2m\,d_k\)，`read.s` 为 \(ds\)。
+
+词表头 \(Vd=8{,}388{,}608\)，约占逐步计算的 **86%**。上下文变长时这两项都不涨。训练是分块 TBPTT：块内 \(O(W)\)，状态在块边界作为槽位状态延续，不存 KV。
 
 ### 定理 5（逐行最优三值重构）
 
 对 master 行 \(w\in\mathbb{R}^n\)，
 
 $$
-\min_{\alpha\ge 0,\;q\in\{-1,0,1\}^n}\|w-\alpha q\|_2^2.
+\min_{\alpha\ge 0,\;q\in\lbrace -1,0,1\rbrace^n}\|w-\alpha q\|_2^2.
 $$
 
 固定非零支撑 \(S\) 时，\(\alpha_S^\ast=\frac1{|S|}\sum_{i\in S}|w_i|\)，最优值 \(J^\ast(S)=\|w\|_2^2-(\sum_{i\in S}|w_i|)^2/|S|\)。故全局最优等价于在 \(|w|\) 降序前缀上最大化 \(A_k^2/k\)。实现按幅值降序、下标升序的 bitonic 排序取最小最优 \(k^\ast\)（等值取更短支撑）。这是实数算术下该行的全局最优，不是启发式舍入。
@@ -230,7 +231,7 @@ $$
 对 logits 的梯度即 masked softmax 交叉熵：
 
 $$
-\frac{\partial\mathcal L}{\partial \ell_{t,j}}=\frac{\mu_t}{N}\bigl(p_{t,j}-\mathbf 1[j=z_{t+1}]\bigr).
+\frac{\partial\mathcal L}{\partial \ell_{t,j}}=\frac{\mu_t}{N}\bigl(p_{t,j}-\mathbf{1}[j=z_{t+1}]\bigr).
 $$
 
 实现见 `ds_ce_batch`：无监督槽位梯度为 0，有监督槽位做稳定 log-sum-exp。
@@ -309,7 +310,7 @@ AdamW，\(\beta_1=0.9\)、\(\beta_2=0.999\)，主权重衰减 \(0.01\)（仅三�
 
 **[1] Vaswani et al., 2017.** *Attention Is All You Need.* NeurIPS 2017. [arXiv:1706.03762](https://arxiv.org/abs/1706.03762)
 
-自回归 LM、teacher forcing、逐步 CE、残差流、绑定嵌入。**不采用** \(\mathrm{softmax}(QK^{\mathsf T}/\sqrt{d_k})V\) 与 KV cache。序列混合改成定理 1–3 的递归。
+自回归 LM、teacher forcing、逐步 CE、残差流、绑定嵌入。**不采用** \(\mathrm{softmax}(QK^{\mathrm{T}}/\sqrt{d_k})V\) 与 KV cache。序列混合改成定理 1–3 的递归。
 
 **[2] Hochreiter & Schmidhuber, 1997.** *Long Short-Term Memory.* Neural Computation.
 
@@ -321,11 +322,11 @@ AdamW，\(\beta_1=0.9\)、\(\beta_2=0.999\)，主权重衰减 \(0.01\)（仅三�
 
 **[4] Katharopoulos et al., 2020.** *Transformers are RNNs.* ICML. [arXiv:2006.16236](https://arxiv.org/abs/2006.16236)
 
-线性注意力可写成有限状态 RNN。我们走显式矩阵 \(M\) 的秩一修正，而不是核特征的 \(\phi(K)^{\mathsf T}V\) 累加。
+线性注意力可写成有限状态 RNN。我们走显式矩阵 \(M\) 的秩一修正，而不是核特征的 \(\phi(K)^{\mathrm{T}}V\) 累加。
 
 **[5] Schlag, Irie, Schmidhuber, 2021.** *Linear Transformers Are Secretly Fast Weight Programmers.* ICML. [arXiv:2102.11174](https://arxiv.org/abs/2102.11174)
 
-Delta 规则作为快权重：\(W\leftarrow W+\beta(v-W\phi(k))\phi(k)^{\mathsf T}\)。定理 2–3 即该更新在本仓库的矩阵记忆上的陈述。`mem.key/query/value` 沿用 FWP 术语，**不是**注意力头。
+Delta 规则作为快权重：\(W\leftarrow W+\beta(v-W\phi(k))\phi(k)^{\mathrm{T}}\)。定理 2–3 即该更新在本仓库的矩阵记忆上的陈述。`mem.key/query/value` 沿用 FWP 术语，**不是**注意力头。
 
 **[6] Gu & Dao, 2023.** *Mamba: Linear-Time Sequence Modeling with Selective State Spaces.* [arXiv:2312.00752](https://arxiv.org/abs/2312.00752)
 
@@ -349,7 +350,7 @@ AdamW：衰减加在参数上，不混进自适应梯度。
 
 **[11] Li, Zhang, Liu, 2016.** *Ternary Weight Networks.* [arXiv:1605.04711](https://arxiv.org/abs/1605.04711)
 
-逐行 \(\{-1,0,+1\}\) 与尺度 \(\alpha\)。定理 5 给出本实现的精确支撑选择，而非阈值启发式。
+逐行 \(\lbrace -1,0,+1\rbrace\) 与尺度 \(\alpha\)。定理 5 给出本实现的精确支撑选择，而非阈值启发式。
 
 **[12] Bengio, Léonard, Courville, 2013.** *Estimating or Propagating Gradients Through Stochastic Neurons.* [arXiv:1308.3432](https://arxiv.org/abs/1308.3432)
 
