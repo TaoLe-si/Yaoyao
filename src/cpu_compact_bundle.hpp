@@ -11,7 +11,11 @@ if(bytes.substr(pos,4)!="DSM1")throw std::runtime_error("model magic");pos+=4;Co
 #ifdef TAO_DELTA_MEM
 c.dk=u32();
 #endif
-c.validate();if(c.layers>64||c.d>8192||c.s>8192||c.m>8192||c.e>32768||c.vocab>262144)throw std::runtime_error("bounds");uint64_t count=0;for(auto&t:schema(c))count+=t.elements();if(count>100000000||model_bytes(c)!=pn||bytes.substr(28,mn)!=bundle_manifest(c,tokenizer))throw std::runtime_error("schema/identity");
+// 元素数上限。原值 1e8 是 <=27M 参数时代的遗留：本项目目标模型是 119,033,986 参数
+// (d=3200 L=2 dk=400)，会被这道门直接拒载 —— 训得出来却加载不了，等于交付不出来。
+// 这里只作为"损坏头部导致巨额分配"的护栏；三值紧凑格式实际占用远小于等值 float32。
+constexpr uint64_t kMaxModelElements = 500000000ull;   // 约 2 GB 等值 float32
+c.validate();if(c.layers>64||c.d>8192||c.s>8192||c.m>8192||c.e>32768||c.vocab>262144)throw std::runtime_error("bounds");uint64_t count=0;for(auto&t:schema(c))count+=t.elements();if(count>kMaxModelElements||model_bytes(c)!=pn||bytes.substr(28,mn)!=bundle_manifest(c,tokenizer))throw std::runtime_error("schema/identity");
 for(auto&t:schema(c)){if(!t.ternary){Vec v(t.elements());for(float&x:v)x=fp();out.vectors.emplace(t.name,std::move(v));continue;}CompactBundleData::Matrix m;m.q.resize(t.elements());m.scale.resize(t.rows);for(unsigned r=0;r<t.rows;++r){m.scale[r]=fp();if(m.scale[r]<=0)throw std::runtime_error("scale");for(unsigned j=0;j<t.cols;j+=4){unsigned b=byte();for(unsigned k=0;k<4;++k){unsigned code=(b>>(2*k))&3;if(code==3||(j+k>=t.cols&&code))throw std::runtime_error("symbol/padding");if(j+k<t.cols)m.q[size_t(r)*t.cols+j+k]=code==0?0:code==1?1:-1;}}}out.matrices.emplace(t.name,std::move(m));}if(pos!=bytes.size())throw std::runtime_error("trailing");return out;
 }
 }

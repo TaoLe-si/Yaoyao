@@ -207,7 +207,11 @@ int main(int argc, char** argv){
             else throw std::runtime_error("unknown option "+a);
         }
         std::string hash;
-        const char* tokp = std::getenv("TAO_TOKENIZER"); if(!tokp) tokp = "build/tok_real_v1.bbp";
+        // 默认值曾指向 build/tok_real_v1.bbp —— 该文件在本仓库中并不存在，
+        // 于是任何未显式设 TAO_TOKENIZER 的调用（含 taovm_pipe 的整个评测/GRPO 链）
+        // 都会以 "tokenizer file size" 失败。真正的分词器是 tok_v2.bbp。
+        const char* tokp = std::getenv("TAO_TOKENIZER");
+        if(!tokp) tokp = "build/tok_v2.bbp";
         auto tokenizer = tao::text::load_tokenizer(tokp, hash);
     // 解码是 CPU 的职责，按逻辑核数并发。每个线程独占一个模型实例。
     std::vector<std::unique_ptr<tao::dual::GreedyPipelineGroupedModel>> models;

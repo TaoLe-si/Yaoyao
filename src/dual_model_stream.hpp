@@ -12,7 +12,9 @@ inline CpuModel load_model_stream(std::istream&f){auto byte=[&](){int v=f.get();
 #ifdef TAO_DELTA_MEM
 c.dk=u();
 #endif
-c.validate();if(c.layers>64||c.d>8192||c.s>8192||c.m>8192||c.e>32768||c.vocab>262144)throw std::runtime_error("bounds");uint64_t total=0;for(auto&t:schema(c))total+=t.elements();if(total>100000000)throw std::runtime_error("allocation budget");CpuModel m(c);for(auto&t:schema(c)){auto&w=m.w.at(t.name);if(!t.ternary){for(auto&v:w)v=fp();continue;}for(unsigned r=0;r<t.rows;++r){float scale=fp();if(scale<=0)throw std::runtime_error("scale");for(unsigned j=0;j<t.cols;j+=4){unsigned b=byte();for(unsigned k=0;k<4;++k){unsigned code=(b>>(2*k))&3;if(code==3||(j+k>=t.cols&&code))throw std::runtime_error("code/padding");if(j+k<t.cols)w[size_t(r)*t.cols+j+k]=code==0?0:code==1?scale:-scale;}}}}if(f.peek()!=EOF)throw std::runtime_error("trailing");return m;}
+// 同 cpu_compact_bundle.hpp：原 1e8 上限会拒载本项目的 119,033,986 参数模型。
+constexpr uint64_t kMaxModelElements = 500000000ull;   // 约 2 GB 等值 float32
+c.validate();if(c.layers>64||c.d>8192||c.s>8192||c.m>8192||c.e>32768||c.vocab>262144)throw std::runtime_error("bounds");uint64_t total=0;for(auto&t:schema(c))total+=t.elements();if(total>kMaxModelElements)throw std::runtime_error("allocation budget");CpuModel m(c);for(auto&t:schema(c)){auto&w=m.w.at(t.name);if(!t.ternary){for(auto&v:w)v=fp();continue;}for(unsigned r=0;r<t.rows;++r){float scale=fp();if(scale<=0)throw std::runtime_error("scale");for(unsigned j=0;j<t.cols;j+=4){unsigned b=byte();for(unsigned k=0;k<4;++k){unsigned code=(b>>(2*k))&3;if(code==3||(j+k>=t.cols&&code))throw std::runtime_error("code/padding");if(j+k<t.cols)w[size_t(r)*t.cols+j+k]=code==0?0:code==1?scale:-scale;}}}}if(f.peek()!=EOF)throw std::runtime_error("trailing");return m;}
 inline void save_model(const CpuModel&m,const std::string&path){std::ofstream f(path,std::ios::binary);save_model_stream(m,f);}
 inline CpuModel load_model(const std::string&path){std::ifstream f(path,std::ios::binary);return load_model_stream(f);}
 }

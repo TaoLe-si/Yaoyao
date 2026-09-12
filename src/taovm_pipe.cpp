@@ -318,6 +318,9 @@ static int cmd_reject(const std::string& in, const std::string& out) {
 // ─────────────────────── 训练阶段 ───────────────────────
 static void base_env() {
     env("TAO_ALLOW_TOKENIZER", "1");
+    // 评测与 GRPO 的 rollout 需要显式指向分词器：grpo_rollout 的默认路径曾是一个
+    // 不存在的旧文件名，导致整条评测/RL 链静默失败。用绝对路径，避免 CWD 依赖。
+    env("TAO_TOKENIZER", ROOT + "\\build\\tok_v2.bbp");
     env("TAO_CPU_THREADS", "16");
     env("TAO_CORPUS_THREADS", "16");
     // 架构硬约束：m==d，dk<=d（违反会被 Config::validate 拒绝）。
