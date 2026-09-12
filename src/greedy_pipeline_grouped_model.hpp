@@ -176,10 +176,18 @@ template<size_t N> std::array<Vec,N> group(const std::array<std::string,N>& name
     if(fast){
         // 32: 量化必须在 dispatch 之前完成 —— 否则 8 个工作线程会并发
         // 对同一个 PipelineRows 做 xu_.resize()，导致堆损坏 (0xC0000374)。
+        // 组内相同输入只量化一次。s 相位的 candidate.x/gate.x 共用 xn、
+        // candidate.s/gate.s 共用 s，原实现在这里把 xn 与 s 各量化两遍；
+        // 而 read 相位两个矩阵输入不同，没有重复 —— 这正是 s 相位比 read 慢 2.6 倍、
+        // 尽管两者 MAC 数完全相同的原因。
         for(size_t i=0;i<N;++i){
             PipelineRows&mp=const_cast<PipelineRows&>(*matrices[i]);
-            if(mp.vnni_)mp.quantize_input(inputs[i]->data());
-            else mp.qc_x_=nullptr;
+            if(!mp.vnni_){mp.qc_x_=nullptr;continue;}
+            size_t src=N;
+            for(size_t j=0;j<i;++j)
+                if(inputs[j]==inputs[i]&&matrices[j]->vnni_&&matrices[j]->has_input()){src=j;break;}
+            if(src<N)mp.share_input_from(*matrices[src]);
+            else     mp.quantize_input(inputs[i]->data());
         }
     dispatch_rows(offsets[N],1,[&](size_t begin,size_t end){
             for(size_t i=0;i<N;++i){
