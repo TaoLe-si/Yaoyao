@@ -254,10 +254,12 @@ float kn=0;for(float z:k)kn+=z*z;kn=1.0f/(std::sqrt(kn)+1e-6f);for(float&z:k)z*=
 const float beta=sigmoid(dot_float(p+"mem.beta",xn)+w.at(p+"mem.beta.bias")[0]);
 Vec o(dv,0);
 // M 的行互不相交，每行由同一次内核调用产出 -> 任意线程数 bitwise 一致。
-dispatch_rows(dv,dk,[&](size_t begin,size_t end){for(size_t i=begin;i<end;++i){
-    float acc=0;const float* src=m.data()+i*dk;for(uint32_t j=0;j<dk;++j)acc+=src[j]*k[j];
+float kq=0;for(uint32_t j=0;j<dk;++j)kq+=k[j]*q[j];   // 与行号无关，每 token 只算一次
+        dispatch_rows(dv,dk,[&](size_t begin,size_t end){for(size_t i=begin;i<end;++i){
+    const float* src=m.data()+i*dk;float acc=0,accq=0;
+    for(uint32_t j=0;j<dk;++j){const float mv=src[j];acc+=mv*k[j];accq+=mv*q[j];}
     const float g=beta*(v[i]-acc);float* dst=m.data()+i*dk;for(uint32_t j=0;j<dk;++j)dst[j]+=g*k[j];
-    float rd=0;for(uint32_t j=0;j<dk;++j)rd+=dst[j]*q[j];o[i]=rd;}});
+    o[i]=accq+g*kq;}});
 #ifdef TAO_PHASE_TIMING
 ph.arm(ms_read);
 #endif
@@ -395,7 +397,7 @@ void set_vnni(bool v)const{
     vnni_=v;
     // 分档：只有 >=1e6 MAC 的矩阵启用 VNNI（输出头）；层内小矩阵走 AVX2 int8。
     for(auto&kv:packed){PipelineRows&p=const_cast<PipelineRows&>(kv.second);
-        p.vnni_=false;   // VNNI 内核已移除：打包常驻后权重不再以 int8 形式存在
+        p.vnni_=v&&size_t(p.rows)*size_t(p.cols)>=1000000u;
         if(p.vnni_&&p.rowsum_.empty())p.build_rowsum();}
 #else
     (void)v;

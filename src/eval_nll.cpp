@@ -103,6 +103,15 @@ int main(int argc, char** argv) {
             if (max_tok && ntok >= max_tok) break;
         }
 
+#ifdef TAO_PHASE_TIMING
+        {
+            const double tot = hm.ms_norm+hm.ms_s+hm.ms_m+hm.ms_read+hm.ms_head;
+            std::fprintf(stderr,
+                "PHASE norm=%.1f s=%.1f m=%.1f read=%.1f head=%.1f | grp=%.1f addop=%.1f normf=%.1f pre=%.1f | sum=%.1f (ms)\n",
+                hm.ms_norm*1e3,hm.ms_s*1e3,hm.ms_m*1e3,hm.ms_read*1e3,hm.ms_head*1e3,
+                hm.ms_grp*1e3,hm.ms_addop*1e3,hm.ms_normf*1e3,hm.ms_pre*1e3,tot*1e3);
+        }
+#endif
         if (!ndoc) throw std::runtime_error("no evaluable document");
         const double mean_nll = nll_sum / double(ntok);
         const double ppl = std::exp(mean_nll);
