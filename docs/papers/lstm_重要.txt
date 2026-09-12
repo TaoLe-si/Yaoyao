@@ -1,0 +1,4122 @@
+
+===== PAGE 1 =====
+LONG SHOR T/-TERM MEMOR Y
+Neural Comput a tion /9/(/8/)/:/1/7/3/5/{/1/7/8/0/, /1/9/9/7
+Sepp Ho c hreiter
+F akult/ at f / ur Informatik
+T ec hnisc he Univ ersit/ at M / unc hen
+/8/0/2/9/0 M / unc hen/, German y
+ho c hreit/@informatik/.tu/-m uenc hen/.de
+h ttp/:////www/7/.informatik/.tu/-m uenc hen/.de///~ho c hreit
+J / urgen Sc hmidh ub er
+IDSIA
+Corso Elv ezia /3/6
+/6/9/0/0 Lugano/, Switzerland
+juergen/@idsia/.c h
+h ttp/:////www/.idsia/.c h///~juergen
+Abstract
+Learning to store information o v er extended time in terv als via recurren t bac kpropagation
+tak es a v ery long time/, mostly due to insu/cien t/, deca ying error bac k /o w/. W e brie/y review
+Ho c hreiter/'s /1/9/9/1 analysis of this problem/, then address it b y in tro ducing a no v el/, e/cien t/,
+gradien t/-based metho d called /\Long Short/-T erm Memory/" /(LSTM/)/. T runcating the gradien t
+where this do es not do harm/, LSTM can learn to bridge minimal time lags in excess of /1/0/0/0
+discrete time steps b y enforcing c onstant error /o w through /\constan t error carrousels/" within
+sp ecial units/. Multiplicativ e gate units learn to op en and close access to the constan t error
+/o w/. LSTM is lo cal in space and time/; its computational complexit y p er time step and w eigh t
+is O /(/1/)/. Our exp erimen ts with arti/cial data in v olv e lo cal/, distributed/, real/-v alued/, and noisy
+pattern represen tations/. In comparisons with R TRL/, BPTT/, Recurren t Cascade/-Correlation/,
+Elman nets/, and Neural Sequence Ch unking/, LSTM leads to man y more successful runs/, and
+learns m uc h faster/. LSTM also solv es complex/, arti/cial long time lag tasks that ha v e nev er
+b een solv ed b y previous recurren t net w ork algorithms/.
+/1 INTR ODUCTION
+Recurren t net w orks can in principle use their feedbac k connections to store represen tations of
+recen t input ev en ts in form of activ ations /(/\short/-term memory/"/, as opp osed to /\long/-term mem/-
+ory/" em b o died b y slo wly c hanging w eigh ts/)/. This is p oten tially signi/can t for man y applications/,
+including sp eec h pro cessing/, non/-Mark o vian con trol/, and m usic comp osition /(e/.g/./, Mozer /1/9/9/2/)/.
+The most widely used algorithms for learning what to put in short/-term memory /, ho w ev er/, tak e
+to o m uc h time or do not w ork w ell at all/, esp ecially when minimal time lags b et w een inputs and
+corresp onding teac her signals are long/. Although theoretically fascinating/, existing metho ds do
+not pro vide clear pr actic al adv an tages o v er/, sa y /, bac kprop in feedforw ard nets with limited time
+windo ws/. This pap er will review an analysis of the problem and suggest a remedy /.
+The problem/. With con v en tional /\Bac k/-Propagation Through Time/" /(BPTT/, e/.g/./, Williams
+and Zipser /1/9/9/2/, W erb os /1/9/8/8/) or /\Real/-Time Recurren t Learning/" /(R TRL/, e/.g/./, Robinson and
+F allside /1/9/8/7/)/, error signals /\/o wing bac kw ards in time/" tend to either /(/1/) blo w up or /(/2/) v anish/:
+the temp oral ev olution of the bac kpropagated error exp onen tially dep ends on the size of the
+w eigh ts /(Ho c hreiter /1/9/9/1/)/. Case /(/1/) ma y lead to oscillating w eigh ts/, while in case /(/2/) learning to
+bridge long time lags tak es a prohibitiv e amoun t of time/, or do es not w ork at all /(see section /3/)/.
+The remedy /. This pap er presen ts /\L ong Short/-T erm Memory/" /(LSTM/)/, a no v el recurren t
+net w ork arc hitecture in conjunction with an appropriate gradien t/-based learning algorithm/. LSTM
+is designed to o v ercome these error bac k/-/o w problems/. It can learn to bridge time in terv als in
+excess of /1/0/0/0 steps ev en in case of noisy /, incompressible input sequences/, without loss of short
+time lag capabilities/. This is ac hiev ed b y an e/cien t/, gradien t/-based algorithm for an arc hitecture
+/1
+===== PAGE 2 =====
+enforcing c onstant /(th us neither explo ding nor v anishing/) error /o w through in ternal states of
+sp ecial units /(pro vided the gradien t computation is truncated at certain arc hitecture/-sp eci/c p oin ts
+/| this do es not a/ect long/-term error /o w though/)/.
+Outline of pap er/. Section /2 will brie/y review previous w ork/. Section /3 b egins with an outline
+of the detailed analysis of v anishing errors due to Ho c hreiter /(/1/9/9/1/)/. It will then in tro duce a naiv e
+approac h to constan t error bac kprop for didactic purp oses/, and highligh t its problems concerning
+information storage and retriev al/. These problems will lead to the LSTM arc hitecture as describ ed
+in Section /4/. Section /5 will presen t n umerous exp erimen ts and comparisons with comp eting
+metho ds/. LSTM outp erforms them/, and also learns to solv e complex/, arti/cial tasks no other
+recurren t net algorithm has solv ed/. Section /6 will discuss LSTM/'s limitations and adv an tages/. The
+app endix con tains a detailed description of the algorithm /(A/./1/)/, and explicit error /o w form ulae
+/(A/./2/)/.
+/2 PREVIOUS W ORK
+This section will fo cus on recurren t nets with time/-v arying inputs /(as opp osed to nets with sta/-
+tionary inputs and /xp oin t/-based gradien t calculations/, e/.g/./, Almeida /1/9/8/7/, Pineda /1/9/8/7/)/.
+Gradien t/-descen t v arian ts/. The approac hes of Elman /(/1/9/8/8/)/, F ahlman /(/1/9/9/1/)/, Williams
+/(/1/9/8/9/)/, Sc hmidh ub er /(/1/9/9/2a/)/, P earlm utter /(/1/9/8/9/)/, and man y of the related algorithms in P earl/-
+m utter/'s comprehensiv e o v erview /(/1/9/9/5/) su/er from the same problems as BPTT and R TRL /(see
+Sections /1 and /3/)/.
+Time/-dela ys/. Other metho ds that seem practical for short time lags only are Time/-Dela y
+Neural Net w orks /(Lang et al/. /1/9/9/0/) and Plate/'s metho d /(Plate /1/9/9/3/)/, whic h up dates unit activ a/-
+tions based on a w eigh ted sum of old activ ations /(see also de V ries and Princip e /1/9/9/1/)/. Lin et al/.
+/(/1/9/9/5/) prop ose v arian ts of time/-dela y net w orks called NARX net w orks/.
+Time constan ts/. T o deal with long time lags/, Mozer /(/1/9/9/2/) uses time constan ts in/uencing
+c hanges of unit activ ations /(deV ries and Princip e/'s ab o v e/-men tioned approac h /(/1/9/9/1/) ma y in fact
+b e view ed as a mixture of TDNN and time constan ts/)/. F or long time lags/, ho w ev er/, the time
+constan ts need external /ne tuning /(Mozer /1/9/9/2/)/. Sun et al/./'s alternativ e approac h /(/1/9/9/3/) up dates
+the activ ation of a recurren t unit b y adding the old activ ation and the /(scaled/) curren t net input/.
+The net input/, ho w ev er/, tends to p erturb the stored information/, whic h mak es long/-term storage
+impractical/.
+Ring/'s approac h/. Ring /(/1/9/9/3/) also prop osed a metho d for bridging long time lags/. Whenev er
+a unit in his net w ork receiv es con/icting error signals/, he adds a higher order unit in/uencing
+appropriate connections/. Although his approac h can sometimes b e extremely fast/, to bridge a
+time lag in v olving /1/0/0 steps ma y require the addition of /1/0/0 units/. Also/, Ring/'s net do es not
+generalize to unseen lag durations/.
+Bengio et al/./'s approac hes/. Bengio et al/. /(/1/9/9/4/) in v estigate metho ds suc h as sim ulated
+annealing/, m ulti/-grid random searc h/, time/-w eigh ted pseudo/-Newton optimization/, and discrete
+error propagation/. Their /\latc h/" and /\/2/-sequence/" problems are v ery similar to problem /3a with
+minimal time lag /1/0/0 /(see Exp erimen t /3/)/. Bengio and F rasconi /(/1/9/9/4/) also prop ose an EM approac h
+for propagating targets/. With n so/-called /\state net w orks/"/, at a giv en time/, their system can b e
+in one of only n di/eren t states/. See also b eginning of Section /5/. But to solv e con tin uous problems
+suc h as the /\adding problem/" /(Section /5/./4/)/, their system w ould require an unacceptable n um b er
+of states /(i/.e/./, state net w orks/)/.
+Kalman /lters/. Pusk orius and F eldk amp /(/1/9/9/4/) use Kalman /lter tec hniques to impro v e
+recurren t net p erformance/. Since they use /\a deriv ativ e discoun t factor imp osed to deca y exp o/-
+nen tially the e/ects of past dynamic deriv ativ es/,/" there is no reason to b eliev e that their Kalman
+Filter T rained Recurren t Net w orks will b e useful for v ery long minimal time lags/.
+Second order nets/. W e will see that LSTM uses m ultiplicativ e units /(MUs/) to protect error
+/o w from un w an ted p erturbations/. It is not the /rst recurren t net metho d using MUs though/.
+F or instance/, W atrous and Kuhn /(/1/9/9/2/) use MUs in second order nets/. Some di/erences to LSTM
+are/: /(/1/) W atrous and Kuhn/'s arc hitecture do es not enforce constan t error /o w and is not designed
+/2
+===== PAGE 3 =====
+to solv e long time lag problems/. /(/2/) It has fully connected second/-order sigma/-pi units/, while the
+LSTM arc hitecture/'s MUs are used only to gate access to constan t error /o w/. /(/3/) W atrous and
+Kuhn/'s algorithm costs O /( W
+/2
+/) op erations p er time step/, ours only O /( W /)/, where W is the n um b er
+of w eigh ts/. See also Miller and Giles /(/1/9/9/3/) for additional w ork on MUs/.
+Simple w eigh t guessing/. T o a v oid long time lag problems of gradien t/-based approac hes w e
+ma y simply randomly initialize all net w ork w eigh ts un til the resulting net happ ens to classify all
+training sequences correctly /. In fact/, recen tly w e disco v ered /(Sc hmidh ub er and Ho c hreiter /1/9/9/6/,
+Ho c hreiter and Sc hmidh ub er /1/9/9/6/, /1/9/9/7/) that simple w eigh t guessing solv es man y of the problems
+in /(Bengio /1/9/9/4/, Bengio and F rasconi /1/9/9/4/, Miller and Giles /1/9/9/3/, Lin et al/. /1/9/9/5/) faster than
+the algorithms prop osed therein/. This do es not mean that w eigh t guessing is a go o d algorithm/.
+It just means that the problems are v ery simple/. More realistic tasks require either man y free
+parameters /(e/.g/./, input w eigh ts/) or high w eigh t precision /(e/.g/./, for con tin uous/-v alued parameters/)/,
+suc h that guessing b ecomes completely infeasible/.
+Adaptiv e sequence c h unk ers/. Sc hmidh ub er/'s hierarc hical c h unk er systems /(/1/9/9/2b/, /1/9/9/3/)
+do ha v e a capabilit y to bridge arbitrary time lags/, but only if there is lo cal predictabilit y across the
+subsequences causing the time lags /(see also Mozer /1/9/9/2/)/. F or instance/, in his p ostdo ctoral thesis
+/(/1/9/9/3/)/, Sc hmidh ub er uses hierarc hical recurren t nets to rapidly solv e certain grammar learning
+tasks in v olving minimal time lags in excess of /1/0/0/0 steps/. The p erformance of c h unk er systems/,
+ho w ev er/, deteriorates as the noise lev el increases and the input sequences b ecome less compressible/.
+LSTM do es not su/er from this problem/.
+/3 CONST ANT ERR OR BA CKPR OP
+/3/./1 EXPONENTIALL Y DECA YING ERR OR
+Con v en tional BPTT /(e/.g/. Williams and Zipser /1/9/9/2/)/. Output unit k /'s target at time t is
+denoted b y d
+k
+/( t /)/. Using mean squared error/, k /'s error signal is
+/#
+k
+/( t /) /= f
+/0
+k
+/( net
+k
+/( t /)/)/( d
+k
+/( t /) /BnZr y
+k
+/( t /)/) /;
+where
+y
+i
+/( t /) /= f
+i
+/( net
+i
+/( t /)/)
+is the activ ation of a non/-input unit i with di/eren tiable activ ation function f
+i
+/,
+net
+i
+/( t /) /=
+X
+j
+w
+ij
+y
+j
+/( t /BnZr /1/)
+is unit i /'s curren t net input/, and w
+ij
+is the w eigh t on the connection from unit j to i /. Some
+non/-output unit j /'s bac kpropagated error signal is
+/#
+j
+/( t /) /= f
+/0
+j
+/( net
+j
+/( t /)/)
+X
+i
+w
+ij
+/#
+i
+/( t /+ /1/) /:
+The corresp onding con tribution to w
+j l
+/'s total w eigh t up date is //#
+j
+/( t /) y
+l
+/( t /BnZr /1/)/, where / is the
+learning rate/, and l stands for an arbitrary unit connected to unit j /.
+Outline of Ho c hreiter/'s analysis /(/1/9/9/1/, page /1/9/-/2/1/)/. Supp ose w e ha v e a fully connected
+net whose non/-input unit indices range from /1 to n /. Let us fo cus on lo cal error /o w from unit u
+to unit v /(later w e will see that the analysis immediately extends to global error /o w/)/. The error
+o ccurring at an arbitrary unit u at time step t is propagated /\bac k in to time/" for q time steps/, to
+an arbitrary unit v /. This will scale the error b y the follo wing factor/:
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+u
+/( t /)
+/=
+/(
+f
+/0
+v
+/( net
+v
+/( t /BnZr /1/)/) w
+uv
+q /= /1
+f
+/0
+v
+/( net
+v
+/( t /BnZr q /)/)
+P
+n
+l /=/1
+/@ /#
+l
+/( t /BnZr q /+/1/)
+/@ /#
+u
+/( t /)
+w
+lv
+q /> /1
+/: /(/1/)
+/3
+===== PAGE 4 =====
+With l
+q
+/= v and l
+/0
+/= u /, w e obtain/:
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+u
+/( t /)
+/=
+n
+X
+l
+/1
+/=/1
+/: /: /:
+n
+X
+l
+q /BnZr /1
+/=/1
+q
+Y
+m /=/1
+f
+/0
+l
+m
+/( net
+l
+m
+/( t /BnZr m /)/) w
+l
+m
+l
+m /BnZr /1
+/(/2/)
+/(pro of b y induction/)/. The sum of the n
+q /BnZr /1
+terms
+Q
+q
+m /=/1
+f
+/0
+l
+m
+/( net
+l
+m
+/( t /BnZr m /)/) w
+l
+m
+l
+m /BnZr /1
+determines the
+total error bac k /o w /(note that since the summation terms ma y ha v e di/eren t signs/, increasing
+the n um b er of units n do es not necessarily increase error /o w/)/.
+In tuitiv e explanation of equation /(/2/)/. If
+j f
+/0
+l
+m
+/( net
+l
+m
+/( t /BnZr m /)/) w
+l
+m
+l
+m /BnZr /1
+j /> /1 /: /0
+for all m /(as can happ en/, e/.g/./, with linear f
+l
+m
+/) then the largest pro duct increases exp onen tially
+with q /. That is/, the error blo ws up/, and con/icting error signals arriving at unit v can lead to
+oscillating w eigh ts and unstable learning /(for error blo w/-ups or bifurcations see also Pineda /1/9/8/8/,
+Baldi and Pineda /1/9/9/1/, Do y a /1/9/9/2/)/. On the other hand/, if
+j f
+/0
+l
+m
+/( net
+l
+m
+/( t /BnZr m /)/) w
+l
+m
+l
+m /BnZr /1
+j /< /1 /: /0
+for all m /, then the largest pro duct de cr e ases exp onen tially with q /. That is/, the error v anishes/, and
+nothing can b e learned in acceptable time/.
+If f
+l
+m
+is the logistic sigmoid function/, then the maximal v alue of f
+/0
+l
+m
+is /0/./2/5/. If y
+l
+m /BnZr /1
+is constan t
+and not equal to zero/, then j f
+/0
+l
+m
+/( net
+l
+m
+/) w
+l
+m
+l
+m /BnZr /1
+j tak es on maximal v alues where
+w
+l
+m
+l
+m /BnZr /1
+/=
+/1
+y
+l
+m /BnZr /1
+coth /(
+/1
+/2
+net
+l
+m
+/) /;
+go es to zero for j w
+l
+m
+l
+m /BnZr /1
+j /! /1 /, and is less than /1 /: /0 for j w
+l
+m
+l
+m /BnZr /1
+j /< /4 /: /0 /(e/.g/./, if the absolute max/-
+imal w eigh t v alue w
+max
+is smaller than /4/./0/)/. Hence with con v en tional logistic sigmoid activ ation
+functions/, the error /o w tends to v anish as long as the w eigh ts ha v e absolute v alues b elo w /4/./0/,
+esp ecially in the b eginning of the training phase/. In general the use of larger initial w eigh ts will
+not help though /| as seen ab o v e/, for j w
+l
+m
+l
+m /BnZr /1
+j /! /1 the relev an t deriv ativ e go es to zero /\faster/"
+than the absolute w eigh t can gro w /(also/, some w eigh ts will ha v e to c hange their signs b y crossing
+zero/)/. Lik ewise/, increasing the learning rate do es not help either /| it will not c hange the ratio of
+long/-range error /o w and short/-range error /o w/. BPTT is to o sensitiv e to recen t distractions/. /(A
+v ery similar/, more recen t analysis w as presen ted b y Bengio et al/. /1/9/9/4/)/.
+Global error /o w/. The lo cal error /o w analysis ab o v e immediately sho ws that global error
+/o w v anishes/, to o/. T o see this/, compute
+X
+u /: u output unit
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+u
+/( t /)
+/:
+W eak upp er b ound for scaling factor/. The follo wing/, sligh tly extended v anishing error
+analysis also tak es n /, the n um b er of units/, in to accoun t/. F or q /> /1/, form ula /(/2/) can b e rewritten
+as
+/( W
+u
+T /)
+T
+F
+/0
+/( t /BnZr /1/)
+q /BnZr /1
+Y
+m /=/2
+/( W F
+/0
+/( t /BnZr m /)/) W
+v
+f
+/0
+v
+/( net
+v
+/( t /BnZr q /)/) /;
+where the w eigh t matrix W is de/ned b y /[ W /]
+ij
+/:/= w
+ij
+/, v /'s outgoing w eigh t v ector W
+v
+is de/ned b y
+/[ W
+v
+/]
+i
+/:/= /[ W /]
+iv
+/= w
+iv
+/, u /'s incoming w eigh t v ector W
+u
+T is de/ned b y /[ W
+u
+T /]
+i
+/:/= /[ W /]
+ui
+/= w
+ui
+/, and for
+m /= /1 /; /: /: /: /; q /, F
+/0
+/( t /BnZr m /) is the diagonal matrix of /rst order deriv ativ es de/ned as/: /[ F
+/0
+/( t /BnZr m /)/]
+ij
+/:/= /0
+if i /6/= j /, and /[ F
+/0
+/( t /BnZr m /)/]
+ij
+/:/= f
+/0
+i
+/( net
+i
+/( t /BnZr m /)/) otherwise/. Here T is the transp osition op erator/,
+/[ A /]
+ij
+is the elemen t in the i /-th column and j /-th ro w of matrix A /, and /[ x /]
+i
+is the i /-th comp onen t
+of v ector x /.
+/4
+===== PAGE 5 =====
+Using a matrix norm k /: k
+A
+compatible with v ector norm k /: k
+x
+/, w e de/ne
+f
+/0
+max
+/:/= max
+m /=/1 /;/:/:/: /;q
+fk F
+/0
+/( t /BnZr m /) k
+A
+g /:
+F or max
+i /=/1 /;/:/:/:/;n
+fj x
+i
+jg / k x k
+x
+w e get j x
+T
+y j / n k x k
+x
+k y k
+x
+/: Since
+j f
+/0
+v
+/( net
+v
+/( t /BnZr q /)/) j / k F
+/0
+/( t /BnZr q /) k
+A
+/ f
+/0
+max
+/;
+w e obtain the follo wing inequalit y/:
+j
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+u
+/( t /)
+j / n /( f
+/0
+max
+/)
+q
+k W
+v
+k
+x
+k W
+u
+T k
+x
+k W k
+q /BnZr /2
+A
+/ n /( f
+/0
+max
+k W k
+A
+/)
+q
+/:
+This inequalit y results from
+k W
+v
+k
+x
+/= k W e
+v
+k
+x
+/ k W k
+A
+k e
+v
+k
+x
+/ k W k
+A
+and
+k W
+u
+T k
+x
+/= k e
+u
+W k
+x
+/ k W k
+A
+k e
+u
+k
+x
+/ k W k
+A
+/;
+where e
+k
+is the unit v ector whose comp onen ts are /0 except for the k /-th comp onen t/, whic h is /1/.
+Note that this is a w eak/, extreme case upp er b ound /| it will b e reac hed only if all k F
+/0
+/( t /BnZr m /) k
+A
+tak e on maximal v alues/, and if the con tributions of all paths across whic h error /o ws bac k from
+unit u to unit v ha v e the same sign/. Large k W k
+A
+/, ho w ev er/, t ypically result in small v alues of
+k F
+/0
+/( t /BnZr m /) k
+A
+/, as con/rmed b y exp erimen ts /(see/, e/.g/./, Ho c hreiter /1/9/9/1/)/.
+F or example/, with norms
+k W k
+A
+/:/= max
+r
+X
+s
+j w
+r s
+j
+and
+k x k
+x
+/:/= max
+r
+j x
+r
+j /;
+w e ha v e f
+/0
+max
+/= /0 /: /2/5 for the logistic sigmoid/. W e observ e that if
+j w
+ij
+j / w
+max
+/<
+/4 /: /0
+n
+/8 i/; j/;
+then k W k
+A
+/ nw
+max
+/< /4 /: /0 will result in exp onen tial deca y /| b y setting / /:/=
+/BnZr
+nw
+max
+/4 /: /0
+/
+/< /1 /: /0/,
+w e obtain
+j
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+u
+/( t /)
+j / n /( / /)
+q
+/:
+W e refer to Ho c hreiter/'s /1/9/9/1 thesis for additional results/.
+/3/./2 CONST ANT ERR OR FLO W/: NAIVE APPR O A CH
+A single unit/. T o a v oid v anishing error signals/, ho w can w e ac hiev e constan t error /o w through
+a single unit j with a single connection to itself /? According to the rules ab o v e/, at time t /, j /'s lo cal
+error bac k /o w is /#
+j
+/( t /) /= f
+/0
+j
+/( net
+j
+/( t /)/) /#
+j
+/( t /+ /1/) w
+j j
+/. T o enforce c onstant error /o w through j /, w e
+require
+f
+/0
+j
+/( net
+j
+/( t /)/) w
+j j
+/= /1 /: /0 /:
+Note the similarit y to Mozer/'s /xed time constan t system /(/1/9/9/2/) /| a time constan t of /1 /: /0 is
+appropriate for p oten tially in/nite time lags
+/1
+/.
+The constan t error carrousel/. In tegrating the di/eren tial equation ab o v e/, w e obtain
+f
+j
+/( net
+j
+/( t /)/) /=
+net
+j
+/( t /)
+w
+j j
+for arbitrary net
+j
+/( t /)/. This means/: f
+j
+has to b e linear/, and unit j /'s acti/-
+v ation has to remain constan t/:
+y
+j
+/( t /+ /1/) /= f
+j
+/( net
+j
+/( t /+ /1/)/) /= f
+j
+/( w
+j j
+y
+j
+/( t /)/) /= y
+j
+/( t /) /:
+/1
+W e do not use the expression /\time constan t/" in the di/eren tial sense/, as/, e/.g/./, P earlm utter /(/1/9/9/5/)/.
+/5
+===== PAGE 6 =====
+In the exp erimen ts/, this will b e ensured b y using the iden tit y function f
+j
+/: f
+j
+/( x /) /= x/; /8 x /, and b y
+setting w
+j j
+/= /1 /: /0/. W e refer to this as the constan t error carrousel /(CEC/)/. CEC will b e LSTM/'s
+cen tral feature /(see Section /4/)/.
+Of course unit j will not only b e connected to itself but also to other units/. This in v ok es t w o
+ob vious/, related problems /(also inheren t in all other gradien t/-based approac hes/)/:
+/1/. Input w eigh t con/ict/: for simplicit y /, let us fo cus on a single additional input w eigh t w
+j i
+/.
+Assume that the total error can b e reduced b y switc hing on unit j in resp onse to a certain input/,
+and k eeping it activ e for a long time /(un til it helps to compute a desired output/)/. Pro vided i is non/-
+zero/, since the same incoming w eigh t has to b e used for b oth storing certain inputs and ignoring
+others/, w
+j i
+will often receiv e con/icting w eigh t up date signals during this time /(recall that j is
+linear/)/: these signals will attempt to mak e w
+j i
+participate in /(/1/) storing the input /(b y switc hing
+on j /) and /(/2/) protecting the input /(b y prev en ting j from b eing switc hed o/ b y irrelev an t later
+inputs/)/. This con/ict mak es learning di/cult/, and calls for a more con text/-sensitiv e mec hanism
+for con trolling /\write op erations/" through input w eigh ts/.
+/2/. Output w eigh t con/ict/: assume j is switc hed on and curren tly stores some previous
+input/. F or simplicit y /, let us fo cus on a single additional outgoing w eigh t w
+k j
+/. The same w
+k j
+has
+to b e used for b oth retrieving j /'s con ten t at certain times and prev en ting j from disturbing k
+at other times/. As long as unit j is non/-zero/, w
+k j
+will attract con/icting w eigh t up date signals
+generated during sequence pro cessing/: these signals will attempt to mak e w
+k j
+participate in /(/1/)
+accessing the information stored in j and /| at di/eren t times /| /(/2/) protecting unit k from b eing
+p erturb ed b y j /. F or instance/, with man y tasks there are certain /\short time lag errors/" that can b e
+reduced in early training stages/. Ho w ev er/, at later training stages j ma y suddenly start to cause
+a v oidable errors in situations that already seemed under con trol b y attempting to participate in
+reducing more di/cult /\long time lag errors/"/. Again/, this con/ict mak es learning di/cult/, and
+calls for a more con text/-sensitiv e mec hanism for con trolling /\read op erations/" through output
+w eigh ts/.
+Of course/, input and output w eigh t con/icts are not sp eci/c for long time lags/, but o ccur for
+short time lags as w ell/. Their e/ects/, ho w ev er/, b ecome particularly pronounced in the long time
+lag case/: as the time lag increases/, /(/1/) stored information m ust b e protected against p erturbation
+for longer and longer p erio ds/, and /| esp ecially in adv anced stages of learning /| /(/2/) more and
+more already correct outputs also require protection against p erturbation/.
+Due to the problems ab o v e the naiv e approac h do es not w ork w ell except in case of certain
+simple problems in v olving lo cal input//output represen tations and non/-rep eating input patterns
+/(see Ho c hreiter /1/9/9/1 and Silv a et al/. /1/9/9/6/)/. The next section sho ws ho w to do it righ t/.
+/4 LONG SHOR T/-TERM MEMOR Y
+Memory cells and gate units /. T o construct an arc hitecture that allo ws for constan t error /o w
+through sp ecial/, self/-connected units without the disadv an tages of the naiv e approac h/, w e extend
+the constan t error carrousel CEC em b o died b y the self/-connected/, linear unit j from Section /3/./2
+b y in tro ducing additional features/. A m ultiplicativ e input gate unit is in tro duced to protect the
+memory con ten ts stored in j from p erturbation b y irrelev an t inputs/. Lik ewise/, a m ultiplicativ e
+output gate unit is in tro duced whic h protects other units from p erturbation b y curren tly irrelev an t
+memory con ten ts stored in j /.
+The resulting/, more complex unit is called a memory c el l /(see Figure /1/)/. The j /-th memory cell
+is denoted c
+j
+/. Eac h memory cell is built around a cen tral linear unit with a /xed self/-connection
+/(the CEC/)/. In addition to net
+c
+j
+/, c
+j
+gets input from a m ultiplicativ e unit out
+j
+/(the /\output gate/"/)/,
+and from another m ultiplicativ e unit in
+j
+/(the /\input gate/"/)/. in
+j
+/'s activ ation at time t is denoted
+b y y
+in
+j
+/( t /)/, out
+j
+/'s b y y
+out
+j
+/( t /)/. W e ha v e
+y
+out
+j
+/( t /) /= f
+out
+j
+/( net
+out
+j
+/( t /)/)/; y
+in
+j
+/( t /) /= f
+in
+j
+/( net
+in
+j
+/( t /)/)/;
+/6
+===== PAGE 7 =====
+where
+net
+out
+j
+/( t /) /=
+X
+u
+w
+out
+j
+u
+y
+u
+/( t /BnZr /1/) /;
+and
+net
+in
+j
+/( t /) /=
+X
+u
+w
+in
+j
+u
+y
+u
+/( t /BnZr /1/) /:
+W e also ha v e
+net
+c
+j
+/( t /) /=
+X
+u
+w
+c
+j
+u
+y
+u
+/( t /BnZr /1/) /:
+The summation indices u ma y stand for input units/, gate units/, memory cells/, or ev en con v en tional
+hidden units if there are an y /(see also paragraph on /\net w ork top ology/" b elo w/)/. All these di/eren t
+t yp es of units ma y con v ey useful information ab out the curren t state of the net/. F or instance/,
+an input gate /(output gate/) ma y use inputs from other memory cells to decide whether to store
+/(access/) certain information in its memory cell/. There ev en ma y b e recurren t self/-connections lik e
+w
+c
+j
+c
+j
+/. It is up to the user to de/ne the net w ork top ology /. See Figure /2 for an example/.
+A t time t /, c
+j
+/'s output y
+c
+j
+/( t /) is computed as
+y
+c
+j
+/( t /) /= y
+out
+j
+/( t /) h /( s
+c
+j
+/( t /)/) /;
+where the /\in ternal state/" s
+c
+j
+/( t /) is
+s
+c
+j
+/(/0/) /= /0 /; s
+c
+j
+/( t /) /= s
+c
+j
+/( t /BnZr /1/) /+ y
+in
+j
+/( t /) g
+/BnZr
+net
+c
+j
+/( t /)
+/
+for t /> /0 /:
+The di/eren tiable function g squashes net
+c
+j
+/; the di/eren tiable function h scales memory cell
+outputs computed from the in ternal state s
+c
+j
+/.
+inj
+inj
+out j
+out j
+w i c j
+wi c j
+y
+c j
+g h1.0
+net
+w i w i
+y
+inj y
+out j
+net c j
+g y
+inj
+= g + sc j
+sc j
+y
+inj
+h y
+out j
+net
+Figure /1/: A r chite ctur e of memory c el l c
+j
+/(the b ox/) and its gate units in
+j
+/; out
+j
+/. The self/-r e curr ent
+c onne ction /(with weight /1/./0/) indic ates fe e db ack with a delay of /1 time step/. It builds the b asis of
+the /\c onstant err or c arr ousel/" CEC/. The gate units op en and close ac c ess to CEC/. Se e text and
+app endix A/./1 for details/.
+Wh y gate units/? T o a v oid input w eigh t con/icts/, in
+j
+con trols the error /o w to memory cell
+c
+j
+/'s input connections w
+c
+j
+i
+/. T o circum v en t c
+j
+/'s output w eigh t con/icts/, out
+j
+con trols the error
+/o w from unit j /'s output connections/. In other w ords/, the net can use in
+j
+to decide when to k eep
+or o v erride information in memory cell c
+j
+/, and out
+j
+to decide when to access memory cell c
+j
+and
+when to prev en t other units from b eing p erturb ed b y c
+j
+/(see Figure /1/)/.
+Error signals trapp ed within a memory cell/'s CEC c annot c hange /{ but di/eren t error signals
+/o wing in to the cell /(at di/eren t times/) via its output gate ma y get sup erimp osed/. The output
+gate will ha v e to learn which errors to trap in its CEC/, b y appropriately scaling them/. The input
+/7
+===== PAGE 8 =====
+gate will ha v e to learn when to release errors/, again b y appropriately scaling them/. Essen tially /,
+the m ultiplicativ e gate units op en and close access to constan t error /o w through CEC/.
+Distributed output represen tations t ypically do require output gates/. Not alw a ys are b oth
+gate t yp es necessary /, though /| one ma y b e su/cien t/. F or instance/, in Exp erimen ts /2a and /2b in
+Section /5/, it will b e p ossible to use input gates only /. In fact/, output gates are not required in case
+of lo cal output enco ding /| prev en ting memory cells from p erturbing already learned outputs can
+b e done b y simply setting the corresp onding w eigh ts to zero/. Ev en in this case/, ho w ev er/, output
+gates can b e b ene/cial/: they prev en t the net/'s attempts at storing long time lag memories /(whic h
+are usually hard to learn/) from p erturbing activ ations represen ting easily learnable short time lag
+memories/. /(This will pro v e quite useful in Exp erimen t /1/, for instance/./)
+Net w ork top ology /. W e use net w orks with one input la y er/, one hidden la y er/, and one output
+la y er/. The /(fully/) self/-connected hidden la y er con tains memory cells and corresp onding gate units
+/(for con v enience/, w e refer to b oth memory cells and gate units as b eing lo cated in the hidden
+la y er/)/. The hidden la y er ma y also con tain /\con v en tional/" hidden units pro viding inputs to gate
+units and memory cells/. All units /(except for gate units/) in all la y ers ha v e directed connections
+/(serv e as inputs/) to all units in the la y er ab o v e /(or to all higher la y ers /{ Exp erimen ts /2a and /2b/)/.
+Memory cell blo c ks/. S memory cells sharing the same input gate and the same output gate
+form a structure called a /\memory cell blo c k of size S /"/. Memory cell blo c ks facilitate information
+storage /| as with con v en tional neural nets/, it is not so easy to co de a distributed input within a
+single cell/. Since eac h memory cell blo c k has as man y gate units as a single memory cell /(namely
+t w o/)/, the blo c k arc hitecture can b e ev en sligh tly more e/cien t /(see paragraph /\computational
+complexit y/"/)/. A memory cell blo c k of size /1 is just a simple memory cell/. In the exp erimen ts
+/(Section /5/)/, w e will use memory cell blo c ks of v arious sizes/.
+Learning/. W e use a v arian t of R TRL /(e/.g/./, Robinson and F allside /1/9/8/7/) whic h prop erly tak es
+in to accoun t the altered/, m ultiplicativ e dynamics caused b y input and output gates/. Ho w ev er/, to
+ensure non/-deca ying error bac kprop through in ternal states of memory cells/, as with truncated
+BPTT /(e/.g/./, Williams and P eng /1/9/9/0/)/, errors arriving at /\memory cell net inputs/" /(for cell c
+j
+/, this
+includes net
+c
+j
+/, net
+in
+j
+/, net
+out
+j
+/) do not get propagated bac k further in time /(although they do serv e
+to c hange the incoming w eigh ts/)/. Only within
+/2
+memory cells/, errors are propagated bac k through
+previous in ternal states s
+c
+j
+/. T o visualize this/: once an error signal arriv es at a memory cell output/,
+it gets scaled b y output gate activ ation and h
+/0
+/. Then it is within the memory cell/'s CEC/, where it
+can /o w bac k inde/nitely without ev er b eing scaled/. Only when it lea v es the memory cell through
+the input gate and g /, it is scaled once more b y input gate activ ation and g
+/0
+/. It then serv es to
+c hange the incoming w eigh ts b efore it is truncated /(see app endix for explicit form ulae/)/.
+Computational complexit y /. As with Mozer/'s fo cused recurren t bac kprop algorithm /(Mozer
+/1/9/8/9/)/, only the deriv ativ es
+/@ s
+c
+j
+/@ w
+il
+need to b e stored and up dated/. Hence the LSTM algorithm is
+v ery e/cien t/, with an excellen t up date complexit y of O /( W /)/, where W the n um b er of w eigh ts /(see
+details in app endix A/./1/)/. Hence/, LSTM and BPTT for fully recurren t nets ha v e the same up date
+complexit y p er time step /(while R TRL/'s is m uc h w orse/)/. Unlik e full BPTT/, ho w ev er/, LSTM is
+lo c al in sp ac e and time
+/3
+/: there is no need to store activ ation v alues observ ed during sequence
+pro cessing in a stac k with p oten tially unlimited size/.
+Abuse problem and solutions/. In the b eginning of the learning phase/, error reduction
+ma y b e p ossible without storing information o v er time/. The net w ork will th us tend to abuse
+memory cells/, e/.g/./, as bias cells /(i/.e/./, it migh t mak e their activ ations constan t and use the outgoing
+connections as adaptiv e thresholds for other units/)/. The p oten tial di/cult y is/: it ma y tak e a
+long time to release abused memory cells and mak e them a v ailable for further learning/. A similar
+/\abuse problem/" app ears if t w o memory cells store the same /(redundan t/) information/. There are
+at least t w o solutions to the abuse problem/: /(/1/) Se quential network c onstruction /(e/.g/./, F ahlman
+/1/9/9/1/)/: a memory cell and the corresp onding gate units are added to the net w ork whenev er the
+/2
+F or in tra/-cellular bac kprop in a quite di/eren t con text see also Do y a and Y oshiza w a /(/1/9/8/9/)/.
+/3
+F ollo wing Sc hmidh ub er /(/1/9/8/9/)/, w e sa y that a recurren t net algorithm is lo c al in sp ac e if the up date complexit y
+p er time step and w eigh t do es not dep end on net w ork size/. W e sa y that a metho d is lo c al in time if its storage
+requiremen ts do not dep end on input sequence length/. F or instance/, R TRL is lo cal in time but not in space/. BPTT
+is lo cal in space but not in time/.
+/8
+===== PAGE 9 =====
+1 1 2
+output
+hidden
+input
+out 1
+in 1
+out 2
+in 2
+1cell
+block block
+1 cell
+block block
+2
+cell 2 cell 2
+Figure /2/: Example of a net with /8 input units/, /4 output units/, and /2 memory c el l blo cks of size /2/.
+in /1 marks the input gate/, out /1 marks the output gate/, and cel l /1 /=bl ock /1 marks the /rst memory
+c el l of blo ck /1/. cel l /1 /=bl ock /1 /'s ar chite ctur e is identic al to the one in Figur e /1/, with gate units
+in /1 and out /1 /(note that by r otating Figur e /1 by /9/0 de gr e es anti/-clo ckwise/, it wil l match with the
+c orr esp onding p arts of Figur e /1/)/. The example assumes dense c onne ctivity/: e ach gate unit and
+e ach memory c el l se e al l non/-output units/. F or simplicity/, however/, outgoing weights of only
+one typ e of unit ar e shown for e ach layer/. With the e/cient/, trunc ate d up date rule/, err or /ows
+only thr ough c onne ctions to output units/, and thr ough /xe d self/-c onne ctions within c el l blo cks /(not
+shown her e /| se e Figur e /1/)/. Err or /ow is trunc ate d onc e it /\wants/" to le ave memory c el ls or
+gate units/. Ther efor e/, no c onne ction shown ab ove serves to pr op agate err or b ack to the unit fr om
+which the c onne ction originates /(exc ept for c onne ctions to output units/)/, although the c onne ctions
+themselves ar e mo di/able/. That/'s why the trunc ate d LSTM algorithm is so e/cient/, despite its
+ability to bridge very long time lags/. Se e text and app endix A/./1 for details/. Figur e /2 actual ly shows
+the ar chite ctur e use d for Exp eriment /6a /| only the bias of the non/-input units is omitte d/.
+error stops decreasing /(see Exp erimen t /2 in Section /5/)/. /(/2/) Output gate bias/: eac h output gate gets
+a negativ e initial bias/, to push initial memory cell activ ations to w ards zero/. Memory cells with
+more negativ e bias automatically get /\allo cated/" later /(see Exp erimen ts /1/, /3/, /4/, /5/, /6 in Section /5/)/.
+In ternal state drift and remedies/. If memory cell c
+j
+/'s inputs are mostly p ositiv e or mostly
+negativ e/, then its in ternal state s
+j
+will tend to drift a w a y o v er time/. This is p oten tially dangerous/,
+for the h
+/0
+/( s
+j
+/) will then adopt v ery small v alues/, and the gradien t will v anish/. One w a y to cir/-
+cum v en t this problem is to c ho ose an appropriate function h /. But h /( x /) /= x /, for instance/, has the
+disadv an tage of unrestricted memory cell output range/. Our simple but e/ectiv e w a y of solving
+drift problems at the b eginning of learning is to initially bias the input gate in
+j
+to w ards zero/.
+Although there is a tradeo/ b et w een the magnitudes of h
+/0
+/( s
+j
+/) on the one hand and of y
+in
+j
+and
+f
+/0
+in
+j
+on the other/, the p oten tial negativ e e/ect of input gate bias is negligible compared to the one
+of the drifting e/ect/. With logistic sigmoid activ ation functions/, there app ears to b e no need for
+/ne/-tuning the initial bias/, as con/rmed b y Exp erimen ts /4 and /5 in Section /5/./4/.
+/5 EXPERIMENTS
+In tro duction/. Whic h tasks are appropriate to demonstrate the qualit y of a no v el long time lag
+/9
+===== PAGE 10 =====
+algorithm/? First of all/, minimal time lags b et w een relev an t input signals and corresp onding teac her
+signals m ust b e long for al l training sequences/. In fact/, man y previous recurren t net algorithms
+sometimes manage to generalize from v ery short training sequences to v ery long test sequences/.
+See/, e/.g/./, P ollac k /(/1/9/9/1/)/. But a real long time lag problem do es not ha v e any short time lag
+exemplars in the training set/. F or instance/, Elman/'s training pro cedure/, BPTT/, o/ine R TRL/,
+online R TRL/, etc/./, fail miserably on real long time lag problems/. See/, e/.g/./, Ho c hreiter /(/1/9/9/1/) and
+Mozer /(/1/9/9/2/)/. A second imp ortan t requiremen t is that the tasks should b e complex enough suc h
+that they cannot b e solv ed quic kly b y simple/-minded strategies suc h as random w eigh t guessing/.
+Guessing can outp erform man y long time lag algorithms/. Recen tly w e disco v ered
+/(Sc hmidh ub er and Ho c hreiter /1/9/9/6/, Ho c hreiter and Sc hmidh ub er /1/9/9/6/, /1/9/9/7/) that man y long
+time lag tasks used in previous w ork can b e solv ed more quic kly b y simple random w eigh t guessing
+than b y the prop osed algorithms/. F or instance/, guessing solv ed a v arian t of Bengio and F rasconi/'s
+/\parit y problem/" /(/1/9/9/4/) problem m uc h faster
+/4
+than the sev en metho ds tested b y Bengio et al/.
+/(/1/9/9/4/) and Bengio and F rasconi /(/1/9/9/4/)/. Similarly for some of Miller and Giles/' problems /(/1/9/9/3/)/. Of
+course/, this do es not mean that guessing is a go o d algorithm/. It just means that some previously
+used problems are not extremely appropriate to demonstrate the qualit y of previously prop osed
+algorithms/.
+What/'s common to Exp erimen ts /1/{/6/. All our exp erimen ts /(except for Exp erimen t /1/)
+in v olv e long minimal time lags /| there are no short time lag training exemplars facilitating
+learning/. Solutions to most of our tasks are sparse in w eigh t space/. They require either man y
+parameters//inputs or high w eigh t precision/, suc h that random w eigh t guessing b ecomes infeasible/.
+W e alw a ys use on/-line learning /(as opp osed to batc h learning/)/, and logistic sigmoids as acti/-
+v ation functions/. F or Exp erimen ts /1 and /2/, initial w eigh ts are c hosen in the range /[ /BnZr /0 /: /2 /; /0 /: /2/]/, for
+the other exp erimen ts in /[ /BnZr /0 /: /1 /; /0 /: /1/]/. T raining sequences are generated randomly according to the
+v arious task descriptions/. In sligh t deviation from the notation in App endix A/1/, eac h discrete
+time step of eac h input sequence in v olv es three pro cessing steps/: /(/1/) use curren t input to set the
+input units/. /(/2/) Compute activ ations of hidden units /(including input gates/, output gates/, mem/-
+ory cells/)/. /(/3/) Compute output unit activ ations/. Except for Exp erimen ts /1/, /2a/, and /2b/, sequence
+elemen ts are randomly generated on/-line/, and error signals are generated only at sequence ends/.
+Net activ ations are reset after eac h pro cessed input sequence/.
+F or comparisons with recurren t nets taugh t b y gradien t descen t/, w e giv e results only for R TRL/,
+except for comparison /2a/, whic h also includes BPTT/. Note/, ho w ev er/, that un truncated BPTT /(see/,
+e/.g/./, Williams and P eng /1/9/9/0/) computes exactly the same gradien t as o/ine R TRL/. With long time
+lag problems/, o/ine R TRL /(or BPTT/) and the online v ersion of R TRL /(no activ ation resets/, online
+w eigh t c hanges/) lead to almost iden tical/, negativ e results /(as con/rmed b y additional sim ulations
+in Ho c hreiter /1/9/9/1/; see also Mozer /1/9/9/2/)/. This is b ecause o/ine R TRL/, online R TRL/, and full
+BPTT all su/er badly from exp onen tial error deca y /.
+Our LSTM arc hitectures are selected quite arbitrarily /. If nothing is kno wn ab out the complex/-
+it y of a giv en problem/, a more systematic approac h w ould b e/: start with a v ery small net consisting
+of one memory cell/. If this do es not w ork/, try t w o cells/, etc/. Alternativ ely /, use sequen tial net w ork
+construction /(e/.g/./, F ahlman /1/9/9/1/)/.
+Outline of exp erimen ts/.
+/ Exp erimen t /1 fo cuses on a standard b enc hmark test for recurren t nets/: the em b edded Reb er
+grammar/. Since it allo ws for training sequences with short time lags/, it is not a long time
+lag problem/. W e include it b ecause /(/1/) it pro vides a nice example where LSTM/'s output
+gates are truly b ene/cial/, and /(/2/) it is a p opular b enc hmark for recurren t nets that has b een
+used b y man y authors /| w e w an t to include at least one exp erimen t where con v en tional
+BPTT and R TRL do not fail completely /(LSTM/, ho w ev er/, clearly outp erforms them/)/. The
+em b edded Reb er grammar/'s minimal time lags represen t a b order case in the sense that it
+is still p ossible to learn to bridge them with con v en tional algorithms/. Only sligh tly longer
+/4
+It should b e men tioned/, ho w ev er/, that di/eren t input represen tations and di/eren t t yp es of noise ma y lead to
+w orse guessing p erformance /(Y osh ua Bengio/, p ersonal comm unication/, /1/9/9/6/)/.
+/1/0
+===== PAGE 11 =====
+minimal time lags w ould mak e this almost imp ossible/. The more in teresting tasks in our
+pap er/, ho w ev er/, are those that R TRL/, BPTT/, etc/. cannot solv e at all/.
+/ Exp erimen t /2 fo cuses on noise/-free and noisy sequences in v olving n umerous input sym b ols
+distracting from the few imp ortan t ones/. The most di/cult task /(T ask /2c/) in v olv es h undreds
+of distractor sym b ols at random p ositions/, and minimal time lags of /1/0/0/0 steps/. LSTM solv es
+it/, while BPTT and R TRL already fail in case of /1/0/-step minimal time lags /(see also/, e/.g/./,
+Ho c hreiter /1/9/9/1 and Mozer /1/9/9/2/)/. F or this reason R TRL and BPTT are omitted in the
+remaining/, more complex exp erimen ts/, all of whic h in v olv e m uc h longer time lags/.
+/ Exp erimen t /3 addresses long time lag problems with noise and signal on the same input
+line/. Exp erimen ts /3a///3b fo cus on Bengio et al/./'s /1/9/9/4 /\/2/-sequence problem/"/. Because
+this problem actually can b e solv ed quic kly b y random w eigh t guessing/, w e also include a
+far more di/cult /2/-sequence problem /(/3c/) whic h requires to learn real/-v alued/, conditional
+exp ectations of noisy targets/, giv en the inputs/.
+/ Exp erimen ts /4 and /5 in v olv e distributed/, con tin uous/-v alued input represen tations and require
+learning to store precise/, real v alues for v ery long time p erio ds/. Relev an t input signals
+can o ccur at quite di/eren t p ositions in input sequences/. Again minimal time lags in v olv e
+h undreds of steps/. Similar tasks nev er ha v e b een solv ed b y other recurren t net algorithms/.
+/ Exp erimen t /6 in v olv es tasks of a di/eren t complex t yp e that also has not b een solv ed b y
+other recurren t net algorithms/. Again/, relev an t input signals can o ccur at quite di/eren t
+p ositions in input sequences/. The exp erimen t sho ws that LSTM can extract information
+con v ey ed b y the temp oral order of widely separated inputs/.
+Subsection /5/./7 will pro vide a detailed summary of exp erimen tal conditions in t w o tables for
+reference/.
+/5/./1 EXPERIMENT /1/: EMBEDDED REBER GRAMMAR
+T ask/. Our /rst task is to learn the /\em b edded Reb er grammar/"/, e/.g/. Smith and Zipser /(/1/9/8/9/)/,
+Cleeremans et al/. /(/1/9/8/9/)/, and F ahlman /(/1/9/9/1/)/. Since it allo ws for training sequences with short
+time lags /(of as few as /9 steps/)/, it is not a long time lag problem/. W e include it for t w o reasons/: /(/1/)
+it is a p opular recurren t net b enc hmark used b y man y authors /| w e w an ted to ha v e at least one
+exp erimen t where R TRL and BPTT do not fail completely /, and /(/2/) it sho ws nicely ho w output
+gates can b e b ene/cial/.
+B
+T
+S
+X
+X P
+V
+T
+P V
+S
+E
+Figure /3/: T r ansition diagr am for the R eb er
+gr ammar/.
+B
+T
+P
+E
+T
+P
+GRAMMAR
+GRAMMAR
+REBER
+REBER
+Figure /4/: T r ansition diagr am for the emb e dde d
+R eb er gr ammar/. Each b ox r epr esents a c opy of
+the R eb er gr ammar /(se e Figur e /3/)/.
+Starting at the leftmost no de of the directed graph in Figure /4/, sym b ol strings are generated
+sequen tially /(b eginning with the empt y string/) b y follo wing edges /| and app ending the asso ciated
+/1/1
+===== PAGE 12 =====
+sym b ols to the curren t string /| un til the righ tmost no de is reac hed/. Edges are c hosen randomly
+if there is a c hoice /(probabilit y/: /0/./5/)/. The net/'s task is to read strings/, one sym b ol at a time/,
+and to p ermanen tly predict the next sym b ol /(error signals o ccur at ev ery time step/)/. T o correctly
+predict the sym b ol b efore last/, the net has to remem b er the second sym b ol/.
+Comparison/. W e compare LSTM to /\Elman nets trained b y Elman/'s training pro cedure/"
+/(ELM/) /(results tak en from Cleeremans et al/. /1/9/8/9/)/, F ahlman/'s /\Recurren t Cascade/-Correlation/"
+/(R CC/) /(results tak en from F ahlman /1/9/9/1/)/, and R TRL /(results tak en from Smith and Zipser /(/1/9/8/9/)/,
+where only the few successful trials are listed/)/. It should b e men tioned that Smith and Zipser
+actually mak e the task easier b y increasing the probabilit y of short time lag exemplars/. W e didn/'t
+do this for LSTM/.
+T raining//T esting/. W e use a lo cal input//output represen tation /(/7 input units/, /7 output
+units/)/. F ollo wing F ahlman/, w e use /2/5/6 training strings and /2/5/6 separate test strings/. The training
+set is generated randomly/; training exemplars are pic k ed randomly from the training set/. T est
+sequences are generated randomly /, to o/, but sequences already used in the training set are not
+used for testing/. After string presen tation/, all activ ations are reinitialized with zeros/. A trial is
+considered successful if all string sym b ols of all sequences in b oth test set and training set are
+predicted correctly /| that is/, if the output unit/(s/) corresp onding to the p ossible next sym b ol/(s/)
+is/(are/) alw a ys the most activ e ones/.
+Arc hitectures/. Arc hitectures for R TRL/, ELM/, R CC are rep orted in the references listed
+ab o v e/. F or LSTM/, w e use /3 /(/4/) memory cell blo c ks/. Eac h blo c k has /2 /(/1/) memory cells/. The
+output la y er/'s only incoming connections originate at memory cells/. Eac h memory cell and eac h
+gate unit receiv es incoming connections from all memory cells and gate units /(the hidden la y er is
+fully connected /| less connectivit y ma y w ork as w ell/)/. The input la y er has forw ard connections
+to all units in the hidden la y er/. The gate units are biased/. These arc hitecture parameters mak e it
+easy to store at least /3 input signals /(arc hitectures /3/-/2 and /4/-/1 are emplo y ed to obtain comparable
+n um b ers of w eigh ts for b oth arc hitectures/: /2/6/4 for /4/-/1 and /2/7/6 for /3/-/2/)/. Other parameters ma y b e
+appropriate as w ell/, ho w ev er/. All sigmoid functions are logistic with output range /[/0 /; /1/]/, except for
+h /, whose range is /[ /BnZr /1 /; /1/]/, and g /, whose range is /[ /BnZr /2 /; /2/]/. All w eigh ts are initialized in /[ /BnZr /0 /: /2 /; /0 /: /2/]/,
+except for the output gate biases/, whic h are initialized to /-/1/, /-/2/, and /-/3/, resp ectiv ely /(see abuse
+problem/, solution /(/2/) of Section /4/)/. W e tried learning rates of /0/./1/, /0/./2 and /0/./5/.
+Results/. W e use /3 di/eren t/, randomly generated pairs of training and test sets/. With eac h
+suc h pair w e run /1/0 trials with di/eren t initial w eigh ts/. See T able /1 for results /(mean of /3/0
+trials/)/. Unlik e the other metho ds/, LSTM alw a ys learns to solv e the task/. Ev en when w e ignore
+the unsuccessful trials of the other approac hes/, LSTM learns m uc h faster/.
+Imp ortance of output gates/. The exp erimen t pro vides a nice example where the output gate
+is truly b ene/cial/. Learning to store the /rst T or P should not p erturb activ ations represen ting
+the more easily learnable transitions of the original Reb er grammar/. This is the job of the output
+gates/. Without output gates/, w e did not ac hiev e fast learning/.
+/5/./2 EXPERIMENT /2/: NOISE/-FREE AND NOISY SEQUENCES
+T ask /2a/: noise/-free sequences with long time lags/. There are p /+ /1 p ossible input sym b ols
+denoted a
+/1
+/; /:/:/:/; a
+p /BnZr /1
+/; a
+p
+/= x/; a
+p /+/1
+/= y /. a
+i
+is /\lo cally/" represen ted b y the p /+ /1/-dimensional v ector
+whose i /-th comp onen t is /1 /(all other comp onen ts are /0/)/. A net with p /+ /1 input units and p /+ /1
+output units sequen tially observ es input sym b ol sequences/, one at a time/, p ermanen tly trying
+to predict the next sym b ol /| error signals o ccur at ev ery single time step/. T o emphasize the
+/\long time lag problem/"/, w e use a training set consisting of only t w o v ery similar sequences/:
+/( y /; a
+/1
+/; a
+/2
+/; /: /: /: /; a
+p /BnZr /1
+/; y /) and /( x/; a
+/1
+/; a
+/2
+/; /: /: /: /; a
+p /BnZr /1
+/; x /)/. Eac h is selected with probabilit y /0/./5/. T o predict
+the /nal elemen t/, the net has to learn to store a represen tation of the /rst elemen t for p time
+steps/.
+W e compare /\Real/-Time Recurren t Learning/" for fully recurren t nets /(R TRL/)/, /\Bac k/-Propa/-
+gation Through Time/" /(BPTT/)/, the sometimes v ery successful /2/-net /\Neural Sequence Ch unk er/"
+/(CH/, Sc hmidh ub er /1/9/9/2b/)/, and our new metho d /(LSTM/)/. In all cases/, w eigh ts are initialized in
+/[/-/0/./2/,/0/./2/]/. Due to limited computation time/, training is stopp ed after /5 million sequence presen/-
+/1/2
+===== PAGE 13 =====
+metho d hidden units /# w eigh ts learning rate /% of success success after
+R TRL /3 / /1/7/0 /0/./0/5 /\some fraction/" /1/7/3/,/0/0/0
+R TRL /1/2 / /4/9/4 /0/./1 /\some fraction/" /2/5/,/0/0/0
+ELM /1/5 / /4/3/5 /0 /> /2/0/0/,/0/0/0
+R CC /7/-/9 / /1/1/9/-/1/9/8 /5/0 /1/8/2/,/0/0/0
+LSTM /4 blo c ks/, size /1 /2/6/4 /0/./1 /1/0/0 /3/9/,/7/4/0
+LSTM /3 blo c ks/, size /2 /2/7/6 /0/./1 /1/0/0 /2/1/,/7/3/0
+LSTM /3 blo c ks/, size /2 /2/7/6 /0/./2 /9/7 /1/4/,/0/6/0
+LSTM /4 blo c ks/, size /1 /2/6/4 /0/./5 /9/7 /9/,/5/0/0
+LSTM /3 blo c ks/, size /2 /2/7/6 /0/./5 /1/0/0 /8/,/4/4/0
+T able /1/: EXPERIMENT /1/: Emb e dde d R eb er gr ammar/: p er c entage of suc c essful trials and numb er
+of se quenc e pr esentations until suc c ess for R TRL /(r esults taken fr om Smith and Zipser /1/9/8/9/)/,
+/\Elman net tr aine d by Elman /'s pr o c e dur e/" /(r esults taken fr om Cle er emans et al/. /1/9/8/9/)/, /\R e curr ent
+Casc ade/-Corr elation /" /(r esults taken fr om F ahlman /1/9/9/1/) and our new appr o ach /(LSTM/)/. Weight
+numb ers in the /rst /4 r ows ar e estimates /| the c orr esp onding p ap ers do not pr ovide al l the te chnic al
+details/. Only LSTM almost always le arns to solve the task /(only two failur es out of /1/5/0 trials/)/.
+Even when we ignor e the unsuc c essful trials of the other appr o aches/, LSTM le arns much faster
+/(the numb er of r e quir e d tr aining examples in the b ottom r ow varies b etwe en /3/,/8/0/0 and /2/4/,/1/0/0/)/.
+tations/. A successful run is one that ful/lls the follo wing criterion/: after training/, during /1/0/,/0/0/0
+successiv e/, randomly c hosen input sequences/, the maximal absolute error of all output units is
+alw a ys b elo w /0 /: /2/5/.
+Arc hitectures/. R TRL/: one self/-recurren t hidden unit/, p /+ /1 non/-recurren t output units/. Eac h
+la y er has connections from all la y ers b elo w/. All units use the logistic activ ation function sigmoid
+in /[/0/,/1/]/.
+BPTT/: same arc hitecture as the one trained b y R TRL/.
+CH/: b oth net arc hitectures lik e R TRL/'s/, but one has an additional output for predicting the
+hidden unit of the other one /(see Sc hmidh ub er /1/9/9/2b for details/)/.
+LSTM/: lik e with R TRL/, but the hidden unit is replaced b y a memory cell and an input gate
+/(no output gate required/)/. g is the logistic sigmoid/, and h is the iden tit y function h /: h /( x /) /= x/; /8 x /.
+Memory cell and input gate are added once the error has stopp ed decreasing /(see abuse problem/:
+solution /(/1/) in Section /4/)/.
+Results/. Using R TRL and a short /4 time step dela y /( p /= /4/)/,
+/7
+/9
+of all trials w ere successful/.
+No trial was suc c essful with p /= /1/0 /. With long time lags/, only the neural sequence c h unk er
+and LSTM ac hiev ed successful trials/, while BPTT and R TRL failed/. With p /= /1/0/0/, the /2/-net
+sequence c h unk er solv ed the task in only
+/1
+/3
+of all trials/. LSTM/, ho w ev er/, alw a ys learned to solv e
+the task/. Comparing successful trials only /, LSTM learned m uc h faster/. See T able /2 for details/. It
+should b e men tioned/, ho w ev er/, that a hier ar chic al c h unk er can also alw a ys quic kly solv e this task
+/(Sc hmidh ub er /1/9/9/2c/, /1/9/9/3/)/.
+T ask /2b/: no lo cal regularities/. With the task ab o v e/, the c h unk er sometimes learns to
+correctly predict the /nal elemen t/, but only b ecause of predictable lo cal regularities in the input
+stream that allo w for compressing the sequence/. In an additional/, more di/cult task /(in v olving
+man y more di/eren t p ossible sequences/)/, w e remo v e compressibilit y b y replacing the determin/-
+istic subsequence /( a
+/1
+/; a
+/2
+/; /: /: /: /; a
+p /BnZr /1
+/) b y a r andom subsequence /(of length p /BnZr /1/) o v er the alpha/-
+b et a
+/1
+/; a
+/2
+/; /: /: /: /; a
+p /BnZr /1
+/. W e obtain /2 classes /(t w o sets of sequences/) f /( y /; a
+i
+/1
+/; a
+i
+/2
+/; /: /: /: /; a
+i
+p /BnZr /1
+/; y /) j /1 /
+i
+/1
+/; i
+/2
+/; /: /: /: /; i
+p /BnZr /1
+/ p /BnZr /1 g and f /( x/; a
+i
+/1
+/; a
+i
+/2
+/; /: /: /: /; a
+i
+p /BnZr /1
+/; x /) j /1 / i
+/1
+/; i
+/2
+/; /: /: /: /; i
+p /BnZr /1
+/ p /BnZr /1 g /. Again/, ev ery
+next sequence elemen t has to b e predicted/. The only totally predictable targets/, ho w ev er/, are x
+and y /, whic h o ccur at sequence ends/. T raining exemplars are c hosen randomly from the /2 classes/.
+Arc hitectures and parameters are the same as in Exp erimen t /2a/. A successful run is one that
+ful/lls the follo wing criterion/: after training/, during /1/0/,/0/0/0 successiv e/, randomly c hosen input
+/1/3
+===== PAGE 14 =====
+Metho d Dela y p Learning rate /# w eigh ts /% Successful trials Success after
+R TRL /4 /1/./0 /3/6 /7/8 /1/,/0/4/3/,/0/0/0
+R TRL /4 /4/./0 /3/6 /5/6 /8/9/2/,/0/0/0
+R TRL /4 /1/0/./0 /3/6 /2/2 /2/5/4/,/0/0/0
+R TRL /1/0 /1/./0/-/1/0/./0 /1/4/4 /0 /> /5/,/0/0/0/,/0/0/0
+R TRL /1/0/0 /1/./0/-/1/0/./0 /1/0/4/0/4 /0 /> /5/,/0/0/0/,/0/0/0
+BPTT /1/0/0 /1/./0/-/1/0/./0 /1/0/4/0/4 /0 /> /5/,/0/0/0/,/0/0/0
+CH /1/0/0 /1/./0 /1/0/5/0/6 /3/3 /3/2/,/4/0/0
+LSTM /1/0/0 /1/./0 /1/0/5/0/4 /1/0/0 /5/,/0/4/0
+T able /2/: T ask /2a/: Per c entage of suc c essful trials and numb er of tr aining se quenc es until suc c ess/,
+for /\R e al/-Time R e curr ent L e arning/" /(R TRL/)/, /\Back/-Pr op agation Thr ough Time/" /(BPTT/)/, neur al
+se quenc e chunking /(CH/)/, and the new metho d /(LSTM/)/. T able entries r efer to me ans of /1/8 trials/.
+With /1/0/0 time step delays/, only CH and LSTM achieve suc c essful trials/. Even when we ignor e the
+unsuc c essful trials of the other appr o aches/, LSTM le arns much faster/.
+sequences/, the maximal absolute error of all output units is b elo w /0 /: /2/5 at sequence end/.
+Results/. As exp ected/, the c h unk er failed to solv e this task /(so did BPTT and R TRL/, of
+course/)/. LSTM/, ho w ev er/, w as alw a ys successful/. On a v erage /(mean of /1/8 trials/)/, success for
+p /= /1/0/0 w as ac hiev ed after /5/,/6/8/0 sequence presen tations/. This demonstrates that LSTM do es not
+require sequence regularities to w ork w ell/.
+T ask /2c/: v ery long time lags /| no lo cal regularities/. This is the most di/cult task in
+this subsection/. T o our kno wledge no other recurren t net algorithm can solv e it/. No w there are p /+ /4
+p ossible input sym b ols denoted a
+/1
+/; /:/:/:/; a
+p /BnZr /1
+/; a
+p
+/; a
+p /+/1
+/= e/; a
+p /+/2
+/= b/; a
+p /+/3
+/= x/; a
+p /+/4
+/= y /. a
+/1
+/; /:/:/:/; a
+p
+are also called /\distr actor symb ols/" /. Again/, a
+i
+is lo cally represen ted b y the p /+ /4/-dimensional v ector
+whose i th comp onen t is /1 /(all other comp onen ts are /0/)/. A net with p /+ /4 input units and /2 output
+units sequen tially observ es input sym b ol sequences/, one at a time/. T raining sequences are randomly
+c hosen from the union of t w o v ery similar subsets of sequences/: f /( b/; y /; a
+i
+/1
+/; a
+i
+/2
+/; /: /: /: /; a
+i
+q /+ k
+/; e/; y /) j /1 /
+i
+/1
+/; i
+/2
+/; /: /: /: /; i
+q /+ k
+/ q g and f /( b/; x/; a
+i
+/1
+/; a
+i
+/2
+/; /: /: /: /; a
+i
+q /+ k
+/; e/; x /) j /1 / i
+/1
+/; i
+/2
+/; /: /: /: /; i
+q /+ k
+/ q g /. T o pro duce a
+training sequence/, w e /(/1/) randomly generate a sequence pre/x of length q /+ /2/, /(/2/) randomly
+generate a sequence su/x of additional elemen ts /(/6 /= b/; e/; x/; y /) with probabilit y
+/9
+/1/0
+or/, alternativ ely /,
+an e with probabilit y
+/1
+/1/0
+/. In the latter case/, w e /(/3/) conclude the sequence with x or y /, dep ending
+on the second elemen t/. F or a giv en k /, this leads to a uniform distribution on the p ossible sequences
+with length q /+ k /+ /4/. The minimal sequence length is q /+ /4/; the exp ected length is
+/4 /+
+/1
+X
+k /=/0
+/1
+/1/0
+/(
+/9
+/1/0
+/)
+k
+/( q /+ k /) /= q /+ /1/4 /:
+The exp ected n um b er of o ccurrences of elemen t a
+i
+/; /1 / i / p /, in a sequence is
+q /+/1/0
+p
+/
+q
+p
+/. The
+goal is to predict the last sym b ol/, whic h alw a ys o ccurs after the /\trigger sym b ol/" e /. Error signals
+are generated only at sequence ends/. T o predict the /nal elemen t/, the net has to learn to store a
+represen tation of the second elemen t for at least q /+ /1 time steps /(un til it sees the trigger sym b ol
+e /)/. Success is de/ned as /\prediction error /(for /nal sequence elemen t/) of b oth output units alw a ys
+b elo w /0 /: /2/, for /1/0/,/0/0/0 successiv e/, randomly c hosen input sequences/"/.
+Arc hitecture//Learning/. The net has p /+ /4 input units and /2 output units/. W eigh ts are
+initialized in /[/-/0/./2/,/0/./2/]/. T o a v oid to o m uc h learning time v ariance due to di/eren t w eigh t initial/-
+izations/, the hidden la y er gets t w o memory cells /(t w o cell blo c ks of size /1 /| although one w ould
+b e su/cien t/)/. There are no other hidden units/. The output la y er receiv es connections only from
+memory cells/. Memory cells and gate units receiv e connections from input units/, memory cells
+and gate units /(i/.e/./, the hidden la y er is fully connected/)/. No bias w eigh ts are used/. h and g are
+logistic sigmoids with output ranges /[ /BnZr /1 /; /1/] and /[ /BnZr /2 /; /2/]/, resp ectiv ely /. The learning rate is /0/./0/1/.
+/1/4
+===== PAGE 15 =====
+q /(time lag /BnZr /1/) p /(/# random inputs/)
+q
+p
+/# w eigh ts Success after
+/5/0 /5/0 /1 /3/6/4 /3/0/,/0/0/0
+/1/0/0 /1/0/0 /1 /6/6/4 /3/1/,/0/0/0
+/2/0/0 /2/0/0 /1 /1/2/6/4 /3/3/,/0/0/0
+/5/0/0 /5/0/0 /1 /3/0/6/4 /3/8/,/0/0/0
+/1/,/0/0/0 /1/,/0/0/0 /1 /6/0/6/4 /4/9/,/0/0/0
+/1/,/0/0/0 /5/0/0 /2 /3/0/6/4 /4/9/,/0/0/0
+/1/,/0/0/0 /2/0/0 /5 /1/2/6/4 /7/5/,/0/0/0
+/1/,/0/0/0 /1/0/0 /1/0 /6/6/4 /1/3/5/,/0/0/0
+/1/,/0/0/0 /5/0 /2/0 /3/6/4 /2/0/3/,/0/0/0
+T able /3/: T ask /2c/: LSTM with very long minimal time lags q /+ /1 and a lot of noise/. p is the
+numb er of available distr actor symb ols /( p /+ /4 is the numb er of input units/)/.
+q
+p
+is the exp e cte d
+numb er of o c curr enc es of a given distr actor symb ol in a se quenc e/. The rightmost c olumn lists the
+numb er of tr aining se quenc es r e quir e d by LSTM /(BPTT/, R TRL and the other c omp etitors have
+no chanc e of solving this task/)/. If we let the numb er of distr actor symb ols /(and weights/) incr e ase
+in pr op ortion to the time lag/, le arning time incr e ases very slow ly/. The lower blo ck il lustr ates the
+exp e cte d slow/-down due to incr e ase d fr e quency of distr actor symb ols/.
+Note that the minimal time lag is q /+ /1 /| the net nev er sees short training sequences facilitating
+the classi/cation of long test sequences/.
+Results/. /2/0 trials w ere made for all tested pairs /( p/; q /)/. T able /3 lists the mean of the n um b er
+of training sequences required b y LSTM to ac hiev e success /(BPTT and R TRL ha v e no c hance of
+solving non/-trivial tasks with minimal time lags of /1/0/0/0 steps/)/.
+Scaling/. T able /3 sho ws that if w e let the n um b er of input sym b ols /(and w eigh ts/) increase
+in prop ortion to the time lag/, learning time increases v ery slo wly /. This is a another remark able
+prop ert y of LSTM not shared b y an y other metho d w e are a w are of/. Indeed/, R TRL and BPTT
+are far from scaling reasonably /| instead/, they app ear to scale exp onen tially /, and app ear quite
+useless when the time lags exceed as few as /1/0 steps/.
+Distractor in/uence/. In T able /3/, the column headed b y
+q
+p
+giv es the exp ected frequency of
+distractor sym b ols/. Increasing this frequency decreases learning sp eed/, an e/ect due to w eigh t
+oscillations caused b y frequen tly observ ed input sym b ols/.
+/5/./3 EXPERIMENT /3/: NOISE AND SIGNAL ON SAME CHANNEL
+This exp erimen t serv es to illustrate that LSTM do es not encoun ter fundamen tal problems if noise
+and signal are mixed on the same input line/. W e initially fo cus on Bengio et al/./'s simple /1/9/9/4
+/\/2/-sequence problem/"/; in Exp erimen t /3c w e will then p ose a more c hallenging /2/-sequence problem/.
+T ask /3a /(/\/2/-sequence problem/"/)/. The task is to observ e and then classify input sequences/.
+There are t w o classes/, eac h o ccurring with probabilit y /0/./5/. There is only one input line/. Only
+the /rst N real/-v alued sequence elemen ts con v ey relev an t information ab out the class/. Sequence
+elemen ts at p ositions t /> N are generated b y a Gaussian with mean zero and v ariance /0/./2/. Case
+N /= /1/: the /rst sequence elemen t is /1/./0 for class /1/, and /-/1/./0 for class /2/. Case N /= /3/: the /rst
+three elemen ts are /1/./0 for class /1 and /-/1/./0 for class /2/. The target at the sequence end is /1/./0 for
+class /1 and /0/./0 for class /2/. Correct classi/cation is de/ned as /\absolute output error at sequence
+end b elo w /0/./2/"/. Giv en a constan t T/, the sequence length is randomly selected b et w een T and T /+
+T///1/0 /(a di/erence to Bengio et al/./'s problem is that they also p ermit shorter sequences of length
+T///2/)/.
+Guessing/. Bengio et al/. /(/1/9/9/4/) and Bengio and F rasconi /(/1/9/9/4/) tested /7 di/eren t metho ds
+on the /2/-sequence problem/. W e disco v ered/, ho w ev er/, that random w eigh t guessing easily outp er/-
+/1/5
+===== PAGE 16 =====
+T N stop/: ST/1 stop/: ST/2 /# w eigh ts ST/2/: fraction misclassi/ed
+/1/0/0 /3 /2/7/,/3/8/0 /3/9/,/8/5/0 /1/0/2 /0/./0/0/0/1/9/5
+/1/0/0 /1 /5/8/,/3/7/0 /6/4/,/3/3/0 /1/0/2 /0/./0/0/0/1/1/7
+/1/0/0/0 /3 /4/4/6/,/8/5/0 /4/5/2/,/4/6/0 /1/0/2 /0/./0/0/0/0/7/8
+T able /4/: T ask /3a/: Bengio et al/./'s /2/-se quenc e pr oblem/. T is minimal se quenc e length/. N is the
+numb er of information/-c onveying elements at se quenc e b e gin/. The c olumn he ade d by ST/1 /(ST/2/)
+gives the numb er of se quenc e pr esentations r e quir e d to achieve stopping criterion ST/1 /(ST/2/)/. The
+rightmost c olumn lists the fr action of misclassi/e d p ost/-tr aining se quenc es /(with absolute err or />
+/0/./2/) fr om a test set c onsisting of /2/5/6/0 se quenc es /(teste d after ST/2 was achieve d/)/. A l l values ar e
+me ans of /1/0 trials/. We disc over e d/, however/, that this pr oblem is so simple that r andom weight
+guessing solves it faster than LSTM and any other metho d for which ther e ar e publishe d r esults/.
+forms them all/, b ecause the problem is so simple
+/5
+/. See Sc hmidh ub er and Ho c hreiter /(/1/9/9/6/) and
+Ho c hreiter and Sc hmidh ub er /(/1/9/9/6/, /1/9/9/7/) for additional results in this v ein/.
+LSTM arc hitecture/. W e use a /3/-la y er net with /1 input unit/, /1 output unit/, and /3 cell blo c ks
+of size /1/. The output la y er receiv es connections only from memory cells/. Memory cells and gate
+units receiv e inputs from input units/, memory cells and gate units/, and ha v e bias w eigh ts/. Gate
+units and output unit are logistic sigmoid in /[/0 /; /1/]/, h in /[ /BnZr /1 /; /1/]/, and g in /[ /BnZr /2 /; /2/]/.
+T raining//T esting/. All w eigh ts /(except the bias w eigh ts to gate units/) are randomly initialized
+in the range /[ /BnZr /0 /: /1 /; /0 /: /1/]/. The /rst input gate bias is initialized with /BnZr /1 /: /0/, the second with /BnZr /3 /: /0/,
+and the third with /BnZr /5 /: /0/. The /rst output gate bias is initialized with /BnZr /2 /: /0/, the second with /BnZr /4 /: /0
+and the third with /BnZr /6 /: /0/. The precise initialization v alues hardly matter though/, as con/rmed b y
+additional exp erimen ts/. The learning rate is /1/./0/. All activ ations are reset to zero at the b eginning
+of a new sequence/.
+W e stop training /(and judge the task as b eing solv ed/) according to the follo wing criteria/: ST/1/:
+none of /2/5/6 sequences from a randomly c hosen test set is misclassi/ed/. ST/2/: ST/1 is satis/ed/, and
+mean absolute test set error is b elo w /0/./0/1/. In case of ST/2/, an additional test set consisting of /2/5/6/0
+randomly c hosen sequences is used to determine the fraction of misclassi/ed sequences/.
+Results/. See T able /4/. The results are means of /1/0 trials with di/eren t w eigh t initializations
+in the range /[ /BnZr /0 /: /1 /; /0 /: /1/]/. LSTM is able to solv e this problem/, though b y far not as fast as random
+w eigh t guessing /(see paragraph /\Guessing/" ab o v e/)/. Clearly /, this trivial problem do es not pro vide a
+v ery go o d testb ed to compare p erformance of v arious non/-trivial algorithms/. Still/, it demonstrates
+that LSTM do es not encoun ter fundamen tal problems when faced with signal and noise on the
+same c hannel/.
+T ask /3b/. Arc hitecture/, parameters/, etc/. lik e in T ask /3a/, but no w with Gaussian noise /(mean
+/0 and v ariance /0/./2/) added to the information/-con v eying elemen ts /( t /< /= N /)/. W e stop training
+/(and judge the task as b eing solv ed/) according to the follo wing/, sligh tly rede/ned criteria/: ST/1/:
+less than /6 out of /2/5/6 sequences from a randomly c hosen test set are misclassi/ed/. ST/2/: ST/1 is
+satis/ed/, and mean absolute test set error is b elo w /0/./0/4/. In case of ST/2/, an additional test set
+consisting of /2/5/6/0 randomly c hosen sequences is used to determine the fraction of misclassi/ed
+sequences/.
+Results/. See T able /5/. The results represen t means of /1/0 trials with di/eren t w eigh t initializa/-
+tions/. LSTM easily solv es the problem/.
+T ask /3c/. Arc hitecture/, parameters/, etc/. lik e in T ask /3a/, but with a few essen tial c hanges that
+mak e the task non/-trivial/: the targets are /0/./2 and /0/./8 for class /1 and class /2/, resp ectiv ely /, and
+there is Gaussian noise on the tar gets /(mean /0 and v ariance /0/./1/; st/.dev/. /0/./3/2/)/. T o minimize mean
+squared error/, the system has to learn the c onditional exp e ctations of the tar gets giv en the inputs/.
+Misclassi/cation is de/ned as /\absolute di/erence b et w een output and noise/-free target /(/0/./2 for
+/5
+It should b e men tioned/, ho w ev er/, that di/eren t input represen tations and di/eren t t yp es of noise ma y lead to
+w orse guessing p erformance /(Y osh ua Bengio/, p ersonal comm unication/, /1/9/9/6/)/.
+/1/6
+===== PAGE 17 =====
+T N stop/: ST/1 stop/: ST/2 /# w eigh ts ST/2/: fraction misclassi/ed
+/1/0/0 /3 /4/1/,/7/4/0 /4/3/,/2/5/0 /1/0/2 /0/./0/0/8/2/8
+/1/0/0 /1 /7/4/,/9/5/0 /7/8/,/4/3/0 /1/0/2 /0/./0/1/5/0/0
+/1/0/0/0 /1 /4/8/1/,/0/6/0 /4/8/5/,/0/8/0 /1/0/2 /0/./0/1/2/0/7
+T able /5/: T ask /3b/: mo di/e d /2/-se quenc e pr oblem/. Same as in T able /4/, but now the information/-
+c onveying elements ar e also p erturb e d by noise/.
+T N stop /# w eigh ts fraction misclassi/ed a v/. di/erence to mean
+/1/0/0 /3 /2/6/9/,/6/5/0 /1/0/2 /0/./0/0/5/5/8 /0/./0/1/4
+/1/0/0 /1 /5/6/5/,/6/4/0 /1/0/2 /0/./0/0/4/4/1 /0/./0/1/2
+T able /6/: T ask /3c/: mo di/e d/, mor e chal lenging /2/-se quenc e pr oblem/. Same as in T able /4/, but with
+noisy r e al/-value d tar gets/. The system has to le arn the c onditional exp e ctations of the tar gets given
+the inputs/. The rightmost c olumn pr ovides the aver age di/er enc e b etwe en network output and
+exp e cte d tar get/. Unlike /3a and /3b/, this task c annot b e solve d quickly by r andom weight guessing/.
+class /1 and /0/./8 for class /2/) /> /0/./1/. /" The net w ork output is considered acceptable if the mean
+absolute di/erence b et w een noise/-free target and output is b elo w /0/./0/1/5/. Since this requires high
+w eigh t precision/, T ask /3c /(unlike /3a and /3b/) c annot b e solve d quickly by r andom guessing/.
+T raining//T esting/. The learning rate is /0 /: /1/. W e stop training according to the follo wing
+criterion/: none of /2/5/6 sequences from a randomly c hosen test set is misclassi/ed/, and mean
+absolute di/erence b et w een noise free target and output is b elo w /0/./0/1/5/. An additional test set
+consisting of /2/5/6/0 randomly c hosen sequences is used to determine the fraction of misclassi/ed
+sequences/.
+Results/. See T able /6/. The results represen t means of /1/0 trials with di/eren t w eigh t initial/-
+izations/. Despite the noisy targets/, LSTM still can solv e the problem b y learning the exp ected
+target v alues/.
+/5/./4 EXPERIMENT /4/: ADDING PR OBLEM
+The di/cult task in this section is of a t yp e that has nev er b een solv ed b y other recurren t net al/-
+gorithms/. It sho ws that LSTM can solv e long time lag problems in v olving distributed/, con tin uous/-
+v alued represen tations/.
+T ask/. Eac h elemen t of eac h input sequence is a pair of comp onen ts/. The /rst comp onen t
+is a real v alue randomly c hosen from the in terv al /[ /BnZr /1 /; /1/]/; the second is either /1/./0/, /0/./0/, or /-/1/./0/,
+and is used as a mark er/: at the end of eac h sequence/, the task is to output the sum of the /rst
+comp onen ts of those pairs that are marke d b y second comp onen ts equal to /1/./0/. Sequences ha v e
+random lengths b et w een the minimal sequence length T and T /+
+T
+/1/0
+/. In a giv en sequence exactly
+t w o pairs are mark ed as follo ws/: w e /rst randomly select and mark one of the /rst ten pairs
+/(whose /rst comp onen t w e call X
+/1
+/)/. Then w e randomly select and mark one of the /rst
+T
+/2
+/BnZr /1
+still unmark ed pairs /(whose /rst comp onen t w e call X
+/2
+/)/. The second comp onen ts of all remaining
+pairs are zero except for the /rst and /nal pair/, whose second comp onen ts are /-/1/. /(In the rare case
+where the /rst pair of the sequence gets mark ed/, w e set X
+/1
+to zero/./) An error signal is generated
+only at the sequence end/: the target is /0 /: /5 /+
+X
+/1
+/+ X
+/2
+/4 /: /0
+/(the sum X
+/1
+/+ X
+/2
+scaled to the in terv al /[/0 /; /1/]/)/.
+A sequence is pro cessed correctly if the absolute error at the sequence end is b elo w /0/./0/4/.
+Arc hitecture/. W e use a /3/-la y er net with /2 input units/, /1 output unit/, and /2 cell blo c ks of size
+/2/. The output la y er receiv es connections only from memory cells/. Memory cells and gate units
+receiv e inputs from memory cells and gate units /(i/.e/./, the hidden la y er is fully connected /| less
+connectivit y ma y w ork as w ell/)/. The input la y er has forw ard connections to all units in the hidden
+/1/7
+===== PAGE 18 =====
+T minimal lag /# w eigh ts /# wrong predictions Success after
+/1/0/0 /5/0 /9/3 /1 out of /2/5/6/0 /7/4/,/0/0/0
+/5/0/0 /2/5/0 /9/3 /0 out of /2/5/6/0 /2/0/9/,/0/0/0
+/1/0/0/0 /5/0/0 /9/3 /1 out of /2/5/6/0 /8/5/3/,/0/0/0
+T able /7/: EXPERIMENT /4/: R esults for the A dding Pr oblem/. T is the minimal se quenc e length/,
+T /= /2 the minimal time lag/. /\/# wr ong pr e dictions/" is the numb er of inc orr e ctly pr o c esse d se quenc es
+/(err or /> /0/./0/4/) fr om a test set c ontaining /2/5/6/0 se quenc es/. The rightmost c olumn gives the numb er
+of tr aining se quenc es r e quir e d to achieve the stopping criterion/. A l l values ar e me ans of /1/0 trials/.
+F or T /= /1/0/0/0 the numb er of r e quir e d tr aining examples varies b etwe en /3/7/0/,/0/0/0 and /2/,/0/2/0/,/0/0/0/,
+exc e e ding /7/0/0/,/0/0/0 in only /3 c ases/.
+la y er/. All non/-input units ha v e bias w eigh ts/. These arc hitecture parameters mak e it easy to store
+at least /2 input signals /(a cell blo c k size of /1 w orks w ell/, to o/)/. All activ ation functions are logistic
+with output range /[/0 /; /1/]/, except for h /, whose range is /[ /BnZr /1 /; /1/]/, and g /, whose range is /[ /BnZr /2 /; /2/]/.
+State drift v ersus initial bias/. Note that the task requires storing the precise v alues of
+real n um b ers for long durations /| the system m ust learn to protect memory cell con ten ts against
+ev en minor in ternal state drift /(see Section /4/)/. T o study the signi/cance of the drift problem/,
+w e mak e the task ev en more di/cult b y biasing all non/-input units/, th us arti/cially inducing
+in ternal state drift/. All w eigh ts /(including the bias w eigh ts/) are randomly initialized in the range
+/[ /BnZr /0 /: /1 /; /0 /: /1/]/. F ollo wing Section /4/'s remedy for state drifts/, the /rst input gate bias is initialized with
+/BnZr /3 /: /0/, the second with /BnZr /6 /: /0 /(though the precise v alues hardly matter/, as con/rmed b y additional
+exp erimen ts/)/.
+T raining//T esting/. The learning rate is /0/./5/. T raining is stopp ed once the a v erage training
+error is b elo w /0/./0/1/, and the /2/0/0/0 most recen t sequences w ere pro cessed correctly /.
+Results/. With a test set consisting of /2/5/6/0 randomly c hosen sequences/, the a v erage test set
+error w as alw a ys b elo w /0/./0/1/, and there w ere nev er more than /3 incorrectly pro cessed sequences/.
+T able /7 sho ws details/.
+The exp erimen t demonstrates/: /(/1/) LSTM is able to w ork w ell with distributed represen tations/.
+/(/2/) LSTM is able to learn to p erform calculations in v olving c ontinuous v alues/. /(/3/) Since the system
+manages to store con tin uous v alues without deterioration for minimal dela ys of
+T
+/2
+time steps/, there
+is no signi/can t/, harmful in ternal state drift/.
+/5/./5 EXPERIMENT /5/: MUL TIPLICA TION PR OBLEM
+One ma y argue that LSTM is a bit biased to w ards tasks suc h as the Adding Problem from the
+previous subsection/. Solutions to the Adding Problem ma y exploit the CEC/'s built/-in in tegration
+capabilities/. Although this CEC prop ert y ma y b e view ed as a feature rather than a disadv an tage
+/(in tegration seems to b e a natural subtask of man y tasks o ccurring in the real w orld/)/, the question
+arises whether LSTM can also solv e tasks with inheren tly non/-in tegrativ e solutions/. T o test this/,
+w e c hange the problem b y requiring the /nal target to equal the pro duct /(instead of the sum/) of
+earlier mark ed inputs/.
+T ask/. Lik e the task in Section /5/./4/, except that the /rst comp onen t of eac h pair is a real v alue
+randomly c hosen from the in terv al /[/0 /; /1/]/. In the rare case where the /rst pair of the input sequence
+gets mark ed/, w e set X
+/1
+to /1/./0/. The target at sequence end is the pro duct X
+/1
+/ X
+/2
+/.
+Arc hitecture/. Lik e in Section /5/./4/. All w eigh ts /(including the bias w eigh ts/) are randomly
+initialized in the range /[ /BnZr /0 /: /1 /; /0 /: /1/]/.
+T raining//T esting/. The learning rate is /0/./1/. W e test p erformance t wice/: as so on as less
+than n
+seq
+of the /2/0/0/0 most recen t training sequences lead to absolute errors exceeding /0/./0/4/, where
+n
+seq
+/= /1/4/0/, and n
+seq
+/= /1/3/. Wh y these v alues/? n
+seq
+/= /1/4/0 is su/cien t to learn storage of the
+relev an t inputs/. It is not enough though to /ne/-tune the precise /nal outputs/. n
+seq
+/= /1/3/, ho w ev er/,
+/1/8
+===== PAGE 19 =====
+T minimal lag /# w eigh ts n
+seq
+/# wrong predictions MSE Success after
+/1/0/0 /5/0 /9/3 /1/4/0 /1/3/9 out of /2/5/6/0 /0/./0/2/2/3 /4/8/2/,/0/0/0
+/1/0/0 /5/0 /9/3 /1/3 /1/4 out of /2/5/6/0 /0/./0/1/3/9 /1/,/2/7/3/,/0/0/0
+T able /8/: EXPERIMENT /5/: R esults for the Multiplic ation Pr oblem/. T is the minimal se quenc e
+length/, T /= /2 the minimal time lag/. We test on a test set c ontaining /2/5/6/0 se quenc es as so on as less
+than n
+seq
+of the /2/0/0/0 most r e c ent tr aining se quenc es le ad to err or /> /0/./0/4/. /\/# wr ong pr e dictions/"
+is the numb er of test se quenc es with err or /> /0/./0/4/. MSE is the me an squar e d err or on the test
+set/. The rightmost c olumn lists numb ers of tr aining se quenc es r e quir e d to achieve the stopping
+criterion/. A l l values ar e me ans of /1/0 trials/.
+leads to quite satisfactory results/.
+Results/. F or n
+seq
+/= /1/4/0 /( n
+seq
+/= /1/3/) with a test set consisting of /2/5/6/0 randomly c hosen
+sequences/, the a v erage test set error w as alw a ys b elo w /0/./0/2/6 /(/0/./0/1/3/)/, and there w ere nev er more
+than /1/7/0 /(/1/5/) incorrectly pro cessed sequences/. T able /8 sho ws details/. /(A net with additional
+standard hidden units or with a hidden la y er ab o v e the memory cells ma y learn the /ne/-tuning
+part more quic kly /./)
+The exp erimen t demonstrates/: LSTM can solv e tasks in v olving b oth con tin uous/-v alued repre/-
+sen tations and non/-in tegrativ e information pro cessing/.
+/5/./6 EXPERIMENT /6/: TEMPORAL ORDER
+In this subsection/, LSTM solv es other di/cult /(but arti/cial/) tasks that ha v e nev er b een solv ed b y
+previous recurren t net algorithms/. The exp erimen t sho ws that LSTM is able to extract information
+con v ey ed b y the temp oral order of widely separated inputs/.
+T ask /6a/: t w o relev an t/, widely separated sym b ols/. The goal is to classify sequences/.
+Elemen ts and targets are represen ted lo cally /(input v ectors with only one non/-zero bit/)/. The
+sequence starts with an E /, ends with a B /(the /\trigger sym b ol/"/) and otherwise consists of randomly
+c hosen sym b ols from the set f a/; b/; c/; d g except for t w o elemen ts at p ositions t
+/1
+and t
+/2
+that are either
+X or Y /. The sequence length is randomly c hosen b et w een /1/0/0 and /1/1/0/, t
+/1
+is randomly c hosen
+b et w een /1/0 and /2/0/, and t
+/2
+is randomly c hosen b et w een /5/0 and /6/0/. There are /4 sequence classes
+Q/; R /; S/; U whic h dep end on the temp oral order of X and Y /. The rules are/: X /; X /! Q /; X /; Y /!
+R /; Y /; X /! S /; Y /; Y /! U /.
+T ask /6b/: three relev an t/, widely separated sym b ols/. Again/, the goal is to classify
+sequences/. Elemen ts//targets are represen ted lo cally /. The sequence starts with an E /, ends with
+a B /(the /\trigger sym b ol/"/)/, and otherwise consists of randomly c hosen sym b ols from the set
+f a/; b/; c/; d g except for three elemen ts at p ositions t
+/1
+/; t
+/2
+and t
+/3
+that are either X or Y /. The sequence
+length is randomly c hosen b et w een /1/0/0 and /1/1/0/, t
+/1
+is randomly c hosen b et w een /1/0 and /2/0/, t
+/2
+is
+randomly c hosen b et w een /3/3 and /4/3/, and t
+/3
+is randomly c hosen b et w een /6/6 and /7/6/. There are /8
+sequence classes Q/; R /; S/; U/; V /; A/; B /; C whic h dep end on the temp oral order of the X s and Y s/. The
+rules are/: X /; X /; X /! Q /; X /; X /; Y /! R /; X /; Y /; X /! S /; X /; Y /; Y /! U /; Y /; X /; X /! V /; Y /; X /; Y /!
+A /; Y /; Y /; X /! B /; Y /; Y /; Y /! C /.
+There are as man y output units as there are classes/. Eac h class is lo cally represen ted b y a
+binary target v ector with one non/-zero comp onen t/. With b oth tasks/, error signals o ccur only at
+the end of a sequence/. The sequence is classi/ed correctly if the /nal absolute error of all output
+units is b elo w /0/./3/.
+Arc hitecture/. W e use a /3/-la y er net with /8 input units/, /2 /(/3/) cell blo c ks of size /2 and /4
+/(/8/) output units for T ask /6a /(/6b/)/. Again all non/-input units ha v e bias w eigh ts/, and the output
+la y er receiv es connections from memory cells only /. Memory cells and gate units receiv e inputs
+from input units/, memory cells and gate units /(i/.e/./, the hidden la y er is fully connected /| less
+connectivit y ma y w ork as w ell/)/. The arc hitecture parameters for T ask /6a /(/6b/) mak e it easy to
+/1/9
+===== PAGE 20 =====
+store at least /2 /(/3/) input signals/. All activ ation functions are logistic with output range /[/0 /; /1/]/,
+except for h /, whose range is /[ /BnZr /1 /; /1/]/, and g /, whose range is /[ /BnZr /2 /; /2/]/.
+T raining//T esting/. The learning rate is /0/./5 /(/0/./1/) for Exp erimen t /6a /(/6b/)/. T raining is stopp ed
+once the a v erage training error falls b elo w /0/./1 and the /2/0/0/0 most recen t sequences w ere classi/ed
+correctly /. All w eigh ts are initialized in the range /[ /BnZr /0 /: /1 /; /0 /: /1/]/. The /rst input gate bias is initialized
+with /BnZr /2 /: /0/, the second with /BnZr /4 /: /0/, and /(for Exp erimen t /6b/) the third with /BnZr /6 /: /0 /(again/, w e con/rmed
+b y additional exp erimen ts that the precise v alues hardly matter/)/.
+Results/. With a test set consisting of /2/5/6/0 randomly c hosen sequences/, the a v erage test set
+error w as alw a ys b elo w /0/./1/, and there w ere nev er more than /3 incorrectly classi/ed sequences/.
+T able /9 sho ws details/.
+The exp erimen t sho ws that LSTM is able to extract information con v ey ed b y the temp oral
+order of widely separated inputs/. In T ask /6a/, for instance/, the dela ys b et w een /rst and second
+relev an t input and b et w een second relev an t input and sequence end are at least /3/0 time steps/.
+task /# w eigh ts /# wrong predictions Success after
+T ask /6a /1/5/6 /1 out of /2/5/6/0 /3/1/,/3/9/0
+T ask /6b /3/0/8 /2 out of /2/5/6/0 /5/7/1/,/1/0/0
+T able /9/: EXPERIMENT /6/: R esults for the T emp or al Or der Pr oblem/. /\/# wr ong pr e dictions/" is
+the numb er of inc orr e ctly classi/e d se quenc es /(err or /> /0/./3 for at le ast one output unit/) fr om a
+test set c ontaining /2/5/6/0 se quenc es/. The rightmost c olumn gives the numb er of tr aining se quenc es
+r e quir e d to achieve the stopping criterion/. The r esults for T ask /6a ar e me ans of /2/0 trials/; those
+for T ask /6b of /1/0 trials/.
+T ypical solutions/. In Exp erimen t /6a/, ho w do es LSTM distinguish b et w een temp oral orders
+/( X /; Y /) and /( Y /; X /)/? One of man y p ossible solutions is to store the /rst X or Y in cell blo c k /1/, and
+the second X/= Y in cell blo c k /2/. Before the /rst X/= Y o ccurs/, blo c k /1 can see that it is still empt y
+b y means of its recurren t connections/. After the /rst X/= Y /, blo c k /1 can close its input gate/. Once
+blo c k /1 is /lled and closed/, this fact will b ecome visible to blo c k /2 /(recall that all gate units and
+all memory cells receiv e connections from all non/-output units/)/.
+T ypical solutions/, ho w ev er/, require only one memory cell blo c k/. The blo c k stores the /rst X
+or Y /; once the second X/= Y o ccurs/, it c hanges its state dep ending on the /rst stored sym b ol/.
+Solution t yp e /1 exploits the connection b et w een memory cell output and input gate unit /| the
+follo wing ev en ts cause di/eren t input gate activ ations/: /\ X o ccurs in conjunction with a /lled
+blo c k/"/; /\ X o ccurs in conjunction with an empt y blo c k/"/. Solution t yp e /2 is based on a strong
+p ositiv e connection b et w een memory cell output and memory cell input/. The previous o ccurrence
+of X /( Y /) is represen ted b y a p ositiv e /(negativ e/) in ternal state/. Once the input gate op ens for the
+second time/, so do es the output gate/, and the memory cell output is fed bac k to its o wn input/.
+This causes /( X /; Y /) to b e represen ted b y a p ositiv e in ternal state/, b ecause X con tributes to the
+new in ternal state t wice /(via curren t in ternal state and cell output feedbac k/)/. Similarly /, /( Y /; X /)
+gets represen ted b y a negativ e in ternal state/.
+/5/./7 SUMMAR Y OF EXPERIMENT AL CONDITIONS
+The t w o tables in this subsection pro vide an o v erview of the most imp ortan t LSTM parameters
+and arc hitectural details for Exp erimen ts /1/{/6/. The conditions of the simple exp erimen ts /2a and
+/2b di/er sligh tly from those of the other/, more systematic exp erimen ts/, due to historical reasons/.
+/1 /2 /3 /4 /5 /6 /7 /8 /9 /1/0 /1/1 /1/2 /1/3 /1/4 /1/5
+T ask p lag b s in out w c ogb igb bias h g /
+/1/-/1 /9 /9 /4 /1 /7 /7 /2/6/4 F /-/1/,/-/2/,/-/3/,/-/4 r ga h/1 g/2 /0/./1
+/1/-/2 /9 /9 /3 /2 /7 /7 /2/7/6 F /-/1/,/-/2/,/-/3 r ga h/1 g/2 /0/./1
+to b e con tin ued on next page
+/2/0
+===== PAGE 21 =====
+con tin ued from previous page
+/1 /2 /3 /4 /5 /6 /7 /8 /9 /1/0 /1/1 /1/2 /1/3 /1/4 /1/5
+T ask p lag b s in out w c ogb igb bias h g /
+/1/-/3 /9 /9 /3 /2 /7 /7 /2/7/6 F /-/1/,/-/2/,/-/3 r ga h/1 g/2 /0/./2
+/1/-/4 /9 /9 /4 /1 /7 /7 /2/6/4 F /-/1/,/-/2/,/-/3/,/-/4 r ga h/1 g/2 /0/./5
+/1/-/5 /9 /9 /3 /2 /7 /7 /2/7/6 F /-/1/,/-/2/,/-/3 r ga h/1 g/2 /0/./5
+/2a /1/0/0 /1/0/0 /1 /1 /1/0/1 /1/0/1 /1/0/5/0/4 B no og none none id g/1 /1/./0
+/2b /1/0/0 /1/0/0 /1 /1 /1/0/1 /1/0/1 /1/0/5/0/4 B no og none none id g/1 /1/./0
+/2c/-/1 /5/0 /5/0 /2 /1 /5/4 /2 /3/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/2 /1/0/0 /1/0/0 /2 /1 /1/0/4 /2 /6/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/3 /2/0/0 /2/0/0 /2 /1 /2/0/4 /2 /1/2/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/4 /5/0/0 /5/0/0 /2 /1 /5/0/4 /2 /3/0/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/5 /1/0/0/0 /1/0/0/0 /2 /1 /1/0/0/4 /2 /6/0/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/6 /1/0/0/0 /1/0/0/0 /2 /1 /5/0/4 /2 /3/0/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/7 /1/0/0/0 /1/0/0/0 /2 /1 /2/0/4 /2 /1/2/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/8 /1/0/0/0 /1/0/0/0 /2 /1 /1/0/4 /2 /6/6/4 F none none none h/1 g/2 /0/./0/1
+/2c/-/9 /1/0/0/0 /1/0/0/0 /2 /1 /5/4 /2 /3/6/4 F none none none h/1 g/2 /0/./0/1
+/3a /1/0/0 /1/0/0 /3 /1 /1 /1 /1/0/2 F /-/2/,/-/4/,/-/6 /-/1/,/-/3/,/-/5 b/1 h/1 g/2 /1/./0
+/3b /1/0/0 /1/0/0 /3 /1 /1 /1 /1/0/2 F /-/2/,/-/4/,/-/6 /-/1/,/-/3/,/-/5 b/1 h/1 g/2 /1/./0
+/3c /1/0/0 /1/0/0 /3 /1 /1 /1 /1/0/2 F /-/2/,/-/4/,/-/6 /-/1/,/-/3/,/-/5 b/1 h/1 g/2 /0/./1
+/4/-/1 /1/0/0 /5/0 /2 /2 /2 /1 /9/3 F r /-/3/,/-/6 all h/1 g/2 /0/./5
+/4/-/2 /5/0/0 /2/5/0 /2 /2 /2 /1 /9/3 F r /-/3/,/-/6 all h/1 g/2 /0/./5
+/4/-/3 /1/0/0/0 /5/0/0 /2 /2 /2 /1 /9/3 F r /-/3/,/-/6 all h/1 g/2 /0/./5
+/5 /1/0/0 /5/0 /2 /2 /2 /1 /9/3 F r r all h/1 g/2 /0/./1
+/6a /1/0/0 /4/0 /2 /2 /8 /4 /1/5/6 F r /-/2/,/-/4 all h/1 g/2 /0/./5
+/6b /1/0/0 /2/4 /3 /2 /8 /8 /3/0/8 F r /-/2/,/-/4/,/-/6 all h/1 g/2 /0/./1
+T able /1/0/: Summary of exp erimental c onditions for LSTM/, Part I/. /1st c olumn/: task numb er/. /2nd
+c olumn/: minimal se quenc e length p /. /3r d c olumn/: minimal numb er of steps b etwe en most r e c ent
+r elevant input information and te acher signal/. /4th c olumn/: numb er of c el l blo cks b /. /5th c olumn/:
+blo ck size s /. /6th c olumn/: numb er of input units in /. /7th c olumn/: numb er of output units out /. /8th
+c olumn/: numb er of weights w /. /9th c olumn/: c describ es c onne ctivity/: /\F/" me ans /\output layer
+r e c eives c onne ctions fr om memory c el ls/; memory c el ls and gate units r e c eive c onne ctions fr om
+input units/, memory c el ls and gate units/"/; /\B/" me ans /\e ach layer r e c eives c onne ctions fr om al l
+layers b elow/"/. /1/0th c olumn/: initial output gate bias og b /, wher e /\r/" stands for /\r andomly chosen
+fr om the interval /[ /BnZr /0 /: /1 /; /0 /: /1/] /" and /\no o g/" me ans /\no output gate use d/"/. /1/1th c olumn/: initial input
+gate bias ig b /(se e /1/0th c olumn/)/. /1/2th c olumn/: which units have bias weights/? /\b/1/" stands for /\al l
+hidden units/"/, /\ga/" for /\only gate units/"/, and /\al l/" for /\al l non/-input units/"/. /1/3th c olumn/: the
+function h /, wher e /\id/" is identity function/, /\h/1/" is lo gistic sigmoid in /[ /BnZr /2 /; /2/] /. /1/4th c olumn/: the
+lo gistic function g /, wher e /\g/1/" is sigmoid in /[/0 /; /1/] /, /\g/2/" in /[ /BnZr /1 /; /1/] /. /1/5th c olumn/: le arning r ate / /.
+/1 /2 /3 /4 /5 /6
+T ask select in terv al test set size stopping criterion success
+/1 t/1 /[ /BnZr /0 /: /2 /; /0 /: /2/] /2/5/6 training /& test correctly pred/. see text
+/2a t/1 /[ /BnZr /0 /: /2 /; /0 /: /2/] no test set after /5 million exemplars ABS/(/0/./2/5/)
+/2b t/2 /[ /BnZr /0 /: /2 /; /0 /: /2/] /1/0/0/0/0 after /5 million exemplars ABS/(/0/./2/5/)
+/2c t/2 /[ /BnZr /0 /: /2 /; /0 /: /2/] /1/0/0/0/0 after /5 million exemplars ABS/(/0/./2/)
+/3a t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 ST/1 and ST/2 /(see text/) ABS/(/0/./2/)
+/3b t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 ST/1 and ST/2 /(see text/) ABS/(/0/./2/)
+/3c t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 ST/1 and ST/2 /(see text/) see text
+/4 t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 ST/3/(/0/./0/1/) ABS/(/0/./0/4/)
+/5 t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 see text ABS/(/0/./0/4/)
+/6a t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 ST/3/(/0/./1/) ABS/(/0/./3/)
+/6b t/3 /[ /BnZr /0 /: /1 /; /0 /: /1/] /2/5/6/0 ST/3/(/0/./1/) ABS/(/0/./3/)
+/2/1
+===== PAGE 22 =====
+T able /1/1/: Summary of exp erimental c onditions for LSTM/, Part II/. /1st c olumn/: task numb er/.
+/2nd c olumn/: tr aining exemplar sele ction/, wher e /\t/1/" stands for /\r andomly chosen fr om tr aining
+set/"/, /\t/2/" for /\r andomly chosen fr om /2 classes/"/, and /\t/3/" for /\r andomly gener ate d on/-line/"/. /3r d
+c olumn/: weight initialization interval/. /4th c olumn/: test set size/. /5th c olumn/: stopping criterion
+for tr aining/, wher e /\ST/3/( / /)/" stands for /\aver age tr aining err or b elow / and the /2/0/0/0 most r e c ent
+se quenc es wer e pr o c esse d c orr e ctly/"/. /6th c olumn/: suc c ess /(c orr e ct classi/c ation/) criterion/, wher e
+/\ABS/( / /)/" stands for /\absolute err or of al l output units at se quenc e end is b elow / /"/.
+/6 DISCUSSION
+Limitations of LSTM/.
+/ The particularly e/cien t truncated bac kprop v ersion of the LSTM algorithm will not easily
+solv e problems similar to /\strongly dela y ed X OR problems/"/, where the goal is to compute the
+X OR of t w o widely separated inputs that previously o ccurred somewhere in a noisy sequence/.
+The reason is that storing only one of the inputs will not help to reduce the exp ected error
+/| the task is non/-decomp osable in the sense that it is imp ossible to incremen tally reduce
+the error b y /rst solving an easier subgoal/.
+In theory /, this limitation can b e circum v en ted b y using the full gradien t /(p erhaps with ad/-
+ditional con v en tional hidden units receiving input from the memory cells/)/. But w e do not
+recommend computing the full gradien t for the follo wing reasons/: /(/1/) It increases computa/-
+tional complexit y /. /(/2/) Constan t error /o w through CECs can b e sho wn only for truncated
+LSTM/. /(/3/) W e actually did conduct a few exp erimen ts with non/-truncated LSTM/. There
+w as no signi/can t di/erence to truncated LSTM/, exactly b ecause outside the CECs error
+/o w tends to v anish quic kly /. F or the same reason full BPTT do es not outp erform truncated
+BPTT/.
+/ Eac h memory cell blo c k needs t w o additional units /(input and output gate/)/. In comparison
+to standard recurren t nets/, ho w ev er/, this do es not increase the n um b er of w eigh ts b y more
+than a factor of /9/: eac h con v en tional hidden unit is replaced b y at most /3 units in the
+LSTM arc hitecture/, increasing the n um b er of w eigh ts b y a factor of /3
+/2
+in the fully connected
+case/. Note/, ho w ev er/, that our exp erimen ts use quite comparable w eigh t n um b ers for the
+arc hitectures of LSTM and comp eting approac hes/.
+/ Generally sp eaking/, due to its constan t error /o w through CECs within memory cells/, LSTM
+runs in to problems similar to those of feedforw ard nets seeing the en tire input string at once/.
+F or instance/, there are tasks that can b e quic kly solv ed b y random w eigh t guessing but not b y
+the truncated LSTM algorithm with small w eigh t initializations/, suc h as the /5/0/0/-step parit y
+problem /(see in tro duction to Section /5/)/. Here/, LSTM/'s problems are similar to the ones of
+a feedforw ard net with /5/0/0 inputs/, trying to solv e /5/0/0/-bit parit y /. Indeed LSTM t ypically
+b eha v es m uc h lik e a feedforw ard net trained b y bac kprop that sees the en tire input/. But
+that/'s also precisely wh y it so clearly outp erforms previous approac hes on man y non/-trivial
+tasks with signi/can t searc h spaces/.
+/ LSTM do es not ha v e an y problems with the notion of /\recency/" that go b ey ond those of
+other approac hes/. All gradien t/-based approac hes/, ho w ev er/, su/er from practical inabilit y to
+precisely coun t discrete time steps/. If it mak es a di/erence whether a certain signal o ccurred
+/9/9 or /1/0/0 steps ago/, then an additional coun ting mec hanism seems necessary /. Easier tasks/,
+ho w ev er/, suc h as one that only requires to mak e a di/erence b et w een/, sa y /, /3 and /1/1 steps/,
+do not p ose an y problems to LSTM/. F or instance/, b y generating an appropriate negativ e
+connection b et w een memory cell output and input/, LSTM can giv e more w eigh t to recen t
+inputs and learn deca ys where necessary /.
+/2/2
+===== PAGE 23 =====
+Adv an tages of LSTM/.
+/ The constan t error bac kpropagation within memory cells results in LSTM/'s abilit y to bridge
+v ery long time lags in case of problems similar to those discussed ab o v e/.
+/ F or long time lag problems suc h as those discussed in this pap er/, LSTM can handle noise/,
+distributed represen tations/, and con tin uous v alues/. In con trast to /nite state automata or
+hidden Mark o v mo dels LSTM do es not require an a priori c hoice of a /nite n um b er of states/.
+In principle it can deal with unlimited state n um b ers/.
+/ F or problems discussed in this pap er LSTM generalizes w ell /| ev en if the p ositions of widely
+separated/, relev an t inputs in the input sequence do not matter/. Unlik e previous approac hes/,
+ours quic kly learns to distinguish b et w een t w o or more widely separated o ccurrences of a
+particular elemen t in an input sequence/, without dep ending on appropriate short time lag
+training exemplars/.
+/ There app ears to b e no need for parameter /ne tuning/. LSTM w orks w ell o v er a broad range
+of parameters suc h as learning rate/, input gate bias and output gate bias/. F or instance/, to
+some readers the learning rates used in our exp erimen ts ma y seem large/. Ho w ev er/, a large
+learning rate pushes the output gates to w ards zero/, th us automatically coun termanding its
+o wn negativ e e/ects/.
+/ The LSTM algorithm/'s up date complexit y p er w eigh t and time step is essen tially that of
+BPTT/, namely O /(/1/)/. This is excellen t in comparison to other approac hes suc h as R TRL/.
+Unlik e full BPTT/, ho w ev er/, LSTM is lo c al in b oth sp ac e and time /.
+/7 CONCLUSION
+Eac h memory cell/'s in ternal arc hitecture guaran tees constan t error /o w within its constan t error
+carrousel CEC/, pro vided that truncated bac kprop cuts o/ error /o w trying to leak out of memory
+cells/. This represen ts the basis for bridging v ery long time lags/. Tw o gate units learn to op en and
+close access to error /o w within eac h memory cell/'s CEC/. The m ultiplicativ e input gate a/ords
+protection of the CEC from p erturbation b y irrelev an t inputs/. Lik ewise/, the m ultiplicativ e output
+gate protects other units from p erturbation b y curren tly irrelev an t memory con ten ts/.
+F uture w ork/. T o /nd out ab out LSTM/'s practical limitations w e in tend to apply it to real
+w orld data/. Application areas will include /(/1/) time series prediction/, /(/2/) m usic comp osition/, and
+/(/3/) sp eec h pro cessing/. It will also b e in teresting to augmen t sequence c h unk ers /(Sc hmidh ub er
+/1/9/9/2b/, /1/9/9/3/) b y LSTM to com bine the adv an tages of b oth/.
+/8 A CKNO WLEDGMENTS
+Thanks to Mik e Mozer/, Wilfried Brauer/, Nic Sc hraudolph/, and sev eral anon ymous referees for v alu/-
+able commen ts and suggestions that help ed to impro v e a previous v ersion of this pap er /(Ho c hreiter
+and Sc hmidh ub er /1/9/9/5/)/. This w ork w as supp orted b y DF G gr ant SCHM /9/4/2///3/-/1 from /\Deutsc he
+F orsc h ungsgemeinsc haft/"/.
+APPENDIX
+A/./1 ALGORITHM DET AILS
+In what follo ws/, the index k ranges o v er output units/, i ranges o v er hidden units/, c
+j
+stands for
+the j /-th memory cell blo c k/, c
+v
+j
+denotes the v /-th unit of memory cell blo c k c
+j
+/, u/; l /; m stand for
+arbitrary units/, t ranges o v er all time steps of a giv en input sequence/.
+/2/3
+===== PAGE 24 =====
+The gate unit logistic sigmoid /(with range /[/0 /; /1/]/) used in the exp erimen ts is
+f /( x /) /=
+/1
+/1 /+ exp/( /BnZr x /)
+/. /(/3/)
+The function h /(with range /[ /BnZr /1 /; /1/]/) used in the exp erimen ts is
+h /( x /) /=
+/2
+/1 /+ exp/( /BnZr x /)
+/BnZr /1 /. /(/4/)
+The function g /(with range /[ /BnZr /2 /; /2/]/) used in the exp erimen ts is
+g /( x /) /=
+/4
+/1 /+ exp/( /BnZr x /)
+/BnZr /2 /. /(/5/)
+F orw ard pass/.
+The net input and the activ ation of hidden unit i are
+net
+i
+/( t /) /=
+X
+u
+w
+iu
+y
+u
+/( t /BnZr /1/) /(/6/)
+y
+i
+/( t /) /= f
+i
+/( net
+i
+/( t /)/) /.
+The net input and the activ ation of in
+j
+are
+net
+in
+j
+/( t /) /=
+X
+u
+w
+in
+j
+u
+y
+u
+/( t /BnZr /1/) /(/7/)
+y
+in
+j
+/( t /) /= f
+in
+j
+/( net
+in
+j
+/( t /)/) /.
+The net input and the activ ation of out
+j
+are
+net
+out
+j
+/( t /) /=
+X
+u
+w
+out
+j
+u
+y
+u
+/( t /BnZr /1/) /(/8/)
+y
+out
+j
+/( t /) /= f
+out
+j
+/( net
+out
+j
+/( t /)/) /.
+The net input net
+c
+v
+j
+/, the in ternal state s
+c
+v
+j
+/, and the output activ ation y
+c
+v
+j
+of the v /-th memory
+cell of memory cell blo c k c
+j
+are/:
+net
+c
+v
+j
+/( t /) /=
+X
+u
+w
+c
+v
+j
+u
+y
+u
+/( t /BnZr /1/) /(/9/)
+s
+c
+v
+j
+/( t /) /= s
+c
+v
+j
+/( t /BnZr /1/) /+ y
+in
+j
+/( t /) g
+/
+net
+c
+v
+j
+/( t /)
+/
+y
+c
+v
+j
+/( t /) /= y
+out
+j
+/( t /) h /( s
+c
+v
+j
+/( t /)/) /.
+The net input and the activ ation of output unit k are
+net
+k
+/( t /) /=
+X
+u /: u not a gate
+w
+k u
+y
+u
+/( t /BnZr /1/)
+y
+k
+/( t /) /= f
+k
+/( net
+k
+/( t /)/) /.
+The bac kw ard pass to b e describ ed later is based on the follo wing truncated bac kprop form ulae/.
+Appro ximate deriv ativ es for truncated bac kprop/. The truncated v ersion /(see Section /4/)
+only appro ximates the partial deriv ativ es/, whic h is re/ected b y the /\ /
+tr
+/" signs in the notation
+b elo w/. It truncates error /o w once it lea v es memory cells or gate units/. T runcation ensures that
+there are no lo ops across whic h an error that left some memory cell through its input or input
+gate can reen ter the cell through its output or output gate/. This in turn ensures constan t error
+/o w through the memory cell/'s CEC/.
+/2/4
+===== PAGE 25 =====
+In the truncated bac kprop v ersion/, the follo wing deriv ativ es are replaced b y zero/:
+/@ net
+in
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/
+tr
+/0 /8 u/;
+/@ net
+out
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/
+tr
+/0 /8 u/;
+and
+/@ net
+c
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/
+tr
+/0 /8 u/:
+Therefore w e get
+/@ y
+in
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/= f
+/0
+in
+j
+/( net
+in
+j
+/( t /)/)
+/@ net
+in
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/
+tr
+/0 /8 u/;
+/@ y
+out
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/= f
+/0
+out
+j
+/( net
+out
+j
+/( t /)/)
+/@ net
+out
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/
+tr
+/0 /8 u/;
+and
+/@ y
+c
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/=
+/@ y
+c
+j
+/( t /)
+/@ net
+out
+j
+/( t /)
+/@ net
+out
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/+
+/@ y
+c
+j
+/( t /)
+/@ net
+in
+j
+/( t /)
+/@ net
+in
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/+
+/@ y
+c
+j
+/( t /)
+/@ net
+c
+j
+/( t /)
+/@ net
+c
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/
+tr
+/0 /8 u/:
+This implies for all w
+lm
+not on connections to c
+v
+j
+/; in
+j
+/; out
+j
+/(that is/, l /6/2 f c
+v
+j
+/; in
+j
+/; out
+j
+g /)/:
+/@ y
+c
+v
+j
+/( t /)
+/@ w
+lm
+/=
+X
+u
+/@ y
+c
+v
+j
+/( t /)
+/@ y
+u
+/( t /BnZr /1/)
+/@ y
+u
+/( t /BnZr /1/)
+/@ w
+lm
+/
+tr
+/0 /:
+The truncated deriv ativ es of output unit k are/:
+/@ y
+k
+/( t /)
+/@ w
+lm
+/= f
+/0
+k
+/( net
+k
+/( t /)/)
+/ 
+X
+u /: u not a gate
+w
+k u
+/@ y
+u
+/( t /BnZr /1/)
+/@ w
+lm
+/+ /
+k l
+y
+m
+/( t /BnZr /1/)
+/!
+/
+tr
+/(/1/0/)
+f
+/0
+k
+/( net
+k
+/( t /)/)
+/0
+/@
+X
+j
+S
+j
+X
+v /=/1
+/
+c
+v
+j
+l
+w
+k c
+v
+j
+/@ y
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+/+
+X
+j
+/BnZr
+/
+in
+j
+l
+/+ /
+out
+j
+l
+/
+S
+j
+X
+v /=/1
+w
+k c
+v
+j
+/@ y
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+/+
+X
+i /: i hidden unit
+w
+k i
+/@ y
+i
+/( t /BnZr /1/)
+/@ w
+lm
+/+ /
+k l
+y
+m
+/( t /BnZr /1/)
+/!
+/=
+f
+/0
+k
+/( net
+k
+/( t /)/)
+/8
+/>
+/>
+/>
+/>
+/>
+/<
+/>
+/>
+/>
+/>
+/>
+/:
+y
+m
+/( t /BnZr /1/) l /= k
+w
+k c
+v
+j
+/@ y
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+l /= c
+v
+j
+P
+S
+j
+v /=/1
+w
+k c
+v
+j
+/@ y
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+l /= in
+j
+OR l /= out
+j
+P
+i /: i hidden unit
+w
+k i
+/@ y
+i
+/( t /BnZr /1/)
+/@ w
+lm
+l otherwise
+/,
+where / is the Kronec k er delta /( /
+ab
+/= /1 if a /= b and /0 otherwise/)/, and S
+j
+is the size of memory
+cell blo c k c
+j
+/. The truncated deriv ativ es of a hidden unit i that is not part of a memory cell are/:
+/@ y
+i
+/( t /)
+/@ w
+lm
+/= f
+/0
+i
+/( net
+i
+/( t /)/)
+/@ net
+i
+/( t /)
+/@ w
+lm
+/
+tr
+/
+li
+f
+/0
+i
+/( net
+i
+/( t /)/) y
+m
+/( t /BnZr /1/) /. /(/1/1/)
+/(Note/: here it w ould b e p ossible to use the full gradien t without a/ecting constan t error /o w
+through in ternal states of memory cells/./)
+/2/5
+===== PAGE 26 =====
+Cell blo c k c
+j
+/'s truncated deriv ativ es are/:
+/@ y
+in
+j
+/( t /)
+/@ w
+lm
+/= f
+/0
+in
+j
+/( net
+in
+j
+/( t /)/)
+/@ net
+in
+j
+/( t /)
+/@ w
+lm
+/
+tr
+/
+in
+j
+l
+f
+/0
+in
+j
+/( net
+in
+j
+/( t /)/) y
+m
+/( t /BnZr /1/) /. /(/1/2/)
+/@ y
+out
+j
+/( t /)
+/@ w
+lm
+/= f
+/0
+out
+j
+/( net
+out
+j
+/( t /)/)
+/@ net
+out
+j
+/( t /)
+/@ w
+lm
+/
+tr
+/
+out
+j
+l
+f
+/0
+out
+j
+/( net
+out
+j
+/( t /)/) y
+m
+/( t /BnZr /1/) /. /(/1/3/)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+lm
+/=
+/@ s
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+/+
+/@ y
+in
+j
+/( t /)
+/@ w
+lm
+g
+/
+net
+c
+v
+j
+/( t /)
+/
+/+ y
+in
+j
+/( t /) g
+/0
+/
+net
+c
+v
+j
+/( t /)
+/
+/@ net
+c
+v
+j
+/( t /)
+/@ w
+lm
+/
+tr
+/(/1/4/)
+/
+/
+in
+j
+l
+/+ /
+c
+v
+j
+l
+/
+/@ s
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+/+ /
+in
+j
+l
+/@ y
+in
+j
+/( t /)
+/@ w
+lm
+g
+/
+net
+c
+v
+j
+/( t /)
+/
+/+
+/
+c
+v
+j
+l
+y
+in
+j
+/( t /) g
+/0
+/
+net
+c
+v
+j
+/( t /)
+/
+/@ net
+c
+v
+j
+/( t /)
+/@ w
+lm
+/=
+/
+/
+in
+j
+l
+/+ /
+c
+v
+j
+l
+/
+/@ s
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+/+ /
+in
+j
+l
+f
+/0
+in
+j
+/( net
+in
+j
+/( t /)/) g
+/
+net
+c
+v
+j
+/( t /)
+/
+y
+m
+/( t /BnZr /1/) /+
+/
+c
+v
+j
+l
+y
+in
+j
+/( t /) g
+/0
+/
+net
+c
+v
+j
+/( t /)
+/
+y
+m
+/( t /BnZr /1/) /.
+/@ y
+c
+v
+j
+/( t /)
+/@ w
+lm
+/=
+/@ y
+out
+j
+/( t /)
+/@ w
+lm
+h /( s
+c
+v
+j
+/( t /)/) /+ h
+/0
+/( s
+c
+v
+j
+/( t /)/)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+lm
+y
+out
+j
+/( t /) /
+tr
+/(/1/5/)
+/
+out
+j
+l
+/@ y
+out
+j
+/( t /)
+/@ w
+lm
+h /( s
+c
+v
+j
+/( t /)/) /+
+/
+/
+in
+j
+l
+/+ /
+c
+v
+j
+l
+/
+h
+/0
+/( s
+c
+v
+j
+/( t /)/)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+lm
+y
+out
+j
+/( t /) /.
+T o e/cien tly up date the system at time t /, the only /(truncated/) deriv ativ es that need to b e stored
+at time t /BnZr /1 are
+/@ s
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+lm
+/, where l /= c
+v
+j
+or l /= in
+j
+/.
+Bac kw ard pass/. W e will describ e the bac kw ard pass only for the particularly e/cien t /\truncated
+gradien t v ersion/" of the LSTM algorithm/. F or simplicit y w e will use equal signs ev en where
+appro ximations are made according to the truncated bac kprop equations ab o v e/.
+The squared error at time t is giv en b y
+E /( t /) /=
+X
+k /: k output unit
+/BnZr
+t
+k
+/( t /) /BnZr y
+k
+/( t /)
+/
+/2
+/, /(/1/6/)
+where t
+k
+/( t /) is output unit k /'s target at time t /.
+Time t /'s con tribution to w
+lm
+/'s gradien t/-based up date with learning rate / is
+/ w
+lm
+/( t /) /= /BnZr /
+/@ E /( t /)
+/@ w
+lm
+/. /(/1/7/)
+W e de/ne some unit l /'s error at time step t b y
+e
+l
+/( t /) /:/= /BnZr
+/@ E /( t /)
+/@ net
+l
+/( t /)
+/. /(/1/8/)
+Using /(almost/) standard bac kprop/, w e /rst compute up dates for w eigh ts to output units /( l /= k /)/,
+w eigh ts to hidden units /( l /= i /) and w eigh ts to output gates /( l /= out
+j
+/)/. W e obtain /(compare
+form ulae /(/1/0/)/, /(/1/1/)/, /(/1/3/)/)/:
+l /= k /(output/) /: e
+k
+/( t /) /= f
+/0
+k
+/( net
+k
+/( t /)/)
+/BnZr
+t
+k
+/( t /) /BnZr y
+k
+/( t /)
+/
+/, /(/1/9/)
+l /= i /(hidden/) /: e
+i
+/( t /) /= f
+/0
+i
+/( net
+i
+/( t /)/)
+X
+k /: k output unit
+w
+k i
+e
+k
+/( t /) /, /(/2/0/)
+/2/6
+===== PAGE 27 =====
+l /= out
+j
+/(output gates/) /: /(/2/1/)
+e
+out
+j
+/( t /) /= f
+/0
+out
+j
+/( net
+out
+j
+/( t /)/)
+/0
+/@
+S
+j
+X
+v /=/1
+h /( s
+c
+v
+j
+/( t /)/)
+X
+k /: k output unit
+w
+k c
+v
+j
+e
+k
+/( t /)
+/1
+A
+/.
+F or all p ossible l time t /'s con tribution to w
+lm
+/'s up date is
+/ w
+lm
+/( t /) /= / e
+l
+/( t /) y
+m
+/( t /BnZr /1/) /. /(/2/2/)
+The remaining up dates for w eigh ts to input gates /( l /= in
+j
+/) and to cell units /( l /= c
+v
+j
+/) are less
+con v en tional/. W e de/ne some in ternal state s
+c
+v
+j
+/'s error/:
+e
+s
+c
+v
+j
+/:/= /BnZr
+/@ E /( t /)
+/@ s
+c
+v
+j
+/( t /)
+/= /(/2/3/)
+f
+out
+j
+/( net
+out
+j
+/( t /)/) h
+/0
+/( s
+c
+v
+j
+/( t /)/)
+X
+k /: k output unit
+w
+k c
+v
+j
+e
+k
+/( t /) /.
+W e obtain for l /= in
+j
+or l /= c
+v
+j
+/; v /= /1 /; /: /: /: /; S
+j
+/BnZr
+/@ E /( t /)
+/@ w
+lm
+/=
+S
+j
+X
+v /=/1
+e
+s
+c
+v
+j
+/( t /)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+lm
+/. /(/2/4/)
+The deriv ativ es of the in ternal states with resp ect to w eigh ts and the corresp onding w eigh t
+up dates are as follo ws /(compare expression /(/1/4/)/)/:
+l /= in
+j
+/(input gates/) /: /(/2/5/)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+in
+j
+m
+/=
+/@ s
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+in
+j
+m
+/+ g /( net
+c
+v
+j
+/( t /)/) f
+/0
+in
+j
+/( net
+in
+j
+/( t /)/) y
+m
+/( t /BnZr /1/) /;
+therefore time t /'s con tribution to w
+in
+j
+m
+/'s up date is /(compare expression /(/1/0/)/)/:
+/ w
+in
+j
+m
+/( t /) /= /
+S
+j
+X
+v /=/1
+e
+s
+c
+v
+j
+/( t /)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+in
+j
+m
+/. /(/2/6/)
+Similarly w e get /(compare expression /(/1/4/)/)/:
+l /= c
+v
+j
+/(memory cells/) /: /(/2/7/)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+c
+v
+j
+m
+/=
+/@ s
+c
+v
+j
+/( t /BnZr /1/)
+/@ w
+c
+v
+j
+m
+/+ g
+/0
+/( net
+c
+v
+j
+/( t /)/) f
+in
+j
+/( net
+in
+j
+/( t /)/) y
+m
+/( t /BnZr /1/) /;
+therefore time t /'s con tribution to w
+c
+v
+j
+m
+/'s up date is /(compare expression /(/1/0/)/)/:
+/ w
+c
+v
+j
+m
+/( t /) /= /e
+s
+c
+v
+j
+/( t /)
+/@ s
+c
+v
+j
+/( t /)
+/@ w
+c
+v
+j
+m
+/. /(/2/8/)
+All w e need to implemen t for the bac kw ard pass are equations /(/1/9/)/, /(/2/0/)/, /(/2/1/)/, /(/2/2/)/, /(/2/3/)/, /(/2/5/)/,
+/(/2/6/)/, /(/2/7/)/, /(/2/8/)/. Eac h w eigh t/'s total up date is the sum of the con tributions of all time steps/.
+Computational complexit y /. LSTM/'s up date complexit y p er time step is
+O /( K H /+ K C S /+ H I /+ C S I /) /= O /( W /) /; /(/2/9/)
+where K is the n um b er of output units/, C is the n um b er of memory cell blo c ks/, S /> /0 is the size
+of the memory cell blo c ks/, H is the n um b er of hidden units/, I is the /(maximal/) n um b er of units
+forw ard/-connected to memory cells/, gate units and hidden units/, and
+W /= K H /+ K C S /+ C S I /+ /2 C I /+ H I /= O /( K H /+ K C S /+ C S I /+ H I /)
+/2/7
+===== PAGE 28 =====
+is the n um b er of w eigh ts/. Expression /(/2/9/) is obtained b y considering all computations of the
+bac kw ard pass/: equation /(/1/9/) needs K steps/; /(/2/0/) needs K H steps/; /(/2/1/) needs K S C steps/; /(/2/2/)
+needs K /( H /+ C /) steps for output units/, H I steps for hidden units/, C I steps for output gates/;
+/(/2/3/) needs K C S steps/; /(/2/5/) needs C S I steps/; /(/2/6/) needs C S I steps/; /(/2/7/) needs C S I steps/;
+/(/2/8/) needs C S I steps/. The total is K /+ /2 K H /+ K C /+ /2 K S C /+ H I /+ C I /+ /4 C S I steps/, or
+O /( K H /+ K S C /+ H I /+ C S I /) steps/. W e conclude/: LSTM algorithm/'s up date complexit y p er time
+step is just lik e BPTT/'s for a fully recurren t net/.
+A t a giv en time step/, only the /2 C S I most recen t
+/@ s
+c
+v
+j
+/@ w
+lm
+v alues from equations /(/2/5/) and /(/2/7/)
+need to b e stored/. Hence LSTM/'s storage complexit y also is O /( W /) /| it do es not dep end on the
+input sequence length/.
+A/./2 ERR OR FLO W
+W e compute ho w m uc h an error signal is scaled while /o wing bac k through a memory cell for q time
+steps/. As a b y/-pro duct/, this analysis recon/rms that the error /o w within a memory cell/'s CEC is
+indeed constan t/, pro vided that truncated bac kprop cuts o/ error /o w trying to lea v e memory cells
+/(see also Section /3/./2/)/. The analysis also highligh ts a p oten tial for undesirable long/-term drifts of
+s
+c
+j
+/(see /(/2/) b elo w/)/, as w ell as the b ene/cial/, coun termanding in/uence of negativ ely biased input
+gates /(see /(/3/) b elo w/)/.
+Using the truncated bac kprop learning rule/, w e obtain
+/@ s
+c
+j
+/( t /BnZr k /)
+/@ s
+c
+j
+/( t /BnZr k /BnZr /1/)
+/= /(/3/0/)
+/1 /+
+/@ y
+in
+j
+/( t /BnZr k /)
+/@ s
+c
+j
+/( t /BnZr k /BnZr /1/)
+g
+/BnZr
+net
+c
+j
+/( t /BnZr k /)
+/
+/+ y
+in
+j
+/( t /BnZr k /) g
+/0
+/BnZr
+net
+c
+j
+/( t /BnZr k /)
+/
+/@ net
+c
+j
+/( t /BnZr k /)
+/@ s
+c
+j
+/( t /BnZr k /BnZr /1/)
+/=
+/1 /+
+X
+u
+/
+/@ y
+in
+j
+/( t /BnZr k /)
+/@ y
+u
+/( t /BnZr k /BnZr /1/)
+/@ y
+u
+/( t /BnZr k /BnZr /1/)
+/@ s
+c
+j
+/( t /BnZr k /BnZr /1/)
+/
+g
+/BnZr
+net
+c
+j
+/( t /BnZr k /)
+/
+/+
+y
+in
+j
+/( t /BnZr k /) g
+/0
+/BnZr
+net
+c
+j
+/( t /BnZr k /)
+/
+X
+u
+/
+/@ net
+c
+j
+/( t /BnZr k /)
+/@ y
+u
+/( t /BnZr k /BnZr /1/)
+/@ y
+u
+/( t /BnZr k /BnZr /1/)
+/@ s
+c
+j
+/( t /BnZr k /BnZr /1/)
+/
+/
+tr
+/1 /:
+The /
+tr
+sign indicates equalit y due to the fact that truncated bac kprop replaces b y zero the
+follo wing deriv ativ es/:
+/@ y
+in
+j
+/( t /BnZr k /)
+/@ y
+u
+/( t /BnZr k /BnZr /1/)
+/8 u and
+/@ net
+c
+j
+/( t /BnZr k /)
+/@ y
+u
+/( t /BnZr k /BnZr /1/)
+/8 u /.
+In what follo ws/, an error /#
+j
+/( t /) starts /o wing bac k at c
+j
+/'s output/. W e rede/ne
+/#
+j
+/( t /) /:/=
+X
+i
+w
+ic
+j
+/#
+i
+/( t /+ /1/) /. /(/3/1/)
+F ollo wing the de/nitions//con v en tions of Section /3/./1/, w e compute error /o w for the truncated
+bac kprop learning rule/. The error o ccurring at the output gate is
+/#
+out
+j
+/( t /) /
+tr
+/@ y
+out
+j
+/( t /)
+/@ net
+out
+j
+/( t /)
+/@ y
+c
+j
+/( t /)
+/@ y
+out
+j
+/( t /)
+/#
+j
+/( t /) /. /(/3/2/)
+The error o ccurring at the in ternal state is
+/#
+s
+c
+j
+/( t /) /=
+/@ s
+c
+j
+/( t /+ /1/)
+/@ s
+c
+j
+/( t /)
+/#
+s
+c
+j
+/( t /+ /1/) /+
+/@ y
+c
+j
+/( t /)
+/@ s
+c
+j
+/( t /)
+/#
+j
+/( t /) /. /(/3/3/)
+Since w e use truncated bac kprop w e ha v e /#
+j
+/( t /) /=
+P
+i /, i no gate and no memory cell
+w
+ic
+j
+/#
+i
+/( t /+ /1/)/;
+therefore w e get
+/@ /#
+j
+/( t /)
+/@ /#
+s
+c
+j
+/( t /+ /1/)
+/=
+X
+i
+w
+ic
+j
+/@ /#
+i
+/( t /+ /1/)
+/@ /#
+s
+c
+j
+/( t /+ /1/)
+/
+tr
+/0 /. /(/3/4/)
+/2/8
+===== PAGE 29 =====
+The previous equations /(/3/3/) and /(/3/4/) imply constan t error /o w through in ternal states of
+memory cells/:
+/@ /#
+s
+c
+j
+/( t /)
+/@ /#
+s
+c
+j
+/( t /+ /1/)
+/=
+/@ s
+c
+j
+/( t /+ /1/)
+/@ s
+c
+j
+/( t /)
+/
+tr
+/1 /. /(/3/5/)
+The error o ccurring at the memory cell input is
+/#
+c
+j
+/( t /) /=
+/@ g /( net
+c
+j
+/( t /)/)
+/@ net
+c
+j
+/( t /)
+/@ s
+c
+j
+/( t /)
+/@ g /( net
+c
+j
+/( t /)/)
+/#
+s
+c
+j
+/( t /) /. /(/3/6/)
+The error o ccurring at the input gate is
+/#
+in
+j
+/( t /) /
+tr
+/@ y
+in
+j
+/( t /)
+/@ net
+in
+j
+/( t /)
+/@ s
+c
+j
+/( t /)
+/@ y
+in
+j
+/( t /)/)
+/#
+s
+c
+j
+/( t /) /. /(/3/7/)
+No external error /o w/. Errors are propagated bac k from units l to unit v along outgoing
+connections with w eigh ts w
+lv
+/. This /\external error/" /(note that for con v en tional units there is
+nothing but external error/) at time t is
+/#
+e
+v
+/( t /) /=
+/@ y
+v
+/( t /)
+/@ net
+v
+/( t /)
+X
+l
+/@ net
+l
+/( t /+ /1/)
+/@ y
+v
+/( t /)
+/#
+l
+/( t /+ /1/) /. /(/3/8/)
+W e obtain
+/@ /#
+e
+v
+/( t /BnZr /1/)
+/@ /#
+j
+/( t /)
+/= /(/3/9/)
+/@ y
+v
+/( t /BnZr /1/)
+/@ net
+v
+/( t /BnZr /1/)
+/
+/@ /#
+out
+j
+/( t /)
+/@ /#
+j
+/( t /)
+/@ net
+out
+j
+/( t /)
+/@ y
+v
+/( t /BnZr /1/)
+/+
+/@ /#
+in
+j
+/( t /)
+/@ /#
+j
+/( t /)
+/@ net
+in
+j
+/( t /)
+/@ y
+v
+/( t /BnZr /1/)
+/+
+/@ /#
+c
+j
+/( t /)
+/@ /#
+j
+/( t /)
+/@ net
+c
+j
+/( t /)
+/@ y
+v
+/( t /BnZr /1/)
+/
+/
+tr
+/0 /.
+W e observ e/: the error /#
+j
+arriving at the memory cell output is not bac kpropagated to units v via
+external connections to in
+j
+/; out
+j
+/; c
+j
+/.
+Error /o w within memory cells/. W e no w fo cus on the error bac k /o w within a memory
+cell/'s CEC/. This is actually the only t yp e of error /o w that can bridge sev eral time steps/. Supp ose
+error /#
+j
+/( t /) arriv es at c
+j
+/'s output at time t and is propagated bac k for q steps un til it reac hes in
+j
+or the memory cell input g /( net
+c
+j
+/)/. It is scaled b y a factor of
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+j
+/( t /)
+/, where v /= in
+j
+/; c
+j
+/. W e /rst
+compute
+/@ /#
+s
+c
+j
+/( t /BnZr q /)
+/@ /#
+j
+/( t /)
+/
+tr
+/8
+/<
+/:
+/@ y
+c
+j
+/( t /)
+/@ s
+c
+j
+/( t /)
+q /= /0
+/@ s
+c
+j
+/( t /BnZr q /+/1/)
+/@ s
+c
+j
+/( t /BnZr q /)
+/@ /#
+s
+c
+j
+/( t /BnZr q /+/1/)
+/@ /#
+j
+/( t /)
+q /> /0
+/. /(/4/0/)
+Expanding equation /(/4/0/)/, w e obtain
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+j
+/( t /)
+/
+tr
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+s
+c
+j
+/( t /BnZr q /)
+/@ /#
+s
+c
+j
+/( t /BnZr q /)
+/@ /#
+j
+/( t /)
+/
+tr
+/(/4/1/)
+/@ /#
+v
+/( t /BnZr q /)
+/@ /#
+s
+c
+j
+/( t /BnZr q /)
+/ 
+/1
+Y
+m /= q
+/@ s
+c
+j
+/( t /BnZr m /+ /1/)
+/@ s
+c
+j
+/( t /BnZr m /)
+/!
+/@ y
+c
+j
+/( t /)
+/@ s
+c
+j
+/( t /)
+/
+tr
+y
+out
+j
+/( t /) h
+/0
+/( s
+c
+j
+/( t /)/)
+/
+g
+/0
+/( net
+c
+j
+/( t /BnZr q /) y
+in
+j
+/( t /BnZr q /) v /= c
+j
+g /( net
+c
+j
+/( t /BnZr q /) f
+/0
+in
+j
+/( net
+in
+j
+/( t /BnZr q /)/) v /= in
+j
+/.
+Consider the factors in the previous equation/'s last expression/. Ob viously /, error /o w is scaled
+only at times t /(when it en ters the cell/) and t /BnZr q /(when it lea v es the cell/)/, but not in b et w een
+/(constan t error /o w through the CEC/)/. W e observ e/:
+/2/9
+===== PAGE 30 =====
+/(/1/) The output gate/'s e/ect is/: y
+out
+j
+/( t /) scales do wn those errors that can b e reduced early
+during training without using the memory cell/. Lik ewise/, it scales do wn those errors resulting
+from using /(activ ating//deactiv ating/) the memory cell at later training stages /| without the output
+gate/, the memory cell migh t for instance suddenly start causing a v oidable errors in situations that
+already seemed under con trol /(b ecause it w as easy to reduce the corresp onding errors without
+memory cells/)/. See /\output w eigh t con/ict/" and /\abuse problem/" in Sections /3///4/.
+/(/2/) If there are large p ositiv e or negativ e s
+c
+j
+/( t /) v alues /(b ecause s
+c
+j
+has drifted since time step
+t /BnZr q /)/, then h
+/0
+/( s
+c
+j
+/( t /)/) ma y b e small /(assuming that h is a logistic sigmoid/)/. See Section /4/. Drifts
+of the memory cell/'s in ternal state s
+c
+j
+can b e coun termanded b y negativ ely biasing the input gate
+in
+j
+/(see Section /4 and next p oin t/)/. Recall from Section /4 that the precise bias v alue do es not
+matter m uc h/.
+/(/3/) y
+in
+j
+/( t /BnZr q /) and f
+/0
+in
+j
+/( net
+in
+j
+/( t /BnZr q /)/) are small if the input gate is negativ ely biased /(assume
+f
+in
+j
+is a logistic sigmoid/)/. Ho w ev er/, the p oten tial signi/cance of this is negligible compared to the
+p oten tial signi/cance of drifts of the in ternal state s
+c
+j
+/.
+Some of the factors ab o v e ma y scale do wn LSTM/'s o v erall error /o w/, but not in a manner
+that dep ends on the length of the time lag/. The /o w will still b e m uc h more e/ectiv e than an
+exp onen tially /(of order q /) deca ying /o w without memory cells/.
+References
+Almeida/, L/. B/. /(/1/9/8/7/)/. A learning rule for async hronous p erceptrons with feedbac k in a com bina/-
+torial en vironmen t/. In IEEE /1st International Confer enc e on Neur al Networks/, San Die go /,
+v olume /2/, pages /6/0/9/{/6/1/8/.
+Baldi/, P /. and Pineda/, F/. /(/1/9/9/1/)/. Con trastiv e learning and neural oscillator/. Neur al Computation /,
+/3/:/5/2/6/{/5/4/5/.
+Bengio/, Y/. and F rasconi/, P /. /(/1/9/9/4/)/. Credit assignmen t through time/: Alternativ es to bac kpropaga/-
+tion/. In Co w an/, J/. D/./, T esauro/, G/./, and Alsp ector/, J/./, editors/, A dvanc es in Neur al Information
+Pr o c essing Systems /6 /, pages /7/5/{/8/2/. San Mateo/, CA/: Morgan Kaufmann/.
+Bengio/, Y/./, Simard/, P /./, and F rasconi/, P /. /(/1/9/9/4/)/. Learning long/-term dep endencies with gradien t
+descen t is di/cult/. IEEE T r ansactions on Neur al Networks /, /5/(/2/)/:/1/5/7/{/1/6/6/.
+Cleeremans/, A/./, Serv an/-Sc hreib er/, D/./, and McClelland/, J/. L/. /(/1/9/8/9/)/. Finite/-state automata and
+simple recurren t net w orks/. Neur al Computation /, /1/:/3/7/2/{/3/8/1/.
+de V ries/, B/. and Princip e/, J/. C/. /(/1/9/9/1/)/. A theory for neural net w orks with time dela ys/. In
+Lippmann/, R/. P /./, Mo o dy /, J/. E/./, and T ouretzky /, D/. S/./, editors/, A dvanc es in Neur al Information
+Pr o c essing Systems /3 /, pages /1/6/2/{/1/6/8/. San Mateo/, CA/: Morgan Kaufmann/.
+Do y a/, K/. /(/1/9/9/2/)/. Bifurcations in the learning of recurren t neural net w orks/. In Pr o c e e dings of /1/9/9/2
+IEEE International Symp osium on Cir cuits and Systems /, pages /2/7/7/7/{/2/7/8/0/.
+Do y a/, K/. and Y oshiza w a/, S/. /(/1/9/8/9/)/. Adaptiv e neural oscillator using con tin uous/-time bac k/-
+propagation learning/. Neur al Networks /, /2/:/3/7/5/{/3/8/5/.
+Elman/, J/. L/. /(/1/9/8/8/)/. Finding structure in time/. T ec hnical Rep ort CRL T ec hnical Rep ort /8/8/0/1/,
+Cen ter for Researc h in Language/, Univ ersit y of California/, San Diego/.
+F ahlman/, S/. E/. /(/1/9/9/1/)/. The recurren t cascade/-correlation learning algorithm/. In Lippmann/, R/. P /./,
+Mo o dy /, J/. E/./, and T ouretzky /, D/. S/./, editors/, A dvanc es in Neur al Information Pr o c essing
+Systems /3 /, pages /1/9/0/{/1/9/6/. San Mateo/, CA/: Morgan Kaufmann/.
+Ho c hreiter/, J/. /(/1/9/9/1/)/. Un tersuc h ungen zu dynamisc hen neuronalen Netzen/. Diploma the/-
+sis/, Institut f / ur Informatik/, Lehrstuhl Prof/. Brauer/, T ec hnisc he Univ ersit/ at M / unc hen/. See
+www/7/.informatik/.tu/-m uenc hen/.de///~ho c hreit/.
+/3/0
+===== PAGE 31 =====
+Ho c hreiter/, S/. and Sc hmidh ub er/, J/. /(/1/9/9/5/)/. Long short/-term memory /. T ec hnical Rep ort FKI/-/2/0/7/-
+/9/5/, F akult/ at f / ur Informatik/, T ec hnisc he Univ ersit/ at M / unc hen/.
+Ho c hreiter/, S/. and Sc hmidh ub er/, J/. /(/1/9/9/6/)/. Bridging long time lags b y w eigh t guessing and /\Long
+Short/-T erm Memory/"/. In Silv a/, F/. L/./, Princip e/, J/. C/./, and Almeida/, L/. B/./, editors/, Sp a/-
+tiotemp or al mo dels in biolo gic al and arti/cial systems /, pages /6/5/{/7/2/. IOS Press/, Amsterdam/,
+Netherlands/. Serie/: F ron tiers in Arti/cial In telligence and Applications/, V olume /3/7/.
+Ho c hreiter/, S/. and Sc hmidh ub er/, J/. /(/1/9/9/7/)/. LSTM can solv e hard long time lag problems/. In
+A dvanc es in Neur al Information Pr o c essing Systems /9 /. MIT Press/, Cam bridge MA/. Presen ted
+at NIPS /9/6/.
+Lang/, K/./, W aib el/, A/./, and Hin ton/, G/. E/. /(/1/9/9/0/)/. A time/-dela y neural net w ork arc hitecture for
+isolated w ord recognition/. Neur al Networks /, /3/:/2/3/{/4/3/.
+Miller/, C/. B/. and Giles/, C/. L/. /(/1/9/9/3/)/. Exp erimen tal comparison of the e/ect of order in recurren t
+neural net w orks/. International Journal of Pattern R e c o gnition and A rti/cial Intel ligenc e /,
+/7/(/4/)/:/8/4/9/{/8/7/2/.
+Mozer/, M/. C/. /(/1/9/8/9/)/. A fo cused bac k/-propagation algorithm for temp oral sequence recognition/.
+Complex Systems /, /3/:/3/4/9/{/3/8/1/.
+Mozer/, M/. C/. /(/1/9/9/2/)/. Induction of m ultiscale temp oral structure/. In Lippman/, D/. S/./, Mo o dy /,
+J/. E/./, and T ouretzky /, D/. S/./, editors/, A dvanc es in Neur al Information Pr o c essing Systems /4 /,
+pages /2/7/5/{/2/8/2/. San Mateo/, CA/: Morgan Kaufmann/.
+P earlm utter/, B/. A/. /(/1/9/8/9/)/. Learning state space tra jectories in recurren t neural net w orks/. Neur al
+Computation /, /1/(/2/)/:/2/6/3/{/2/6/9/.
+P earlm utter/, B/. A/. /(/1/9/9/5/)/. Gradien t calculations for dynamic recurren t neural net w orks/: A surv ey /.
+IEEE T r ansactions on Neur al Networks /, /6/(/5/)/:/1/2/1/2/{/1/2/2/8/.
+Pineda/, F/. J/. /(/1/9/8/7/)/. Generalization of bac k/-propagation to recurren t neural net w orks/. Physic al
+R eview L etters /, /1/9/(/5/9/)/:/2/2/2/9/{/2/2/3/2/.
+Pineda/, F/. J/. /(/1/9/8/8/)/. Dynamics and arc hitecture for neural computation/. Journal of Complexity /,
+/4/:/2/1/6/{/2/4/5/.
+Plate/, T/. A/. /(/1/9/9/3/)/. Holographic recurren t net w orks/. In S/. J/. Hanson/, J/. D/. C/. and Giles/, C/. L/./,
+editors/, A dvanc es in Neur al Information Pr o c essing Systems /5 /, pages /3/4/{/4/1/. San Mateo/, CA/:
+Morgan Kaufmann/.
+P ollac k/, J/. B/. /(/1/9/9/1/)/. Language induction b y phase transition in dynamical recognizers/. In
+Lippmann/, R/. P /./, Mo o dy /, J/. E/./, and T ouretzky /, D/. S/./, editors/, A dvanc es in Neur al Information
+Pr o c essing Systems /3 /, pages /6/1/9/{/6/2/6/. San Mateo/, CA/: Morgan Kaufmann/.
+Pusk orius/, G/. V/. and F eldk amp/, L/. A/. /(/1/9/9/4/)/. Neuro con trol of nonlinear dynamical systems with
+Kalman /lter trained recurren t net w orks/. IEEE T r ansactions on Neur al Networks /, /5/(/2/)/:/2/7/9/{
+/2/9/7/.
+Ring/, M/. B/. /(/1/9/9/3/)/. Learning sequen tial tasks b y incremen tally adding higher orders/. In S/. J/. Han/-
+son/, J/. D/. C/. and Giles/, C/. L/./, editors/, A dvanc es in Neur al Information Pr o c essing Systems
+/5 /, pages /1/1/5/{/1/2/2/. Morgan Kaufmann/.
+Robinson/, A/. J/. and F allside/, F/. /(/1/9/8/7/)/. The utilit y driv en dynamic error propagation net w ork/.
+T ec hnical Rep ort CUED//F/-INFENG//TR/./1/, Cam bridge Univ ersit y Engineering Departmen t/.
+Sc hmidh ub er/, J/. /(/1/9/8/9/)/. The Neural Buc k et Brigade/: A lo cal learning algorithm for dynamic
+feedforw ard and recurren t net w orks/. Conne ction Scienc e /, /1/(/4/)/:/4/0/3/{/4/1/2/.
+/3/1
+===== PAGE 32 =====
+Sc hmidh ub er/, J/. /(/1/9/9/2a/)/. A /xed size storage O /( n
+/3
+/) time complexit y learning algorithm for fully
+recurren t con tin ually running net w orks/. Neur al Computation /, /4/(/2/)/:/2/4/3/{/2/4/8/.
+Sc hmidh ub er/, J/. /(/1/9/9/2b/)/. Learning complex/, extended sequences using the principle of history
+compression/. Neur al Computation /, /4/(/2/)/:/2/3/4/{/2/4/2/.
+Sc hmidh ub er/, J/. /(/1/9/9/2c/)/. Learning unam biguous reduced sequence descriptions/. In Mo o dy /, J/. E/./,
+Hanson/, S/. J/./, and Lippman/, R/. P /./, editors/, A dvanc es in Neur al Information Pr o c essing Sys/-
+tems /4 /, pages /2/9/1/{/2/9/8/. San Mateo/, CA/: Morgan Kaufmann/.
+Sc hmidh ub er/, J/. /(/1/9/9/3/)/. Netzw erk arc hitekturen/, Zielfunktionen und Kettenregel/. Habilitations/-
+sc hrift/, Institut f / ur Informatik/, T ec hnisc he Univ ersit/ at M / unc hen/.
+Sc hmidh ub er/, J/. and Ho c hreiter/, S/. /(/1/9/9/6/)/. Guessing can outp erform man y long time lag algo/-
+rithms/. T ec hnical Rep ort IDSIA/-/1/9/-/9/6/, IDSIA/.
+Silv a/, G/. X/./, Amaral/, J/. D/./, Langlois/, T/./, and Almeida/, L/. B/. /(/1/9/9/6/)/. F aster training of recurren t
+net w orks/. In Silv a/, F/. L/./, Princip e/, J/. C/./, and Almeida/, L/. B/./, editors/, Sp atiotemp or al mo dels
+in biolo gic al and arti/cial systems /, pages /1/6/8/{/1/7/5/. IOS Press/, Amsterdam/, Netherlands/. Serie/:
+F ron tiers in Arti/cial In telligence and Applications/, V olume /3/7/.
+Smith/, A/. W/. and Zipser/, D/. /(/1/9/8/9/)/. Learning sequen tial structures with the real/-time recurren t
+learning algorithm/. International Journal of Neur al Systems /, /1/(/2/)/:/1/2/5/{/1/3/1/.
+Sun/, G/./, Chen/, H/./, and Lee/, Y/. /(/1/9/9/3/)/. Time w arping in v arian t neural net w orks/. In S/. J/. Hanson/,
+J/. D/. C/. and Giles/, C/. L/./, editors/, A dvanc es in Neur al Information Pr o c essing Systems /5 /,
+pages /1/8/0/{/1/8/7/. San Mateo/, CA/: Morgan Kaufmann/.
+W atrous/, R/. L/. and Kuhn/, G/. M/. /(/1/9/9/2/)/. Induction of /nite/-state languages using second/-order
+recurren t net w orks/. Neur al Computation /, /4/:/4/0/6/{/4/1/4/.
+W erb os/, P /. J/. /(/1/9/8/8/)/. Generalization of bac kpropagation with application to a recurren t gas mark et
+mo del/. Neur al Networks /, /1/.
+Williams/, R/. J/. /(/1/9/8/9/)/. Complexit y of exact gradien t computation algorithms for recurren t neural
+net w orks/. T ec hnical Rep ort T ec hnical Rep ort NU/-CCS/-/8/9/-/2/7/, Boston/: Northeastern Univ er/-
+sit y /, College of Computer Science/.
+Williams/, R/. J/. and P eng/, J/. /(/1/9/9/0/)/. An e/cien t gradien t/-based algorithm for on/-line training of
+recurren t net w ork tra jectories/. Neur al Computation /, /4/:/4/9/1/{/5/0/1/.
+Williams/, R/. J/. and Zipser/, D/. /(/1/9/9/2/)/. Gradien t/-based learning algorithms for recurren t net w orks
+and their computational complexit y /. In Back/-pr op agation/: The ory/, A r chite ctur es and Appli/-
+c ations /. Hillsdale/, NJ/: Erlbaum/.
+/3/2

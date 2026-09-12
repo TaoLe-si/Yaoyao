@@ -14,7 +14,7 @@ inline BatchPlan take_batch(ShuffledEpochCursor& cursor,size_t width) {
     for(size_t k=0;k<p.slots;++k)if(valid[k]){
         const auto& w=work[k];const auto& doc=cursor.cursor().docs[w.doc];
         for(size_t t=0;t<w.end-w.begin;++t){const size_t i=w.begin+t;
-            p.items[t*p.slots+k]={unsigned(doc[i-1].id),unsigned(doc[i].id),true,t==0&&w.reset,bool(doc[i].loss)};
+            p.items[t*p.slots+k]={unsigned(doc[i-1].id),unsigned(doc[i].id),true,t==0&&w.reset,bool(doc[i].loss),cursor.cursor().doc_weights.empty()?1.f:cursor.cursor().doc_weights[w.doc]};
             ++p.positions;p.supervised+=doc[i].loss;
         }
     }

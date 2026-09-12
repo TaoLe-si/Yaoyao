@@ -22,9 +22,9 @@ inline void observe_grad(Device&g){if(grad_allocation_observer)grad_allocation_o
 inline void observe_grad(Device&){}
 #endif
 #ifdef TAO_DEVICE_ZERO_GRAD
-struct GradNode{Device value,grad;explicit GradNode(const Vec&v):value(v),grad(v.size()){check(cudaMemsetAsync(grad.p,0,grad.n*sizeof(float)));observe_grad(grad);}explicit GradNode(size_t n):value(n),grad(n){check(cudaMemsetAsync(grad.p,0,grad.n*sizeof(float)));observe_grad(grad);}};
+struct GradNode{Device value,grad;explicit GradNode(const Vec&v,bool vh=false,bool gh=false):value(v,vh),grad(v.size(),gh){check(cudaMemsetAsync(grad.p,0,grad.n*sizeof(float)));observe_grad(grad);}explicit GradNode(size_t n,bool vh=false,bool gh=false):value(n,vh),grad(n,gh){check(cudaMemsetAsync(grad.p,0,grad.n*sizeof(float)));observe_grad(grad);}};
 #else
-struct GradNode{Device value,grad;explicit GradNode(const Vec&v):value(v),grad(Vec(v.size())){}explicit GradNode(size_t n):value(n),grad(Vec(n)){} };
+struct GradNode{Device value,grad;explicit GradNode(const Vec&v,bool vh=false,bool gh=false):value(v,vh),grad(v.size(),gh){check(cudaMemsetAsync(grad.p,0,grad.n*sizeof(float)));}explicit GradNode(size_t n,bool vh=false,bool gh=false):value(n,vh),grad(n,gh){check(cudaMemsetAsync(grad.p,0,grad.n*sizeof(float)));} };
 #endif
 using Node=std::shared_ptr<GradNode>;
 __global__ void ds_scaled_copy(const float*x,float*y,int n,float scale,bool accumulate){int i=blockIdx.x*blockDim.x+threadIdx.x;if(i<n){float v=x[i]*scale;if(accumulate)y[i]+=v;else y[i]=v;}};
@@ -33,16 +33,16 @@ __global__ void ds_add_pair_grad(const float*dy,float*da,float*db,int n){int i=b
 struct Tape {
 Node scaled(Node x,float scale){auto y=std::make_shared<GradNode>(x->value.n);ds_scaled_copy<<<(x->value.n+127)/128,128>>>(x->value.p,y->value.p,int(x->value.n),scale,false);reverse.push_back([=](){ds_scaled_copy<<<(x->value.n+127)/128,128>>>(y->grad.p,x->grad.p,int(x->value.n),scale,true);});return y;}
 std::vector<std::function<void()>> reverse;
-Node leaf(const Vec&v){return std::make_shared<GradNode>(v);}
+Node leaf(const Vec&v,bool in_host=false){return std::make_shared<GradNode>(v,in_host,false);}
 #ifdef TAO_DELTA_MEM
 // ---- H2R 增量规则矩阵记忆：按 slot 数参数化，slots==1 即单序列训练 ----
 Node l2norm(Node k,unsigned slots,unsigned dk){
   if(!slots||!dk||k->value.n!=size_t(slots)*dk)throw std::runtime_error("l2norm shape");
   auto y=std::make_shared<GradNode>(k->value.n);
   auto norm=std::make_shared<Device>(size_t(slots));
-  dm_normalize_fwd<<<slots,1>>>(k->value.p,y->value.p,norm->p,dk);
+  dm_normalize_fwd<<<slots,DM_RED>>>(k->value.p,y->value.p,norm->p,dk);
   check(cudaGetLastError());
-  reverse.push_back([=](){dm_normalize_bwd<<<slots,dk>>>(y->value.p,y->grad.p,norm->p,k->grad.p,dk);
+  reverse.push_back([=](){dm_normalize_bwd<<<slots,DM_RED>>>(y->value.p,y->grad.p,norm->p,k->grad.p,dk);
                           check(cudaGetLastError());});
   return y;
 }
@@ -59,7 +59,10 @@ Node sigmoid(Node x){
 // 返回 {新 M, o}；o 由写入之后的 M' 计算（先写后读）。
 std::pair<Node,Node> delta(Node M,Node khat,Node q,Node v,Node beta,
                            unsigned slots,unsigned dv,unsigned dk){
-  if(!slots||!dv||!dk||dv>1024)throw std::runtime_error("delta shape");
+  // dv>1024 的原守卫源于「dv 当 blockDim」的硬件上限，已由 dm_grid 二维网格解除；
+  // 上界与 load_bundle 的维度界限(8192)保持一致。dk 不再充当 blockDim
+  // （dm_dkhat_dq_bwd 已改为固定的 DM_COLS×DM_ROWS 二维块），此守卫仅作保守边界。
+  if(!slots||!dv||!dk||dv>8192||dk>1024)throw std::runtime_error("delta shape");
   if(M->value.n!=size_t(slots)*dv*dk||khat->value.n!=size_t(slots)*dk||q->value.n!=size_t(slots)*dk||
      v->value.n!=size_t(slots)*dv||beta->value.n!=slots)throw std::runtime_error("delta shape");
   auto Mout=std::make_shared<GradNode>(M->value.n);
@@ -69,16 +72,16 @@ std::pair<Node,Node> delta(Node M,Node khat,Node q,Node v,Node beta,
   auto e=std::make_shared<Device>(size_t(slots));
   auto p=std::make_shared<Device>(size_t(slots)*dv);
   auto du=std::make_shared<Device>(size_t(slots)*dv);
-  dm_forward<<<slots,dv>>>(M->value.p,khat->value.p,q->value.p,v->value.p,beta->value.p,
+  dm_forward<<<dm_grid(slots,dv),DM_THREADS>>>(M->value.p,khat->value.p,q->value.p,v->value.p,beta->value.p,
                            Mout->value.p,o->value.p,a->p,dv,dk);
   check(cudaGetLastError());
   reverse.push_back([=](){
-      dm_proj_bwd<<<slots,dv>>>(Mout->grad.p,khat->value.p,p->p,dv,dk);
-      dm_scalars_bwd<<<slots,1>>>(q->value.p,khat->value.p,o->grad.p,v->value.p,a->p,p->p,
+      dm_proj_bwd<<<dm_grid(slots,dv),DM_THREADS>>>(Mout->grad.p,khat->value.p,p->p,dv,dk);
+      dm_scalars_bwd<<<slots,DM_RED>>>(q->value.p,khat->value.p,o->grad.p,v->value.p,a->p,p->p,
                                   beta->value.p,c->p,e->p,du->p,beta->grad.p,dv,dk);
-      dm_dM_dv_bwd<<<slots,dv>>>(Mout->grad.p,khat->value.p,q->value.p,o->grad.p,du->p,beta->value.p,
+      dm_dM_dv_bwd<<<dm_grid(slots,dv),DM_THREADS>>>(Mout->grad.p,khat->value.p,q->value.p,o->grad.p,du->p,beta->value.p,
                                  M->grad.p,v->grad.p,dv,dk);
-      dm_dkhat_dq_bwd<<<slots,dk>>>(M->value.p,khat->value.p,q->value.p,o->grad.p,v->value.p,a->p,
+      dm_dkhat_dq_bwd<<<dm_col_grid(slots,dk),dim3(DM_COLS,DM_ROWS)>>>(M->value.p,khat->value.p,q->value.p,o->grad.p,v->value.p,a->p,
                                     du->p,e->p,beta->value.p,Mout->grad.p,khat->grad.p,q->grad.p,dv,dk);
       check(cudaGetLastError());});
   return {Mout,o};

@@ -1,5 +1,6 @@
 // H2R 增量规则记忆：训练路径反向的有限差分校验。
 // 用 3 个时间步让 M 真正跨步累积，从而同时校验 dM 在时间上的回传。
+#define TAO_NO_FFN
 #include "dual_state_cpu.hpp"
 #include "batch_train_graph.cuh"
 #include <cstdio>
@@ -10,7 +11,14 @@ using namespace tao::dual;
 int main(int argc,char**argv){
     setvbuf(stdout,NULL,_IONBF,0);
     try{
-        Config c;c.layers=1;c.d=16;c.s=8;c.m=16;c.e=16;c.vocab=272;c.dk=4;c.validate();
+        // 允许用 TAO_CFG_* 覆盖形状，以便在加宽配置（d>1024）下做同一套有限差分校验。
+        // 默认保持极小配置，使校验本身不成为瓶颈。
+        Config c;c.layers=1;c.d=16;c.s=8;c.m=16;c.e=16;c.vocab=272;c.dk=4;
+        { auto ov=[&](const char*n,uint32_t&dst){ if(const char*v=std::getenv(n)){unsigned long x=std::strtoul(v,nullptr,10);
+              if(x>=1&&x<=262144)dst=uint32_t(x);} };
+          ov("TAO_CFG_LAYERS",c.layers); ov("TAO_CFG_D",c.d); ov("TAO_CFG_S",c.s);
+          ov("TAO_CFG_M",c.m); ov("TAO_CFG_E",c.e); ov("TAO_CFG_DK",c.dk); ov("TAO_CFG_VOCAB",c.vocab); }
+        c.validate();
         const unsigned slots=2,steps=(argc>1?unsigned(atoi(argv[1])):3u);
         std::mt19937 rng(7);
         std::uniform_real_distribution<float> u(-1.f,1.f);
@@ -31,6 +39,10 @@ int main(int argc,char**argv){
         auto pidx=mkdev(idx),pmsk=mkdev(msk),prst=mkdev(rst);
         std::vector<float> coef(size_t(c.vocab)*slots);
         for(size_t i=0;i<coef.size();++i)coef[i]=u(rng);
+        // 归一化损失尺度：有限差分噪声底 ≈ eps*|L|/h + h^2*|L'''|，若不归一化，
+        // |L| 随 vocab 增长会把"解析梯度本就接近 0"的入口淹没成假失败
+        // （表现为解析≈1e-5、FD≈2e-3）。这是校验器的尺度问题，不是内核错误。
+        { const float inv=1.f/float(coef.size()); for(auto&cv:coef)cv*=inv; }
         auto forward=[&](BatchTrainGraph&g){
             Node y;
             for(unsigned t=0;t<steps;++t)y=g.step_device(pidx,pmsk,prst,size_t(t)*slots);
@@ -48,7 +60,8 @@ int main(int argc,char**argv){
             check(cudaMemcpy(lg.data(),yy->value.p,lg.size()*4,cudaMemcpyDeviceToHost));
             double L=0;for(size_t i=0;i<lg.size();++i)L+=double(coef[i])*lg[i];
             return L;};
-        printf("== H2R 训练路径梯度校验  layers=1 d=16 s=8 m=8 dk=%u slots=%u steps=%u ==\n",c.dk,slots,steps);
+        printf("== H2R 训练路径梯度校验  layers=%u d=%u s=%u m=%u dk=%u slots=%u steps=%u ==\n",c.layers,c.d,c.s,c.m,c.dk,slots,steps);
+        fflush(stdout);
         const char* names[]={"embedding","layer.0.mem.key","layer.0.mem.query","layer.0.mem.value",
             "layer.0.mem.beta","layer.0.mem.beta.bias","layer.0.read.s","layer.0.read.norm",
             "layer.0.s.candidate.x","layer.0.s.gate.bias","layer.0.input.norm","final.norm","vocab.bias"};

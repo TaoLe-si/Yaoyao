@@ -1,4 +1,0 @@
-# stage	shard_lo	shard_hi	steps_per_shard	lr
-core	0	1	400	0.001
-mixed	2	2	300	0.0008
-interfere	3	3	300	0.0005

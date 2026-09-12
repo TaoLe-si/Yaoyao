@@ -1,0 +1,172 @@
+{
+  "version": "2.1",
+  "model": {
+    "operator": "dual-state-4-noffn-delta-mem-input-sqrt-d",
+    "layers": 2,
+    "d": 3200,
+    "s": 1600,
+    "m": 3200,
+    "dk": 400,
+    "e": 3200,
+    "vocab": 16384,
+    "params": 119033986,
+    "hw_constraints": [
+      "m 必须等于 d（残差 add 的形状要求）",
+      "dk <= d（Config::validate）；dk <= 1024（保守边界；delta 反向已不再用 dk 当 blockDim）",
+      "layers 固定为 2：层数线性拖慢 CPU 解码，而 CPU 是唯一解码执行者",
+      "权重与优化器状态驻主机 RAM（cudaHostAlloc Mapped），不占显存、无每步往返"
+    ]
+  },
+  "measured": {
+    "note": "0.2 口径：cuBLAS + 优化器状态页锁定驻内存 + delta 内核全并行。以下均为实测 pos/s。",
+    "L2_d3200_sl8_wd8": {
+      "params": 119033986,
+      "positions": 64,
+      "vram_mib": 7077,
+      "pos_per_s": 142
+    },
+    "L2_d2048_sl8_wd8": {
+      "params": 60850000,
+      "positions": 64,
+      "vram_mib": 3219,
+      "pos_per_s": 282
+    },
+    "L2_d2048_sl8_wd16": {
+      "positions": 128,
+      "vram_mib": 5349,
+      "pos_per_s": 401
+    },
+    "L2_d2048_sl16_wd8": {
+      "positions": 128,
+      "vram_mib": 5340,
+      "pos_per_s": 435
+    },
+    "L2_d1024_sl16_wd16": {
+      "params": 23618562,
+      "positions": 256,
+      "vram_mib": 2812,
+      "pos_per_s": 1790
+    }
+  },
+  "batch": {
+    "slots": 16,
+    "width": 3,
+    "note": "GEMM 的 batch 等于 slots，width 是固定的 BPTT 长度。d=3200 实测显存 MiB = 84.5*slots*width + 40*slots + 2121。16x3=48 单位 => 6817MiB（安全）；16x4=64 单位 => 8169MiB（触发 WDDM 分配驱逐，所有阶段慢 3 倍）。可用 TAO_PIPE_SLOTS/TAO_PIPE_WIDTH 覆盖。"
+  },
+  "data": {
+    "corpus_shards": "data/p1_corpus",
+    "order": [
+      "wiki×7",
+      "reason×2",
+      "code×4",
+      "reason×2",
+      "wiki×6",
+      "alpaca×2"
+    ],
+    "total_mb": 1049,
+    "grpo_train": "data/grpo_train.jsonl",
+    "grpo_test": "data/grpo_test.jsonl",
+    "isolation": "ID 重叠=0，题干重叠=0（已验证）",
+    "reason_corpus": "data/p1_reason.txt"
+  },
+  "stages": [
+    {
+      "id": "0_data",
+      "name": "数据工程",
+      "status": "done",
+      "artifacts": [
+        "data/p1_corpus",
+        "data/grpo_train.jsonl",
+        "data/grpo_test.jsonl"
+      ]
+    },
+    {
+      "id": "1_tokenizer",
+      "name": "分词器",
+      "status": "done",
+      "artifacts": [
+        "build/tok_v2.bbp"
+      ],
+      "note": "16121 merges，已产出"
+    },
+    {
+      "id": "2_pretrain",
+      "name": "预训练",
+      "status": "ready",
+      "artifacts": [
+        "data/p1_corpus_v2",
+        "build/p1_pretrain/final.dsb"
+      ]
+    },
+    {
+      "id": "3_anneal",
+      "name": "退火",
+      "status": "ready",
+      "artifacts": [
+        "build/p1_anneal/final.dsb"
+      ]
+    },
+    {
+      "id": "4_sft",
+      "name": "冷启动SFT",
+      "status": "ready",
+      "artifacts": [
+        "build/p1_sft/final.dsb"
+      ],
+      "note": "train_sft.cu 已实现（多核加载 + TAO_FRESH 从零）"
+    },
+    {
+      "id": "5_grpo",
+      "name": "GRPO",
+      "status": "partial",
+      "artifacts": [
+        "build/p1_grpo/final.dsb"
+      ],
+      "blocker": "缺 ratio+clip、KL(ref)、mu 次内层更新"
+    },
+    {
+      "id": "6_eval",
+      "name": "评测",
+      "status": "ready",
+      "artifacts": [
+        "build/eval_report.json"
+      ]
+    },
+    {
+      "id": "7_export",
+      "name": "导出部署",
+      "status": "ready",
+      "artifacts": [
+        "build/p1_deploy.dsb"
+      ]
+    }
+  ],
+  "reason_mode": {
+    "format": "U <题> / A 思考 <推理>答案：<X>",
+    "decision": "用文本标记而非控制 token（零成本解阻塞）；THINK=261 / THINK_END=262 已在分词器预留，可后续切换",
+    "corpus": "data/p1_reason.txt",
+    "docs": 202652
+  },
+  "special_tokens": {
+    "BOS": 256,
+    "USER": 257,
+    "ASSISTANT": 258,
+    "TURN_END": 259,
+    "EOS": 260,
+    "THINK": 261,
+    "THINK_END": 262,
+    "FIRST_MERGE": 263,
+    "note": "BPE 合并 token 从 263 起；旧分词器为 261，故旧分片全部作废（已按用户指示抛弃旧权重）"
+  },
+  "decoding": {
+    "owner": "CPU",
+    "note": "CPU 只负责解码，必须吃满全部逻辑核",
+    "strategy": "序列间并发，每线程独立模型实例",
+    "env": "TAO_CPU_THREADS"
+  },
+  "training": {
+    "owner": "GPU",
+    "note": "GPU 只负责训练",
+    "batch": "slots=16 width=16"
+  }
+}

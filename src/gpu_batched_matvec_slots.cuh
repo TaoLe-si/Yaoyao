@@ -36,7 +36,9 @@ __global__ void ds_bmv_tiled_kernel(const float*w,const float*x,float*y,int rows
 // 返回 false 表示该形状不适用，调用方回退到原内核。
 inline bool launch_bmv_tiled(const float*w,const float*x,float*y,int rows,int cols,int slots){
     if(slots%TAO_SLOT_TILE||slots<TAO_SLOT_TILE)return false;
-    if(cols<=0||cols>1024||rows<=0)return false;
+    // cols 不再设人为上限：内核内层是 j=lane;j<cols;j+=32 的通用循环。
+    // 真正的限制是共享内存 TILE*cols*4 <= 48KB（下一行的判据），由它决定是否回退。
+    if(cols<=0||cols>8192||rows<=0)return false;
     const size_t smem=size_t(TAO_SLOT_TILE)*cols*sizeof(float);
     if(smem>48*1024)return false;
     dim3 grid((rows+7)/8,slots/TAO_SLOT_TILE);

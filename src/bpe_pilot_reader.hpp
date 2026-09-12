@@ -1,4 +1,5 @@
 #pragma once
+#include "language_data_contract.hpp"
 #include "pilot_reader.hpp"
 namespace tao::data {
 
@@ -16,7 +17,7 @@ inline bool read_bpe_pilot_doc(std::istream&in,std::vector<Token>&t){
     while(p<t.size()){
         if((t[p].id!=USER&&t[p].id!=ASSISTANT)||t[p].loss)throw std::runtime_error("role");
         bool a=t[p++].id==ASSISTANT;
-        while(p<t.size()&&(t[p].id<256||t[p].id>=261)){if(t[p++].loss!=a)throw std::runtime_error("mask");}
+        while(p<t.size()&&(t[p].id<256||t[p].id>=tao::data::FIRST_MERGE)){if(t[p++].loss!=a)throw std::runtime_error("mask");}
         if(p>=t.size()||t[p].id!=TURN_END||t[p].loss!=a)throw std::runtime_error("turn");
         ++p;
     }

@@ -4,6 +4,8 @@
 #include <map>
 #include <cmath>
 #include <chrono>
+#include <cstring>
+#include <cstdlib>
 namespace tao::dual {
 
 
@@ -18,7 +20,18 @@ void release(float*p,size_t n){if(n*4<=cap-cached){bins[n].push_back(p);cached+=
 ~DevicePool(){for(auto&kv:bins)for(float*p:kv.second)cudaFree(p);}};
 inline DevicePool& device_pool(){static DevicePool pool;return pool;}
 #endif
-struct Device{float*p=nullptr;size_t n;explicit Device(size_t count):n(count){
+// 【权重驻内存】cudaHostAlloc(cudaHostAllocMapped)：权重与优化器状态整体留在主机
+// RAM，内核通过 cudaHostGetDevicePointer 得到的指针直接读写同一块内存。于是
+//   ① 权重不占显存（显存只剩激活与梯度）；② 没有任何 cudaMemcpy 往返搬运；
+//   ③ 训练步骤内 CPU 不参与（内核直接访问 RAM，无需拷回主机再扫描）。
+// TAO_HOST_WEIGHTS=0 可关闭，退回「权重放显存」的对照口径。
+inline bool host_weights_enabled(){static const bool v=[](){const char*e=std::getenv("TAO_HOST_WEIGHTS");return !e||*e!='0';}();return v;}
+struct Device{float*p=nullptr;float*hostp=nullptr;size_t n;explicit Device(size_t count,bool in_host=false):n(count){
+  if(in_host&&host_weights_enabled()){
+    void*h=nullptr;check(cudaHostAlloc(&h,n*sizeof(float),cudaHostAllocMapped));
+    hostp=static_cast<float*>(h);void*d=nullptr;check(cudaHostGetDevicePointer(&d,h,0));p=static_cast<float*>(d);
+    return;
+  }
 #ifdef TAO_ALLOC_PROFILE
 auto started=std::chrono::steady_clock::now();
 #endif
@@ -32,7 +45,11 @@ check(cudaMalloc(&p,n*sizeof(float)));
 #ifdef TAO_ALLOC_PROFILE
 allocation_seconds+=std::chrono::duration<double>(std::chrono::steady_clock::now()-started).count();++allocation_calls;
 #endif
-}explicit Device(const Vec&v):Device(v.size()){check(cudaMemcpy(p,v.data(),n*sizeof(float),cudaMemcpyHostToDevice));}~Device(){
+}explicit Device(const Vec&v,bool in_host=false):Device(v.size(),in_host){
+  if(hostp){std::memcpy(hostp,v.data(),n*sizeof(float));return;}
+  check(cudaMemcpy(p,v.data(),n*sizeof(float),cudaMemcpyHostToDevice));
+}~Device(){
+  if(hostp){cudaFreeHost(hostp);return;}
 #ifdef TAO_ALLOC_PROFILE
 auto started=std::chrono::steady_clock::now();
 #endif
@@ -46,7 +63,7 @@ cudaFree(p);
 #ifdef TAO_ALLOC_PROFILE
 free_seconds+=std::chrono::duration<double>(std::chrono::steady_clock::now()-started).count();++free_calls;
 #endif
-}Device(const Device&)=delete;Vec host(){Vec v(n);check(cudaMemcpy(v.data(),p,n*sizeof(float),cudaMemcpyDeviceToHost));return v;}};
+}Device(const Device&)=delete;Vec host(){Vec v(n);if(hostp){std::memcpy(v.data(),hostp,n*sizeof(float));return v;}check(cudaMemcpy(v.data(),p,n*sizeof(float),cudaMemcpyDeviceToHost));return v;}};
 __global__ void matvec(const float*a,const float*x,float*y,int rows,int cols){int r=blockIdx.x*blockDim.x+threadIdx.x;if(r<rows){float z=0;for(int j=0;j<cols;++j)z+=a[r*cols+j]*x[j];y[r]=z;}}
 __global__ void rms(const float*x,const float*g,float*y,int n){float sum=0;for(int j=0;j<n;++j)sum+=x[j]*x[j];float inv=1/sqrtf(sum/n+1e-5f);for(int j=0;j<n;++j)y[j]=x[j]*inv*g[j];}
 struct CudaProbeModel{

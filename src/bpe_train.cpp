@@ -1,4 +1,18 @@
 // Byte-level BPE trainer with a hard digit constraint.
+#include "language_data_contract.hpp"
+#include <thread>
+
+// CPU 处理必须吃满多核。这里的并行只作用于「初始配对计数」这一纯统计阶段：
+// 它按区间划分互不重叠，结果与串行逐位等价。
+static unsigned bpe_threads(){
+  unsigned hw=std::thread::hardware_concurrency(); if(hw==0u)hw=4u;
+  if(const char*e=std::getenv("TAO_CPU_THREADS")){int v=std::atoi(e); if(v>0)hw=unsigned(v);}
+  return hw;
+}
+
+// 说明：BPE 的合并循环是 16121 步严格串行的全局状态变更，且堆中每个配对依赖
+// "递增计数条目" 的历史语义（计数下降后仍需被重新选中），因此本工具不并行化。
+// 语料处理与数据加载的多核并行在 corpus_pipeline.hpp / train_sft.cu / grpo_rollout.cpp 中实现。
 //
 // WHY: numbers were opaque single tokens in the old tokenizer (0-100 each became
 // one token), so arithmetic could only ever be table lookup -- the model never saw
@@ -46,6 +60,8 @@ int main(int argc,char**argv){
     // ---- read lines, concatenating with barriers ----
     std::vector<uint32_t> tok; tok.reserve(cap+1024);
     size_t lines=0, bytes=0;
+    // 装载保持串行：这是磁盘 I/O 而非 CPU 计算，且按行截断的语义（cap 前判断、
+    // 可能超出一个整行）必须原样保留，否则语料内容会变。真正的 CPU 热点是下面的配对计数。
     for(int a=4;a<argc && tok.size()<cap;++a){
       std::ifstream f(argv[a],std::ios::binary);
       if(!f){ std::fprintf(stderr,"WARN cannot open %s\n",argv[a]); continue; }
@@ -88,7 +104,45 @@ int main(int argc,char**argv){
       if(it!=cnt.end() && it->second>0) --it->second;
     };
 
-    for(size_t i=0;i+1<N;++i) add_pair(tok[i],tok[i+1],uint32_t(i));
+    {
+      // 初始计数并行化。等价性要点：串行版对每个 key 依次压入 (1,k),(2,k),...,(c,k)，
+      // 因此堆里是「递增条目」的多重集 —— 计数因合并下降后，历史条目仍能让该 pair
+      // 被重新选中。这里必须先并行统计出 c，再原样压入同一个多重集，否则合并路径分叉。
+      const unsigned T=bpe_threads();
+      std::vector<std::unordered_map<uint64_t,uint32_t>> lc(T);
+      std::vector<std::unordered_map<uint64_t,std::vector<uint32_t>>> lp(T);
+      for(unsigned w=0;w<T;++w){ lc[w].reserve((N/4u)/T+16u); }
+      std::vector<std::thread> ts; ts.reserve(T);
+      std::vector<std::exception_ptr> errs(T,nullptr);
+      for(unsigned w=0;w<T;++w){
+        ts.emplace_back([&,w](){
+          try{
+            const size_t b=w*(N-1)/T, e=(w+1)*(N-1)/T;
+            auto&c=lc[w]; auto&ps=lp[w];
+            for(size_t i=b;i<e;++i){
+              const uint32_t a=tok[i], bb=tok[i+1];
+              if(a==SENT||bb==SENT) continue;
+              if(is_digit(a)||is_digit(bb)) continue;
+              const uint64_t k=key(a,bb);
+              ++c[k];
+              ps[k].push_back(uint32_t(i));
+            }
+          }catch(...){ errs[w]=std::current_exception(); }
+        });
+      }
+      for(auto&x:ts)x.join();
+      for(auto&e:errs) if(e)std::rethrow_exception(e);
+      // 合并：计数求和；位置按区间升序拼接（各线程区间连续且递增，故整体仍是升序）。
+      for(unsigned w=0;w<T;++w){
+        for(auto&kv:lc[w]) cnt[kv.first]+=kv.second;
+        for(auto&kv:lp[w]) { auto&d=pos[kv.first]; d.insert(d.end(),kv.second.begin(),kv.second.end()); }
+      }
+      // 重建与串行完全相同的堆多重集 {(1,k),(2,k),...,(c,k)}。
+      for(auto&kv:cnt){
+        const uint32_t c=kv.second; const uint64_t k=kv.first;
+        for(uint32_t v=1;v<=c;++v) heap.push({v,k});
+      }
+    }
 
     // ---- merge loop ----
     std::vector<std::pair<uint32_t,uint32_t>> merges;
@@ -105,7 +159,7 @@ int main(int argc,char**argv){
       if(!have) break;
       const uint32_t a=uint32_t(k>>32), b=uint32_t(k&0xFFFFFFFFu);
       heap.pop();
-      const uint32_t newid=uint32_t(261+merges.size());
+      const uint32_t newid=uint32_t(tao::data::FIRST_MERGE+merges.size());
       merges.push_back({a,b});
       cnt.erase(k);
       std::vector<uint32_t> ps; 

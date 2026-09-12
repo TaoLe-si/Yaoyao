@@ -1,9 +1,0 @@
-status	complete
-format	TLP2
-policy	tiny-closed-probe;human-written;no-holdout-in-train
-docs	33935
-tokens	608700
-supervised	208146
-utf8_bytes	3206091
-tokenizer_sha256	18b1c761bbc13d7f29ff99db86b3eb17502d7ba2afe45c549fc4381fffc037fa
-bin_sha256	3c6d55a577ef8d534a367eeb5e72c48d0dce7eb425c66e50a32108c6cc471009

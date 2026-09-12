@@ -1,4 +1,5 @@
 #pragma once
+#include "language_data_contract.hpp"
 #include "cpu_row_parallel_executor.hpp"
 #include "cpu_row_parallel_pool.hpp"
 #include "dual_state_cpu.hpp"
@@ -343,7 +344,7 @@ public:
                 observe(r,value);
                 // Check ALL rows, even excluded role IDs, without early exit.
                 if(!std::isfinite(value)){local.nonfinite=true;continue;}
-                if(r==256||r==257||r==258)continue;
+                if(r>=256&&r<tao::data::FIRST_MERGE&&r!=tao::data::TURN_END&&r!=tao::data::EOS)continue;
                 if(!local.found||value>local.value||(value==local.value&&r<local.token)){
                     local.value=value;local.token=uint32_t(r);local.found=true;
                 }

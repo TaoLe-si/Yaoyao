@@ -1,10 +1,11 @@
 #pragma once
+#include "language_data_contract.hpp"
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
 namespace tao::dual {
-struct Config { uint32_t layers=2,d=512,s=128,m=512,e=1024,vocab=16384; uint32_t dk=64; void validate()const{if(!layers||!d||!s||!m||!e||vocab<261)throw std::invalid_argument("model dimensions");
+struct Config { uint32_t layers=2,d=512,s=128,m=512,e=1024,vocab=16384; uint32_t dk=64; void validate()const{if(!layers||!d||!s||!m||!e||vocab<tao::data::FIRST_MERGE)throw std::invalid_argument("model dimensions");
 #ifdef TAO_DELTA_MEM
 if(!dk||dk>d)throw std::invalid_argument("key dimension");
 #endif

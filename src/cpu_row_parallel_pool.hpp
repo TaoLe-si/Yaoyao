@@ -177,13 +177,16 @@ public:
     // fn is invoked as fn(chunk_index, begin_row, end_row). Chunk 0 always runs
     // on the caller, so a serial fallback is exactly fn(0, 0, rows).
     template <class F> void run(size_t rows, size_t cols, F fn) {
-        std::lock_guard<std::mutex> caller(callers_);
         const unsigned n = thread_count();
+        // 串行快路径只调用 fn，不触碰 context_/invoke_/slots_，因此不需要 callers_。
+        // 此前在入口就加锁，使「每线程一个模型实例并发解码」也被迫串行 —— 这是
+        // 多核利用率上不去的直接原因之一。
         if (n <= 1u || rows < 2u || cols == 0u ||
             rows < (min_elements_ / cols + (min_elements_ % cols != 0))) {
             fn(size_t(0), size_t(0), rows);
             return;
         }
+        std::lock_guard<std::mutex> caller(callers_);
         size_t bounds[max_threads + 1];
         for (unsigned k = 0; k <= n; ++k) bounds[k] = rows * size_t(k) / size_t(n);
         const unsigned workers_used = n - 1u;

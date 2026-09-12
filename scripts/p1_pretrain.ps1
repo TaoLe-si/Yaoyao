@@ -1,0 +1,26 @@
+# 标准流程 阶段② 预训练：从零训练扩容后的模型（抛弃全部旧权重）。
+# 流式分片：同一分片训到收敛再进下一片（TAO_CONVERGE 门控 + steps_per_shard 上限）。
+$ErrorActionPreference="Continue"
+Set-Location D:\TaoVm
+$env:TAO_ALLOW_TOKENIZER="1"
+$env:TAO_CPU_THREADS="8"
+$env:TAO_CFG_LAYERS="2"
+$env:TAO_CFG_D="1024"
+$env:TAO_CFG_S="512"
+$env:TAO_CFG_M="1024"
+$env:TAO_CFG_DK="128"
+$env:TAO_SHUFFLE_SEED="20261001"
+$env:TAO_LR="0.0006"
+$env:TAO_LR_DECAY_START="0"
+$env:TAO_LR_DECAY_STEPS="69000"
+$env:TAO_LR_MIN="0.00006"
+$env:TAO_CONVERGE="1"
+$env:TAO_CONV_MIN="200"
+$env:TAO_CONV_PATIENCE="3"
+$env:TAO_CONV_WINDOW="100"
+$env:TAO_CONV_TOL="0.002"
+$env:TAO_CONV_FLOOR="0.2"
+$OUT="D:\TaoVm\build\p1_pretrain"
+if(Test-Path $OUT){ Write-Output "ABORT: $OUT 已存在"; exit 3 }
+& .\build\train_shards.exe data/p1_corpus build/tok_real_v1.bbp $OUT 3000 16 16 2>&1 | Tee-Object -FilePath "D:\TaoVm\build\p1_pretrain_run.log"
+Write-Output "P1_PRETRAIN_EXIT=$LASTEXITCODE"

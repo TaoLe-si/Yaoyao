@@ -66,12 +66,12 @@ struct Stats {
 
 inline void require(bool ok, const std::string& why) { if (!ok) throw std::runtime_error(why); }
 
-// 语料处理的并行度。TAO_CORPUS_THREADS 可覆盖；默认取机器核数，上限 8
-// （记录：16 线程在本机 8 核/16 逻辑核上会 SMT 饥饿）。设为 1 即回到纯串行。
+// 语料处理的并行度。默认为全部逻辑核（CPU 处理必须吃满多核）；
+// TAO_CORPUS_THREADS 可覆盖，设为 1 即回到纯串行。
 inline unsigned corpus_threads() {
     unsigned hw = std::thread::hardware_concurrency();
     if (hw == 0u) hw = 4u;
-    unsigned n = hw < 8u ? hw : 8u;
+    unsigned n = hw;
     if (const char* e = std::getenv("TAO_CORPUS_THREADS")) {
         const int v = std::atoi(e);
         if (v > 0) n = unsigned(v);
@@ -419,7 +419,7 @@ inline size_t emit_shards(const std::vector<RawDoc>& docs, const tao::text::Byte
                 for (const auto& m : d.turns) {
                     auto ids=bpe.encode(m.utf8);
                     require(bpe.decode(ids)==m.utf8, "BPE roundtrip");
-                    for (auto id : ids) require(id<16384 && (id<256||id>=261), "BPE text ID");
+                    for (auto id : ids) require(id<16384 && (id<256||id>=tao::data::FIRST_MERGE), "BPE text ID");
                     e.turns.push_back(std::move(ids));
                 }
             } else {

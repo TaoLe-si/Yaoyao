@@ -3,7 +3,10 @@
 #include <string>
 #include <stdexcept>
 namespace tao::data {
-enum Special { BOS=256, USER=257, ASSISTANT=258, TURN_END=259, EOS=260 };
+enum Special { BOS=256, USER=257, ASSISTANT=258, TURN_END=259, EOS=260, THINK=261, THINK_END=262 };
+// BPE 合并 token 的起始 id：前 256 是原始字节，256..262 是特殊 token。
+// 新增特殊 token 必须从 FIRST_MERGE 之后顺延，且 FIRST_MERGE 需同步上调。
+enum { FIRST_MERGE = 263, SPECIAL_COUNT = 7 };
 struct Message { bool assistant; std::string utf8; };
 struct Token { int id; bool loss; };
 inline std::vector<Token> encode(const std::vector<Message>&messages){
