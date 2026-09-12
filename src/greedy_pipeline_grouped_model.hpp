@@ -142,7 +142,7 @@ Vec linear(const std::string&name,const Vec&x,uint32_t rows)const{const auto&p=p
 #ifdef TAO_CPU_AVX2
 if(fast){{PipelineRows&mp=const_cast<PipelineRows&>(p);if(mp.vnni_)mp.quantize_input(x.data());else mp.qc_x_=nullptr;}dispatch_rows(rows,p.cols,[&](size_t begin,size_t end){for(size_t r=begin;r<end;++r)y[r]=p.dot(r,x.data());});return y;}
 #endif
-for(uint32_t r=0;r<rows;++r)for(size_t j=0;j<x.size();++j)y[r]+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];return y;}
+for(uint32_t r=0;r<rows;++r)for(size_t j=0;j<x.size();++j)y[r]+=(float(p.at(r,j))*p.scale[r])*x[j];return y;}
 static void add(Vec&a,const Vec&b){if(a.size()!=b.size())throw std::runtime_error("vector shape");for(size_t i=0;i<a.size();++i)a[i]+=b[i];}
 Vec norm(const Vec&x,const std::string&name)const{const auto&g=w.at(name);if(g.size()!=x.size())throw std::runtime_error("norm shape");float sum=0;for(float z:x)sum+=z*z;float inv=1/std::sqrt(sum/x.size()+1e-5f);Vec y(x.size());for(size_t j=0;j<x.size();++j)y[j]=x[j]*inv*g[j];return y;}
 static float sigmoid(float x){if(x>=0)return 1/(1+std::exp(-x));float e=std::exp(x);return e/(1+e);}
@@ -200,12 +200,12 @@ template<size_t N> std::array<Vec,N> group(const std::array<std::string,N>& name
     for(size_t i=0;i<N;++i){
         const auto& p=*matrices[i];const auto& x=*inputs[i];
         for(uint32_t r=0;r<p.rows;++r)for(size_t j=0;j<x.size();++j)
-            out[i][r]+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];
+            out[i][r]+=(float(p.at(r,j))*p.scale[r])*x[j];
     }
     return out;
 }
 
-Vec recurrent(uint32_t token,std::vector<LayerState>&state)const{if(token>=c.vocab||state.size()!=c.layers)throw std::invalid_argument("token/state");for(const auto&z:state)if(z.s.size()!=c.s||z.m.size()!=memory_size())throw std::invalid_argument("state shape");const auto&emb=packed.at("embedding");Vec x(c.d);for(size_t j=0;j<c.d;++j)x[j]=float(emb.q[size_t(token)*c.d+j])*emb.scale[token];
+Vec recurrent(uint32_t token,std::vector<LayerState>&state)const{if(token>=c.vocab||state.size()!=c.layers)throw std::invalid_argument("token/state");for(const auto&z:state)if(z.s.size()!=c.s||z.m.size()!=memory_size())throw std::invalid_argument("state shape");const auto&emb=packed.at("embedding");Vec x(c.d);for(size_t j=0;j<c.d;++j)x[j]=float(emb.at(size_t(token),j))*emb.scale[token];
 #ifdef TAO_INPUT_SCALE
 for(float&v:x)v*=std::sqrt(float(c.d));
 #endif
@@ -337,7 +337,7 @@ public:
                 if(fast)value=p.dot(r,x.data());else
 #endif
                 for(size_t j=0;j<x.size();++j)
-                    value+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];
+                    value+=(float(p.at(r,j))*p.scale[r])*x[j];
                 // Deliberate float assignment boundary matches linear then add.
                 value+=bias[r];
                 if(head_adj_){const float a=head_adj_[r];if(a>0.f)value=(value>=0.f)?(value/a):(value*a);}
@@ -395,7 +395,7 @@ void set_vnni(bool v)const{
     vnni_=v;
     // 分档：只有 >=1e6 MAC 的矩阵启用 VNNI（输出头）；层内小矩阵走 AVX2 int8。
     for(auto&kv:packed){PipelineRows&p=const_cast<PipelineRows&>(kv.second);
-        p.vnni_=v&&size_t(p.rows)*size_t(p.cols)>=1000000u;
+        p.vnni_=false;   // VNNI 内核已移除：打包常驻后权重不再以 int8 形式存在
         if(p.vnni_&&p.rowsum_.empty())p.build_rowsum();}
 #else
     (void)v;
@@ -433,8 +433,8 @@ void buildHead2()const{
     const auto&p=packed.at("embedding");
     const uint32_t V=p.rows,D=p.cols,G=head2_G;
     std::vector<float> X(size_t(V)*D);
-    for(uint32_t r=0;r<V;++r){const float a=p.scale[r];const int8_t* q=p.q.data()+size_t(r)*D;
-        for(uint32_t j=0;j<D;++j)X[size_t(r)*D+j]=float(q[j])*a;}
+    for(uint32_t r=0;r<V;++r){const float a=p.scale[r];
+        for(uint32_t j=0;j<D;++j)X[size_t(r)*D+j]=float(p.at(r,j))*a;}
     head2_cent_.assign(size_t(G)*D,0.0f);head2_of_.assign(V,0);
     // 初始化：均匀抽样 G 行作为初始簇心
     for(uint32_t g=0;g<G;++g){const uint32_t r=(uint64_t(g)*V)/G;

@@ -1,7 +1,11 @@
 #pragma once
 #include "dual_model_bundle.hpp"
 namespace tao::dual {
-struct CompactBundleData {Config c;struct Matrix{std::vector<int8_t>q;Vec scale;};std::map<std::string,Matrix>matrices;std::map<std::string,Vec>vectors;};
+// 三值矩阵以磁盘上的 2-bit 打包形式原样常驻（每字节 4 个权重）。
+// 旧实现把每个 2-bit 码展开成 1 字节 int8，使常驻量放大 4 倍：
+// 119,033,986 权重 -> 119 MB/token 而不是 29.8 MB/token。解码是带宽受限的，
+// 这个展开直接把解码速度砍到四分之一。解码器现在直接读打包字节。
+struct CompactBundleData {Config c;struct Matrix{std::vector<uint8_t>q;Vec scale;};std::map<std::string,Matrix>matrices;std::map<std::string,Vec>vectors;};
 inline CompactBundleData read_compact_bundle(const std::string&path,const std::string&tokenizer){
 std::ifstream f(path,std::ios::binary|std::ios::ate);auto length=f.tellg();if(length<28||length>512ll*1024*1024)throw std::runtime_error("bundle length");f.seekg(0);std::string bytes(size_t(length),0);f.read(bytes.data(),bytes.size());if(!f||bytes.substr(0,4)!="DSB2")throw std::runtime_error("bundle header");
 {auto nl=bytes.find('\n',28);if(nl==std::string::npos||nl<=28||bytes.compare(28,nl-28,TAO_OPERATOR_ID)!=0)throw std::runtime_error("operator identity mismatch");}
@@ -16,6 +20,6 @@ c.dk=u32();
 // 这里只作为"损坏头部导致巨额分配"的护栏；三值紧凑格式实际占用远小于等值 float32。
 constexpr uint64_t kMaxModelElements = 500000000ull;   // 约 2 GB 等值 float32
 c.validate();if(c.layers>64||c.d>8192||c.s>8192||c.m>8192||c.e>32768||c.vocab>262144)throw std::runtime_error("bounds");uint64_t count=0;for(auto&t:schema(c))count+=t.elements();if(count>kMaxModelElements||model_bytes(c)!=pn||bytes.substr(28,mn)!=bundle_manifest(c,tokenizer))throw std::runtime_error("schema/identity");
-for(auto&t:schema(c)){if(!t.ternary){Vec v(t.elements());for(float&x:v)x=fp();out.vectors.emplace(t.name,std::move(v));continue;}CompactBundleData::Matrix m;m.q.resize(t.elements());m.scale.resize(t.rows);for(unsigned r=0;r<t.rows;++r){m.scale[r]=fp();if(m.scale[r]<=0)throw std::runtime_error("scale");for(unsigned j=0;j<t.cols;j+=4){unsigned b=byte();for(unsigned k=0;k<4;++k){unsigned code=(b>>(2*k))&3;if(code==3||(j+k>=t.cols&&code))throw std::runtime_error("symbol/padding");if(j+k<t.cols)m.q[size_t(r)*t.cols+j+k]=code==0?0:code==1?1:-1;}}}out.matrices.emplace(t.name,std::move(m));}if(pos!=bytes.size())throw std::runtime_error("trailing");return out;
+for(auto&t:schema(c)){if(!t.ternary){Vec v(t.elements());for(float&x:v)x=fp();out.vectors.emplace(t.name,std::move(v));continue;}CompactBundleData::Matrix m;const size_t pst=(size_t(t.cols)+3)/4;m.q.assign(pst*t.rows,0);m.scale.resize(t.rows);for(unsigned r=0;r<t.rows;++r){m.scale[r]=fp();if(m.scale[r]<=0)throw std::runtime_error("scale");for(unsigned j=0;j<t.cols;j+=4){const unsigned b=byte();for(unsigned k=0;k<4;++k){const unsigned code=(b>>(2*k))&3;if(code==3||(j+k>=t.cols&&code))throw std::runtime_error("symbol/padding");}m.q[size_t(r)*pst+(j>>2)]=uint8_t(b);}}out.matrices.emplace(t.name,std::move(m));}if(pos!=bytes.size())throw std::runtime_error("trailing");return out;
 }
 }
