@@ -5,12 +5,15 @@
 #include "cpu_pipeline_rows.hpp"
 #include "cpu_fast_activation.hpp"
 #include "cpu_compact_bundle.hpp"
+#include "session_hot.hpp"
 #include <map>
 #include <array>
 #include <utility>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <immintrin.h>
+#include <limits>
 #ifdef TAO_CPU_AVX2
 #include "cpu_dot_avx2.hpp"
 #endif
@@ -134,18 +137,85 @@ return size_t(c.m)*c.dk;
 return c.m;
 #endif
 }
-std::vector<LayerState> initial()const{return std::vector<LayerState>(c.layers,LayerState{Vec(c.s),Vec(memory_size())});}
+std::vector<LayerState> initial()const{
+    std::vector<LayerState> st;st.reserve(c.layers);
+    for(uint32_t i=0;i<c.layers;++i)st.emplace_back(c.s,memory_size());
+    return st;}
 // 浮点（非三值）投影的内积；仅 mem.beta 这类 d 维向量使用，成本可忽略。
 float dot_float(const std::string&name,const Vec&x)const{const auto&a=w.at(name);if(a.size()!=x.size())throw std::runtime_error("float projection shape");float acc=0;for(size_t j=0;j<x.size();++j)acc+=a[j]*x[j];return acc;}
 Vec linear(const std::string&name,const Vec&x,uint32_t rows)const{const auto&p=packed.at(name);if(p.rows!=rows||p.cols!=x.size())throw std::runtime_error("matrix shape");Vec y(rows);
 #ifdef TAO_CPU_AVX2
-if(fast){{PipelineRows&mp=const_cast<PipelineRows&>(p);if(mp.vnni_)mp.quantize_input(x.data());else mp.qc_x_=nullptr;}dispatch_rows(rows,p.cols,[&](size_t begin,size_t end){for(size_t r=begin;r<end;++r)y[r]=p.dot(r,x.data());});return y;}
+if(fast){{PipelineRows&mp=const_cast<PipelineRows&>(p);if(mp.vnni_)mp.quantize_input(x.data());else mp.qc_x_=nullptr;}dispatch_rows(rows,p.cols,[&](size_t begin,size_t end){p.gemv_rows(begin,end,x.data(),y.data());});return y;}
 #endif
 for(uint32_t r=0;r<rows;++r)for(size_t j=0;j<x.size();++j)y[r]+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];return y;}
-static void add(Vec&a,const Vec&b){if(a.size()!=b.size())throw std::runtime_error("vector shape");for(size_t i=0;i<a.size();++i)a[i]+=b[i];}
-Vec norm(const Vec&x,const std::string&name)const{const auto&g=w.at(name);if(g.size()!=x.size())throw std::runtime_error("norm shape");float sum=0;for(float z:x)sum+=z*z;float inv=1/std::sqrt(sum/x.size()+1e-5f);Vec y(x.size());for(size_t j=0;j<x.size();++j)y[j]=x[j]*inv*g[j];return y;}
+static void add(Vec&a,const Vec&b){if(a.size()!=b.size())throw std::runtime_error("vector shape");
+#ifdef TAO_CPU_AVX2
+size_t i=0;for(;i+8<=a.size();i+=8)_mm256_storeu_ps(a.data()+i,_mm256_add_ps(_mm256_loadu_ps(a.data()+i),_mm256_loadu_ps(b.data()+i)));
+for(;i<a.size();++i)a[i]+=b[i];
+#else
+for(size_t i=0;i<a.size();++i)a[i]+=b[i];
+#endif
+}
+Vec norm(const Vec&x,const std::string&name)const{Vec y;norm_into(x,name,y);return y;}
 static float sigmoid(float x){if(x>=0)return 1/(1+std::exp(-x));float e=std::exp(x);return e/(1+e);}
+void norm_into(const Vec&x,const std::string&name,Vec&y)const{
+    const auto&g=w.at(name);if(g.size()!=x.size())throw std::runtime_error("norm shape");
+    float sum=0;for(float z:x)sum+=z*z;const float inv=1/std::sqrt(sum/x.size()+1e-5f);
+    y.resize(x.size());
+#ifdef TAO_CPU_AVX2
+    size_t j=0;const __m256 vinv=_mm256_set1_ps(inv);
+    for(;j+8<=x.size();j+=8){
+        __m256 gg=_mm256_mul_ps(_mm256_loadu_ps(g.data()+j),vinv);
+        _mm256_storeu_ps(y.data()+j,_mm256_mul_ps(_mm256_loadu_ps(x.data()+j),gg));
+    }
+    for(;j<x.size();++j)y[j]=x[j]*inv*g[j];
+#else
+    for(size_t j=0;j<x.size();++j)y[j]=x[j]*inv*g[j];
+#endif
+}
+void load_token_emb(uint32_t token,Vec&x)const{
+    const auto&emb=packed.at("embedding");x.resize(c.d);
+    const int8_t* p=emb.q.data()+size_t(token)*c.d;
+    const float sc=emb.scale[token]
+#ifdef TAO_INPUT_SCALE
+        *std::sqrt(float(c.d))
+#endif
+        ;
+#ifdef TAO_CPU_AVX2
+    const __m256 vs=_mm256_set1_ps(sc);size_t j=0;
+    for(;j+8<=c.d;j+=8){
+        __m256 q=_mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(_mm_loadl_epi64(reinterpret_cast<const __m128i*>(p+j))));
+        _mm256_storeu_ps(x.data()+j,_mm256_mul_ps(q,vs));
+    }
+    for(;j<c.d;++j)x[j]=float(p[j])*sc;
+#else
+    for(size_t j=0;j<c.d;++j)x[j]=float(p[j])*sc;
+#endif
+}
+template<class X> void linear_into(const std::string&name,const X&x,uint32_t rows,Vec&y)const{
+    const auto&p=packed.at(name);if(p.rows!=rows||p.cols!=x.size())throw std::runtime_error("matrix shape");
+    y.resize(rows);
+#ifdef TAO_CPU_AVX2
+    if(fast){{PipelineRows&mp=const_cast<PipelineRows&>(p);if(mp.vnni_)mp.quantize_input(x.data());else mp.qc_x_=nullptr;}
+        dispatch_rows(rows,p.cols,[&](size_t begin,size_t end){p.gemv_rows(begin,end,x.data(),y.data());});return;}
+#endif
+    for(uint32_t r=0;r<rows;++r){float z=0;for(size_t j=0;j<x.size();++j)z+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];y[r]=z;}
+}
+struct RecurBuf{Vec x,xn,v,o,r,nrm,hn;std::array<Vec,4> g4;std::array<Vec,2> g2;};
+mutable RecurBuf rb_;
+void ensure_rb()const{
+    if(rb_.x.size()==c.d)return;
+    rb_.x.assign(c.d,0);rb_.xn.assign(c.d,0);rb_.v.assign(c.m,0);rb_.o.assign(c.m,0);
+    rb_.r.assign(c.d,0);rb_.nrm.assign(c.d,0);rb_.hn.assign(c.d,0);
+    for(auto&z:rb_.g4)z.assign(c.s,0);
+#ifdef TAO_DELTA_MEM
+    rb_.g2[0].assign(c.dk,0);rb_.g2[1].assign(c.dk,0);
+#endif
+}
 private:
+struct InX{const float*p;size_t n;const float*data()const{return p;}size_t size()const{return n;}const float&operator[](size_t i)const{return p[i];}};
+static InX inx(const Vec&v){return {v.data(),v.size()};}
+static InX inx(const FSpan&v){return {v.data(),v.size()};}
 
 // A group is one synchronous dispatch, not one dispatch per projection.
 // Cost coordinates concatenate rows*cols, then snap the half-cost boundary
@@ -153,7 +223,7 @@ private:
 // by less than one row cost (candidate/gate groups split exactly in half).
 // Inputs/outputs are borrowed until run returns, including exception paths.
 template<size_t N> std::array<Vec,N> group(const std::array<std::string,N>& names,
-                                         const std::array<const Vec*,N>& inputs,
+                                         const std::array<InX,N>& inputs,
                                          uint32_t rows)const {
     std::array<Vec,N> out;
     std::array<const PipelineRows*,N> matrices{};
@@ -163,7 +233,7 @@ template<size_t N> std::array<Vec,N> group(const std::array<std::string,N>& name
         const auto& p=packed.at(names[i]);
         // 01 号文档 #6（mHC 迁移）：允许组内各矩阵 rows 不同，使 s(128) 与 m(512)
         // 分支能合并进同一次 dispatch。分派本就按 MAC 区间切分并用各自的 p.cols 还原行号。
-        if(p.cols!=inputs[i]->size()||p.cols==0)
+        if(p.cols!=inputs[i].size()||p.cols==0)
             throw std::runtime_error("matrix shape");
         if(p.rows>(std::numeric_limits<size_t>::max()-offsets[i])/p.cols)
             throw std::overflow_error("group cost overflow");
@@ -177,7 +247,7 @@ template<size_t N> std::array<Vec,N> group(const std::array<std::string,N>& name
         // 对同一个 PipelineRows 做 xu_.resize()，导致堆损坏 (0xC0000374)。
         for(size_t i=0;i<N;++i){
             PipelineRows&mp=const_cast<PipelineRows&>(*matrices[i]);
-            if(mp.vnni_)mp.quantize_input(inputs[i]->data());
+            if(mp.vnni_)mp.quantize_input(inputs[i].data());
             else mp.qc_x_=nullptr;
         }
     dispatch_rows(offsets[N],1,[&](size_t begin,size_t end){
@@ -190,29 +260,73 @@ template<size_t N> std::array<Vec,N> group(const std::array<std::string,N>& name
                 // caller [0,k), worker [k,rows). Thus no missing/duplicate rows.
                 const size_t first=lo/p.cols+(lo%p.cols!=0);
                 const size_t last=hi/p.cols+(hi%p.cols!=0);
-                for(size_t r=first;r<last;++r)out[i][r]=p.dot(r,inputs[i]->data());
+                p.gemv_rows(first,last,inputs[i].data(),out[i].data());
             }
         });
         return out;
     }
 #endif
     for(size_t i=0;i<N;++i){
-        const auto& p=*matrices[i];const auto& x=*inputs[i];
+        const auto& p=*matrices[i];const auto& x=inputs[i];
         for(uint32_t r=0;r<p.rows;++r)for(size_t j=0;j<x.size();++j)
             out[i][r]+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];
     }
     return out;
 }
 
-Vec recurrent(uint32_t token,std::vector<LayerState>&state)const{if(token>=c.vocab||state.size()!=c.layers)throw std::invalid_argument("token/state");for(const auto&z:state)if(z.s.size()!=c.s||z.m.size()!=memory_size())throw std::invalid_argument("state shape");const auto&emb=packed.at("embedding");Vec x(c.d);for(size_t j=0;j<c.d;++j)x[j]=float(emb.q[size_t(token)*c.d+j])*emb.scale[token];
-#ifdef TAO_INPUT_SCALE
-for(float&v:x)v*=std::sqrt(float(c.d));
+template<size_t N> void group_into(const std::array<std::string,N>& names,
+                                  const std::array<InX,N>& inputs,
+                                  std::array<Vec,N>& out)const {
+    std::array<const PipelineRows*,N> matrices{};
+    std::array<size_t,N+1> offsets{};
+    {SubTimer _tp(ms_pre);
+    for(size_t i=0;i<N;++i){
+        const auto& p=packed.at(names[i]);
+        if(p.cols!=inputs[i].size()||p.cols==0)
+            throw std::runtime_error("matrix shape");
+        if(p.rows>(std::numeric_limits<size_t>::max()-offsets[i])/p.cols)
+            throw std::overflow_error("group cost overflow");
+        matrices[i]=&p;
+        if(out[i].size()!=p.rows)out[i].assign(p.rows,0.f);
+        offsets[i+1]=offsets[i]+p.rows*p.cols;
+    }
+    }
+#ifdef TAO_CPU_AVX2
+    if(fast){
+        for(size_t i=0;i<N;++i){
+            PipelineRows&mp=const_cast<PipelineRows&>(*matrices[i]);
+            if(mp.vnni_)mp.quantize_input(inputs[i].data());
+            else mp.qc_x_=nullptr;
+        }
+        dispatch_rows(offsets[N],1,[&](size_t begin,size_t end){
+            for(size_t i=0;i<N;++i){
+                if(end<=offsets[i]||begin>=offsets[i+1])continue;
+                const auto& p=*matrices[i];
+                const size_t lo=begin>offsets[i]?begin-offsets[i]:0;
+                const size_t hi=end<offsets[i+1]?end-offsets[i]:offsets[i+1]-offsets[i];
+                const size_t first=lo/p.cols+(lo%p.cols!=0);
+                const size_t last=hi/p.cols+(hi%p.cols!=0);
+                p.gemv_rows(first,last,inputs[i].data(),out[i].data());
+            }
+        });
+        return;
+    }
 #endif
+    for(size_t i=0;i<N;++i){
+        const auto& p=*matrices[i];const auto& x=inputs[i];
+        Vec& y=out[i];
+        for(uint32_t r=0;r<p.rows;++r){float z=0;for(size_t j=0;j<x.size();++j)
+            z+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];y[r]=z;}
+    }
+}
+
+Vec recurrent(uint32_t token,std::vector<LayerState>&state)const{if(token>=c.vocab||state.size()!=c.layers)throw std::invalid_argument("token/state");for(const auto&z:state)if(z.s.size()!=c.s||z.m.size()!=memory_size())throw std::invalid_argument("state shape");
+prefetch_session_l2(state);ensure_rb();load_token_emb(token,rb_.x);Vec& x=rb_.x;
 std::vector<Vec> cachedV,cachedG;if(reuse_mv&&layerSource.size()==c.layers){cachedV.resize(c.layers);cachedG.resize(c.layers);}const uint32_t active_layers=(layer_limit&&layer_limit<c.layers)?layer_limit:c.layers;for(uint32_t l=0;l<active_layers;++l){auto p="layer."+std::to_string(layerSource[l])+".";
 #ifdef TAO_PHASE_TIMING
 ScopedPhase ph(ms_norm);
 #endif
-auto xn=TAO_T(ms_normf,norm(x,p+"input.norm"));auto&s=state[l].s;auto&m=state[l].m;
+{TAO_T(ms_normf,(norm_into(x,p+"input.norm",rb_.xn),0));}Vec& xn=rb_.xn;auto&s=state[l].s;auto&m=state[l].m;
 #ifdef TAO_PHASE_TIMING
 ph.arm(ms_s);
 #endif
@@ -230,50 +344,86 @@ const bool can_fuse=fuse_sm_&&!(reuse_mv&&!cachedV.empty()&&layerSource[l]!=l);
 #endif
 Vec s_old;
 std::array<Vec,4> st;std::array<Vec,6> mt6;bool have_mt6=false;
-if(can_fuse){s_old=s;auto st10=TAO_T(ms_grp,group<10>(
+if(can_fuse){s_old.assign(s.data(),s.data()+s.size());auto st10=TAO_T(ms_grp,group<10>(
     {p+"s.candidate.x",p+"s.candidate.s",p+"s.gate.x",p+"s.gate.s",
      p+"m.candidate.x",p+"m.candidate.s",p+"m.candidate.m",
      p+"m.gate.x",p+"m.gate.s",p+"m.gate.m"},
-    {&xn,&s_old,&xn,&s_old,&xn,&s_old,&m,&xn,&s_old,&m},c.s));
+    {inx(xn),inx(s_old),inx(xn),inx(s_old),inx(xn),inx(s_old),inx(m),inx(xn),inx(s_old),inx(m)},c.s));
     for(size_t i=0;i<4;++i)st[i]=std::move(st10[i]);
-    for(size_t i=0;i<6;++i)mt6[i]=std::move(st10[4+i]);have_mt6=true;}
-else st=TAO_T(ms_grp,group<4>({p+"s.candidate.x",p+"s.candidate.s",p+"s.gate.x",p+"s.gate.s"},{&xn,&s,&xn,&s},c.s));
-auto u=std::move(st[0]),a=std::move(st[2]);{TAO_T(ms_addop,(add(u,st[1]),add(u,w.at(p+"s.candidate.bias")),add(a,st[3]),add(a,w.at(p+"s.gate.bias")),0));}
-if(fast_act_)fast_gated_update(s.data(),u.data(),a.data(),s.size());
-else for(size_t j=0;j<s.size();++j)s[j]+=sigmoid(a[j])*(std::tanh(u[j])-s[j]);
+    for(size_t i=0;i<6;++i)mt6[i]=std::move(st10[4+i]);have_mt6=true;
+    {TAO_T(ms_addop,(add(st[0],st[1]),add(st[0],w.at(p+"s.candidate.bias")),add(st[2],st[3]),add(st[2],w.at(p+"s.gate.bias")),0));}
+    if(fast_act_)fast_gated_update(s.data(),st[0].data(),st[2].data(),s.size());
+    else for(size_t j=0;j<s.size();++j)s[j]+=sigmoid(st[2][j])*(std::tanh(st[0][j])-s[j]);}
+else{
+    {TAO_T(ms_grp,(group_into<4>({p+"s.candidate.x",p+"s.candidate.s",p+"s.gate.x",p+"s.gate.s"},{inx(xn),inx(s),inx(xn),inx(s)},rb_.g4),0));}
+    {TAO_T(ms_addop,(add(rb_.g4[0],rb_.g4[1]),add(rb_.g4[0],w.at(p+"s.candidate.bias")),add(rb_.g4[2],rb_.g4[3]),add(rb_.g4[2],w.at(p+"s.gate.bias")),0));}
+    if(fast_act_)fast_gated_update(s.data(),rb_.g4[0].data(),rb_.g4[2].data(),s.size());
+    else for(size_t j=0;j<s.size();++j)s[j]+=sigmoid(rb_.g4[2][j])*(std::tanh(rb_.g4[0][j])-s[j]);}
 #ifdef TAO_PHASE_TIMING
 ph.arm(ms_m);
 #endif
 #ifdef TAO_DELTA_MEM
-// H2R 增量规则矩阵记忆：M 为 dv x dk 行主序。
 const uint32_t dk=c.dk,dv=c.m;
-auto kt=group<2>({p+"mem.key",p+"mem.query"},{&xn,&xn},dk);
-auto k=std::move(kt[0]),q=std::move(kt[1]);auto v=linear(p+"mem.value",xn,dv);
-float kn=0;for(float z:k)kn+=z*z;kn=1.0f/(std::sqrt(kn)+1e-6f);for(float&z:k)z*=kn;
+{TAO_T(ms_grp,(group_into<2>({p+"mem.key",p+"mem.query"},{inx(xn),inx(xn)},rb_.g2),0));}
+Vec& k=rb_.g2[0];Vec& q=rb_.g2[1];linear_into(p+"mem.value",xn,dv,rb_.v);Vec& v=rb_.v;
+float kn=0;for(float z:k)kn+=z*z;kn=1.0f/(std::sqrt(kn)+1e-6f);
+#ifdef TAO_CPU_AVX2
+{size_t jj=0;const __m256 vkn=_mm256_set1_ps(kn);
+for(;jj+8<=k.size();jj+=8)_mm256_storeu_ps(k.data()+jj,_mm256_mul_ps(_mm256_loadu_ps(k.data()+jj),vkn));
+for(;jj<k.size();++jj)k[jj]*=kn;}
+#else
+for(float&z:k)z*=kn;
+#endif
 const float beta=sigmoid(dot_float(p+"mem.beta",xn)+w.at(p+"mem.beta.bias")[0]);
-Vec o(dv,0);
-// M 的行互不相交，每行由同一次内核调用产出 -> 任意线程数 bitwise 一致。
+Vec& o=rb_.o;
+float kq=0;for(uint32_t j=0;j<dk;++j)kq+=k[j]*q[j];
 dispatch_rows(dv,dk,[&](size_t begin,size_t end){for(size_t i=begin;i<end;++i){
-    float acc=0;const float* src=m.data()+i*dk;for(uint32_t j=0;j<dk;++j)acc+=src[j]*k[j];
-    const float g=beta*(v[i]-acc);float* dst=m.data()+i*dk;for(uint32_t j=0;j<dk;++j)dst[j]+=g*k[j];
-    float rd=0;for(uint32_t j=0;j<dk;++j)rd+=dst[j]*q[j];o[i]=rd;}});
+    if(i+2<end){const char* nxt=reinterpret_cast<const char*>(m.data()+(i+2)*size_t(dk));
+        _mm_prefetch(nxt,_MM_HINT_T0);_mm_prefetch(nxt+64,_MM_HINT_T0);
+        _mm_prefetch(nxt+128,_MM_HINT_T0);_mm_prefetch(nxt+192,_MM_HINT_T0);}
+    float* row=m.data()+i*dk; float acc=0, rd=0; uint32_t j=0;
+#ifdef TAO_CPU_AVX2
+    __m256 vacc=_mm256_setzero_ps(), vrd=_mm256_setzero_ps();
+    for(;j+8u<=dk;j+=8u){
+        __m256 mr=_mm256_loadu_ps(row+j);
+        vacc=_mm256_add_ps(vacc,_mm256_mul_ps(mr,_mm256_loadu_ps(k.data()+j)));
+        vrd =_mm256_add_ps(vrd ,_mm256_mul_ps(mr,_mm256_loadu_ps(q.data()+j)));
+    }
+    alignas(32) float ta[8], tr[8];
+    _mm256_store_ps(ta,vacc); _mm256_store_ps(tr,vrd);
+    for(int t=0;t<8;++t){acc+=ta[t];rd+=tr[t];}
+#endif
+    for(;j<dk;++j){const float mv=row[j]; acc+=mv*k[j]; rd+=mv*q[j];}
+    const float g=beta*(v[i]-acc);
+    o[i]=rd+g*kq;
+    j=0;
+#ifdef TAO_CPU_AVX2
+    const __m256 vg=_mm256_set1_ps(g);
+    for(;j+8u<=dk;j+=8u){
+        __m256 mr=_mm256_loadu_ps(row+j);
+        _mm256_storeu_ps(row+j,_mm256_add_ps(mr,_mm256_mul_ps(vg,_mm256_loadu_ps(k.data()+j))));
+    }
+#endif
+    for(;j<dk;++j)row[j]+=g*k[j];
+}});
 #ifdef TAO_PHASE_TIMING
 ph.arm(ms_read);
 #endif
-auto r=linear(p+"read.s",s,c.d);add(r,o);add(x,norm(r,p+"read.norm"));
+linear_into(p+"read.s",s,c.d,rb_.r);add(rb_.r,o);norm_into(rb_.r,p+"read.norm",rb_.nrm);add(x,rb_.nrm);
+if(l+1<active_layers)prefetch_layer_l2(state[l+1]);
 #else
 Vec v,g;
 if(reuse_mv&&!cachedV.empty()&&layerSource[l]!=l){v=cachedV[layerSource[l]];g=cachedG[layerSource[l]];}
 else if(have_mt6){v=std::move(mt6[0]);g=std::move(mt6[3]);
 {TAO_T(ms_addop,(add(v,mt6[1]),add(v,mt6[2]),add(v,w.at(p+"m.candidate.bias")),add(g,mt6[4]),add(g,mt6[5]),add(g,w.at(p+"m.gate.bias")),0));}
 if(reuse_mv&&!cachedV.empty()){cachedV[l]=v;cachedG[l]=g;}}
-else{auto mt=TAO_T(ms_grp,group<6>({p+"m.candidate.x",p+"m.candidate.s",p+"m.candidate.m",p+"m.gate.x",p+"m.gate.s",p+"m.gate.m"},{&xn,&s,&m,&xn,&s,&m},c.m));v=std::move(mt[0]);g=std::move(mt[3]);
+else{auto mt=TAO_T(ms_grp,group<6>({p+"m.candidate.x",p+"m.candidate.s",p+"m.candidate.m",p+"m.gate.x",p+"m.gate.s",p+"m.gate.m"},{inx(xn),inx(s),inx(m),inx(xn),inx(s),inx(m)},c.m));v=std::move(mt[0]);g=std::move(mt[3]);
 {TAO_T(ms_addop,(add(v,mt[1]),add(v,mt[2]),add(v,w.at(p+"m.candidate.bias")),add(g,mt[4]),add(g,mt[5]),add(g,w.at(p+"m.gate.bias")),0));}if(reuse_mv&&!cachedV.empty()){cachedV[l]=v;cachedG[l]=g;}}if(fast_act_)fast_gated_update(m.data(),v.data(),g.data(),m.size());
 else for(size_t j=0;j<m.size();++j)m[j]+=sigmoid(g[j])*(std::tanh(v[j])-m[j]);
 #ifdef TAO_PHASE_TIMING
 ph.arm(ms_read);
 #endif
-auto rt=TAO_T(ms_grp,group<2>({p+"read.s",p+"read.m"},{&s,&m},c.d));auto r=std::move(rt[0]);
+auto rt=TAO_T(ms_grp,group<2>({p+"read.s",p+"read.m"},{inx(s),inx(m)},c.d));auto r=std::move(rt[0]);
 {TAO_T(ms_addop,(add(r,rt[1]),0));}
 {TAO_T(ms_normf,(add(x,norm(r,p+"read.norm")),0));}
 #endif
@@ -299,7 +449,9 @@ public:
 // Optional generation-only API: does not construct or promise a logits vector.
     // State advances before head validation, as with step followed by a scan.
     uint32_t greedy_step(uint32_t token,std::vector<LayerState>& state)const {
-        return greedy_head(recurrent(token,state));
+        const uint32_t t=greedy_head(recurrent(token,state));
+        prefetch_session_l2(state);
+        return t;
     }
     uint32_t greedy_head(const Vec& hidden)const {
         return greedy_head_observe(hidden,[](size_t,float){});
@@ -311,7 +463,9 @@ public:
 #ifdef TAO_PHASE_TIMING
         ScopedPhase ph(ms_head);
 #endif
-        const auto x=norm(hidden,"final.norm");
+        ensure_rb();
+        norm_into(hidden,"final.norm",rb_.hn);
+        const Vec& x=rb_.hn;
         const auto& p=packed.at("embedding");const auto& bias=w.at("vocab.bias");
         if(p.rows!=c.vocab||p.cols!=x.size()||bias.size()!=p.rows||p.rows==0)
             throw std::runtime_error("greedy head shape");
@@ -330,23 +484,43 @@ public:
         for(size_t k=0;k<active_chunks;++k)partial[k]=Partial{};
         auto rows=[&](size_t chunk,size_t begin,size_t end){
             Partial local;
-            for(size_t r=begin;r<end;++r){
-                float value=0;
-#ifdef TAO_CPU_AVX2
-                if(fast)value=p.dot(r,x.data());else
-#endif
-                for(size_t j=0;j<x.size();++j)
-                    value+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];
-                // Deliberate float assignment boundary matches linear then add.
+            auto take=[&](size_t r,float value){
                 value+=bias[r];
                 if(head_adj_)value-=head_adj_[r];
                 observe(r,value);
-                // Check ALL rows, even excluded role IDs, without early exit.
-                if(!std::isfinite(value)){local.nonfinite=true;continue;}
-                if(r==256||r==257||r==258)continue;
+                if(!std::isfinite(value)){local.nonfinite=true;return;}
+                if(r==256||r==257||r==258)return;
                 if(!local.found||value>local.value||(value==local.value&&r<local.token)){
                     local.value=value;local.token=uint32_t(r);local.found=true;
                 }
+            };
+#ifdef TAO_CPU_AVX2
+            if(fast){
+                size_t r=begin;
+#ifdef TAO_AVX512_KERNEL
+                float blk8[8];
+                if(p.vnni_&&p.xu_.size()==p.cols){
+                    for(;r+8<=end;r+=8){
+                        p.vnni8(r,blk8);
+                        take(r,blk8[0]);take(r+1,blk8[1]);take(r+2,blk8[2]);take(r+3,blk8[3]);
+                        take(r+4,blk8[4]);take(r+5,blk8[5]);take(r+6,blk8[6]);take(r+7,blk8[7]);
+                    }
+                }
+#endif
+                float blk[4];
+                for(;r+4<=end;r+=4){
+                    if(p.vnni_&&p.xu_.size()==p.cols)p.vnni4(r,blk);
+                    else p.float4(r,x.data(),blk);
+                    take(r,blk[0]);take(r+1,blk[1]);take(r+2,blk[2]);take(r+3,blk[3]);
+                }
+                for(;r<end;++r)take(r,p.dot(r,x.data()));
+            }else
+#endif
+            for(size_t r=begin;r<end;++r){
+                float value=0;
+                for(size_t j=0;j<x.size();++j)
+                    value+=(float(p.q[r*x.size()+j])*p.scale[r])*x[j];
+                take(r,value);
             }
             // The pool calls exactly one task per chunk with a unique chunk
             // index; serial fallback writes chunk 0 only and every other slot
@@ -386,19 +560,14 @@ void set_layer_share(const std::vector<uint32_t>& s)const{layerSource=s;}
 void set_reuse_mv(bool v)const{reuse_mv=v;}
 void set_layer_limit(uint32_t n)const{layer_limit=n;}
 void set_fast_act(bool v)const{fast_act_=v;}
-// §27：AVX-512 内核（运行期开关，默认关闭）。仅重排浮点累加分组，
-// 不改变函数语义（无需重训），但**会改变 checksum**，故默认关闭。
+// 输出头 int8 VNNI（激活量化）。关 TAO_VNNI=0 则回到逐行 float 点积（与旧 checksum 一致）。
 void set_vnni(bool v)const{
     if(v==vnni_)return;
-#ifdef TAO_AVX512_KERNEL
     vnni_=v;
-    // 分档：只有 >=1e6 MAC 的矩阵启用 VNNI（输出头）；层内小矩阵走 AVX2 int8。
+    // 分档：>=1e6 MAC（输出头）；层内小矩阵走 4 行打包的 float 点积。
     for(auto&kv:packed){PipelineRows&p=const_cast<PipelineRows&>(kv.second);
         p.vnni_=v&&size_t(p.rows)*size_t(p.cols)>=1000000u;
         if(p.vnni_&&p.rowsum_.empty())p.build_rowsum();}
-#else
-    (void)v;
-#endif
 }
 void set_head_limit(uint32_t v)const{head_limit_=v;}
 void set_head_adjustment(const float* adj)const{head_adj_=adj;}
@@ -478,6 +647,9 @@ void applyDefaultArch(){
     if(!std::getenv("TAO_LAYER_REUSE_MV"))reuse_mv=true;
     set_fast_act(envOn("TAO_FAST_ACT",true));
     set_vnni(envOn("TAO_VNNI",true));
+    // 只让词表头（Vd≈8.4M MAC）进线程池。s 组与 mem.value 恰好卡在 262144，
+    // 唤醒 8 线程的同步成本高于那点 GEMV。提高阈值 bitwise 一致。
+    set_row_parallel_minimum(size_t(1)<<20);
     // 解码旧 8 层 checkpoint 时默认只跑 2 层槽位（与固化深度一致）。
     if(!std::getenv("TAO_LAYER_LIMIT")&&c.layers>2u)layer_limit=2u;
 }

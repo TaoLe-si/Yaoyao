@@ -19,6 +19,7 @@
 #include "shuffled_epoch_batch_plan.hpp"
 #include "dual_model_bundle.hpp"
 #include "plain_lm_format.hpp"
+#include <cmath>             // std::cos for LR cosine decay (TAO_LR_DECAY_START/STEPS)
 
 namespace shardtrain {
 using namespace tao::dual;
@@ -157,6 +158,49 @@ int main(int argc, char** argv) {
             printf("LR_OVERRIDE TAO_LR=%g\n", double(v));
             fflush(stdout);
         }
+        // 余弦退火（默认关闭）。
+        // 触发：设了 TAO_LR_DECAY_START 且 TAO_LR_DECAY_STEPS>0。
+        // 从 decay_start 起，按 progress=(steps-decay_start)/decay_steps 走
+        //   lr = lr_min + 0.5*(lr_max-lr_min)*(1+cos(pi*progress))
+        // 这样分片内有退火，课程三段（分片间 LR 切换）依然按 curriculum.tsv 走。
+        // 注意：warmup 只在 steps<20 且 steps<decay_start 时生效；进入退火区段后
+        //       退火公式接管（warmup 的"线性上升"只对恒定 LR 区段有意义）。
+        float lr_min=1e-5f;
+        unsigned lr_decay_start=0, lr_decay_steps=0;
+        bool lr_decay=false;
+        if(const char* e=std::getenv("TAO_LR_DECAY_START")){
+            const long long v=std::strtoll(e,nullptr,10);
+            require(v>=0 && v<=1000000000LL, "TAO_LR_DECAY_START range");
+            lr_decay_start=(unsigned)v;
+        }
+        if(const char* e=std::getenv("TAO_LR_DECAY_STEPS")){
+            const long long v=std::strtoll(e,nullptr,10);
+            require(v>0 && v<=1000000000LL, "TAO_LR_DECAY_STEPS range");
+            lr_decay_steps=(unsigned)v;
+        }
+        if(const char* e=std::getenv("TAO_LR_MIN")){
+            const float v=strtof(e,nullptr);
+            require(v>=0.f && v<0.1f, "TAO_LR_MIN range");
+            lr_min=v;
+        }
+        if(lr_decay_start>0 && lr_decay_steps>0){
+            lr_decay=true;
+            printf("LR_DECAY start=%u steps=%u min=%g (cosine)\n", lr_decay_start, lr_decay_steps, double(lr_min));
+            fflush(stdout);
+        }
+        // 梯度裁剪（默认关闭）。
+        // 触发：TAO_GRAD_CLIP 设了正数。
+        // 实现：在 tr.update 之前若 norm>clip 则把 lr 乘以 clip/norm，等价于把更新步长
+        //       限制在 clip/norm 的步长上。update() 内部已有 factor=1/(supervised*norm)
+        //       的全局归一化，再叠加这一层就是标准 L2 grad clip 语义。
+        float grad_clip=0.f;
+        if(const char* e=std::getenv("TAO_GRAD_CLIP")){
+            const float v=strtof(e,nullptr);
+            require(v>0.f, "TAO_GRAD_CLIP must be positive");
+            grad_clip=v;
+            printf("GRAD_CLIP=%g\n", double(grad_clip));
+            fflush(stdout);
+        }
 
         for (unsigned si=start_shard; si<shards.size(); ++si) {
             printf("SHARD_BEGIN index=%u file=%s\n", si, shards[si].filename().string().c_str());
@@ -196,8 +240,19 @@ int main(int argc, char** argv) {
                 }
                 require(targets>0, "no supervised update");
                 const double train_loss=loss.collect();
-                const float lr=tr.steps<20u ? lr_max*float(tr.steps+1u)/20.f : lr_max;
-                float norm=tr.update(targets, lr);
+                float lr=lr_max;
+                if(lr_decay && tr.steps>=lr_decay_start){
+                    const unsigned past=tr.steps-lr_decay_start;
+                    const float progress=past>=lr_decay_steps ? 1.f : float(past)/float(lr_decay_steps);
+                    lr=lr_min+0.5f*(lr_max-lr_min)*(1.f+std::cos(3.14159265358979323846f*progress));
+                }else if(tr.steps<20u){
+                    lr=lr_max*float(tr.steps+1u)/20.f;   // 线性 warmup（仅在非退火区段）
+                }
+                float norm=tr.update(targets, lr, grad_clip);   // max_norm=grad_clip；0 表示不裁剪
+                if(grad_clip>0.f && norm>grad_clip){
+                    printf("CLIPPED step=%u norm=%.6f -> cap=%.6f\n", tr.steps, norm, grad_clip);
+                    fflush(stdout);
+                }
                 check(cudaDeviceSynchronize());
                 require(tr.steps==before+1 && std::isfinite(norm), "invalid update");
                 printf("UPDATE step=%u shard=%u positions=%zu targets=%zu train_preupdate_NLL=%.6f lr=%.6f norm=%.6f\n",

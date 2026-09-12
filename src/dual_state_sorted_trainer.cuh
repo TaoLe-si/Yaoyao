@@ -103,7 +103,7 @@ void detach(){auto copy=[](Node old){auto n=std::make_shared<GradNode>(old->valu
 
 void zero_grad(){for(auto&kv:graph.w)check(cudaMemset(kv.second->grad.p,0,kv.second->grad.n*4));}
 
-float update(size_t supervised,float lr=.0003f){
+float update(size_t supervised,float lr=.0003f,float max_norm=0.f){
   if(!supervised)return 0;
   double norm=0;
 #ifdef TAO_GPU_HEALTH
@@ -112,7 +112,12 @@ float update(size_t supervised,float lr=.0003f){
   for(auto&t:spec)for(float g:graph.w.at(t.name)->grad.host()){if(!std::isfinite(g))throw std::runtime_error("gradient");double z=double(g)/supervised;norm+=z*z;}
 #endif
   norm=std::sqrt(norm);
-  const float factor=float(1./supervised/std::max(1.,norm));
+  // 梯度裁剪（L2 范数）：norm>max_norm 时把 factor 里的 norm 替换为 max_norm。
+  // 因为 Adam 内核用 factor 把梯度 pre-scale 到 unit-norm 区，再乘 lr；
+  // 把 norm 替换成 max_norm 等价于把整批梯度的有效 L2 视为 max_norm —— 标准 L2 grad clip 语义。
+  // max_norm<=0 时退化到原行为（factor=1/(supervised*max(norm,1))）。
+  const float norm_for_scale=max_norm>0.f && norm>max_norm ? max_norm : float(std::max(1.,norm));
+  const float factor=float(1./supervised/norm_for_scale);
   ++steps;
   const float bc1=1-std::pow(.9f,float(steps)),bc2=1-std::pow(.999f,float(steps));
   for(auto&t:spec){

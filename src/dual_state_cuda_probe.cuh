@@ -52,8 +52,12 @@ __global__ void rms(const float*x,const float*g,float*y,int n){float sum=0;for(i
 struct CudaProbeModel{
 Config c;std::map<std::string,Vec>w;
 explicit CudaProbeModel(Config cfg):c(cfg){for(auto&t:schema(c))w.emplace(t.name,Vec(t.elements(),0));}
-std::vector<LayerState> initial()const{return std::vector<LayerState>(c.layers,LayerState{Vec(c.s),Vec(c.m)});}
+std::vector<LayerState> initial()const{
+    std::vector<LayerState> st;st.reserve(c.layers);
+    for(uint32_t i=0;i<c.layers;++i)st.emplace_back(c.s,c.m);
+    return st;}
 Vec linear(const std::string&name,const Vec&x,uint32_t rows)const{const auto&a=w.at(name);if(a.size()!=uint64_t(rows)*x.size())throw std::runtime_error("shape");Device da(a),dx(x);Device dy(rows);matvec<<<(rows+127)/128,128>>>(da.p,dx.p,dy.p,rows,x.size());check(cudaGetLastError());return dy.host();}
+Vec linear(const std::string&name,const FSpan&x,uint32_t rows)const{return linear(name,Vec(x.data(),x.data()+x.size()),rows);}
 
 static void add(Vec&a,const Vec&b){if(a.size()!=b.size())throw std::runtime_error("vector shape");for(size_t i=0;i<a.size();++i)a[i]+=b[i];}
 Vec norm(const Vec&x,const std::string&name)const{Device dx(x),dg(w.at(name)),dy(x.size());rms<<<1,1>>>(dx.p,dg.p,dy.p,x.size());check(cudaGetLastError());return dy.host();}
