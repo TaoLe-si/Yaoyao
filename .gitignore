@@ -1,0 +1,19 @@
+# Build artefacts
+build/
+release/
+.vs/
+
+# MSVC / toolchain output
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.idb
+*.tlog
+*.lastbuildstate
+
+# Project intermediates
+*.dsb
+*.log
