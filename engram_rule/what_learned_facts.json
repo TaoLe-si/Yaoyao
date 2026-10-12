@@ -1,0 +1,176 @@
+{
+ "ckpt": "engram_rule_dialogue_bpe_answer_disjoint_d128_s11_st400.pt",
+ "cfg": {
+  "vocab": 1024,
+  "d": 128,
+  "n_layers": 2,
+  "n_heads": 8,
+  "ffn_mult": 2,
+  "rope_dim": 8,
+  "ngram_max": 2,
+  "n_hash": 2,
+  "n_slots": 4096,
+  "beta": 1.0,
+  "min_count": 1,
+  "n_buckets": 16,
+  "k_buckets": 4,
+  "use_pos_abs": true,
+  "pos_abs_max": 512,
+  "use_pos_bucket": true,
+  "clamp_window": true,
+  "near_first": 2.0,
+  "gate_rank": 16,
+  "local_norm": true,
+  "window_max": 16,
+  "bucket_step": 32,
+  "rule_scale_init": 2.0,
+  "lam_init": 1.0
+ },
+ "rows": [
+  {
+   "name": "blocks.0.attn.pos_bucket",
+   "shape": [
+    512,
+    16
+   ],
+   "numel": 8192,
+   "norm": 5.350257396697998,
+   "absmean": 0.04067555442452431,
+   "absmax": 0.2988370656967163,
+   "nonzero_frac": 0.7734375,
+   "delta_norm": 5.350257396697998,
+   "delta_absmax": 0.2988370656967163,
+   "moved_frac": 0.7734375
+  },
+  {
+   "name": "blocks.1.attn.pos_bucket",
+   "shape": [
+    512,
+    16
+   ],
+   "numel": 8192,
+   "norm": 5.865102291107178,
+   "absmean": 0.04349985346198082,
+   "absmax": 0.2512231767177582,
+   "nonzero_frac": 0.76171875,
+   "delta_norm": 5.865102291107178,
+   "delta_absmax": 0.2512231767177582,
+   "moved_frac": 0.76171875
+  },
+  {
+   "name": "blocks.0.attn.pos_abs",
+   "shape": [
+    512,
+    16
+   ],
+   "numel": 8192,
+   "norm": 90.39434051513672,
+   "absmean": 0.8017545342445374,
+   "absmax": 3.904296636581421,
+   "nonzero_frac": 1.0
+  },
+  {
+   "name": "emb.weight",
+   "shape": [
+    1024,
+    128
+   ],
+   "numel": 131072,
+   "norm": 12.95003604888916,
+   "absmean": 0.027995754033327103,
+   "absmax": 0.1807844638824463,
+   "nonzero_frac": 1.0
+  },
+  {
+   "name": "engram.val.weight",
+   "shape": [
+    4096,
+    128
+   ],
+   "numel": 524288,
+   "norm": 44.62589645385742,
+   "absmean": 0.04918389394879341,
+   "absmax": 0.27347174286842346,
+   "nonzero_frac": 1.0
+  },
+  {
+   "name": "engram.key.weight",
+   "shape": [
+    4096,
+    128
+   ],
+   "numel": 524288,
+   "norm": 52.01570129394531,
+   "absmean": 0.06018917262554169,
+   "absmax": 0.23269422352313995,
+   "nonzero_frac": 1.0
+  },
+  {
+   "name": "head.weight",
+   "shape": [
+    1024,
+    128
+   ],
+   "numel": 131072,
+   "norm": 45.6685676574707,
+   "absmean": 0.10282579064369202,
+   "absmax": 0.43126678466796875,
+   "nonzero_frac": 1.0
+  },
+  {
+   "name": "blocks.0.attn.rule_scale",
+   "shape": [],
+   "numel": 1,
+   "norm": 1.975066900253296,
+   "absmean": 1.975066900253296,
+   "absmax": 1.975066900253296,
+   "nonzero_frac": 1.0,
+   "delta_norm": 0.0249330997467041,
+   "delta_absmax": 0.0249330997467041,
+   "moved_frac": 1.0
+  },
+  {
+   "name": "blocks.0.attn.lam",
+   "shape": [],
+   "numel": 1,
+   "norm": 1.035345435142517,
+   "absmean": 1.035345435142517,
+   "absmax": 1.035345435142517,
+   "nonzero_frac": 1.0,
+   "delta_norm": 0.03534543514251709,
+   "delta_absmax": 0.03534543514251709,
+   "moved_frac": 1.0
+  },
+  {
+   "name": "blocks.0.attn.gate",
+   "shape": [
+    128
+   ],
+   "numel": 128,
+   "norm": 11.126901626586914,
+   "absmean": 0.9828771948814392,
+   "absmax": 1.0670686960220337,
+   "nonzero_frac": 1.0,
+   "delta_norm": 0.4374235272407532,
+   "delta_absmax": 0.13138681650161743,
+   "moved_frac": 1.0
+  },
+  {
+   "name": "blocks.0.attn.head_w",
+   "shape": [
+    4
+   ],
+   "numel": 4,
+   "norm": 2.1825649738311768,
+   "absmean": 1.0735703706741333,
+   "absmax": 1.2694263458251953,
+   "nonzero_frac": 1.0,
+   "delta_norm": 0.4183618426322937,
+   "delta_absmax": 0.2694263458251953,
+   "moved_frac": 1.0
+  }
+ ],
+ "pos_bucket_moved": 0.7734375,
+ "semantic_norm": 155.2602014541626,
+ "rule_norm": 16.319878935813904
+}

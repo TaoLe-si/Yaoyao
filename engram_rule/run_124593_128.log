@@ -1,0 +1,16 @@
+﻿gate = 644bba058926（exp_scaling_grid_v2 + model + 两份 dialogue_small）
+math_gate = eb7136d1f3f6（只含 model.py + 两份 dialogue_small；编排改动不影响它）
+旧 gate 等价声明: ('ff5eefd1604b', '59855015dfd8') ← 4faabefdcd58
+  语料 155740 行 → train 124593 / 探针 31147（全量词项级不相交断言通过）
+      [编码缓存命中 c4571b3c065f8bb2，跳过 31147 行 BPE]
+  网格 2 格（epochs 目标 40.0，wd 臂 [0.0, 0.01]）
+  空闲显存 7068 MiB / 总 8188 MiB
+  预计总墙钟 ~10045 s（167.4 min，按同 N 档实测基线外推）
+  >>> N=124593 d=128  wd=0.00  steps=19468 epochs=40.0 ...
+      [编码缓存命中 dcb67bb142b5f4c3，跳过 124593 行 BPE]
+      [x/s/l 常驻 GPU：488 MB，剩余 6536 MB]
+      [续训：已完成 12650/19468 步，trace 已恢复 3 点]
+      probe NLL=2.2760 tok_acc=0.5291 | train末loss=1.9405 | mb=64 3145.1s (0.162 s/步, 基线 0.258)
+  >>> N=124593 d=128  wd=0.01  steps=19468 epochs=40.0 ...
+      [编码缓存命中 dcb67bb142b5f4c3，跳过 124593 行 BPE]
+      [x/s/l 常驻 GPU：488 MB，剩余 6444 MB]

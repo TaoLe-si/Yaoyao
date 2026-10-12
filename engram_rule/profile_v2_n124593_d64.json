@@ -1,0 +1,79 @@
+{
+ "n": 124593,
+ "d": 64,
+ "steps": 20,
+ "kernel_us_per_step": 48376.43285000017,
+ "aten_us_per_step": 46884.45720000021,
+ "rows": [
+  {
+   "op": "aten::mul",
+   "ms": 13.958589700000006,
+   "calls": 117
+  },
+  {
+   "op": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEESt5arrayIPcLy3EELb0EEEviT0_T1_",
+   "ms": 9.14795265000003,
+   "calls": 31
+  },
+  {
+   "op": "aten::mm",
+   "ms": 8.931991400000085,
+   "calls": 73
+  },
+  {
+   "op": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_13BinaryFunctorIfffNS0_15binary_internal10MulFunctorIfEEEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+   "ms": 4.710209850000118,
+   "calls": 63
+  },
+  {
+   "op": "aten::sum",
+   "ms": 3.3408859499998624,
+   "calls": 44
+  },
+  {
+   "op": "_ZN2at6native29vectorized_elementwise_kernelILi4ENS0_15CUDAFunctor_addIfEESt5arrayIPcLy3EELb0EEEviT0_T1_",
+   "ms": 2.8282463499998713,
+   "calls": 49
+  },
+  {
+   "op": "ampere_sgemm_64x64_tn",
+   "ms": 2.592302100000008,
+   "calls": 9
+  },
+  {
+   "op": "aten::add",
+   "ms": 2.5235677999999475,
+   "calls": 32
+  },
+  {
+   "op": "ampere_sgemm_32x32_sliced1x4_nt",
+   "ms": 2.4921918499999767,
+   "calls": 9
+  },
+  {
+   "op": "aten::add_",
+   "ms": 2.425449349999914,
+   "calls": 95
+  },
+  {
+   "op": "ampere_sgemm_64x64_nn",
+   "ms": 2.3258651999999915,
+   "calls": 11
+  },
+  {
+   "op": "_ZN2at6native13reduce_kernelILi128ELi4ENS0_8ReduceOpIfNS0_14func_wrapper_tIfZNS0_11sum_functorIfffEclERNS_14TensorIteratorEEUlffE_EEjfLi4ELi4EEEEEvT1_",
+   "ms": 2.205717849999896,
+   "calls": 19
+  },
+  {
+   "op": "_ZN2at6native18elementwise_kernelILi128ELi2EZNS0_22gpu_kernel_impl_nocastINS0_15CUDAFunctor_addIfEEEEvRNS_18TensorIteratorBaseERKT_EUliE_EEviT1_",
+   "ms": 2.190933150000086,
+   "calls": 10
+  },
+  {
+   "op": "aten::silu_backward",
+   "ms": 1.7133119000000239,
+   "calls": 2
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+﻿C1 通过  eval tokens/starts/lengths 与 v11 逐元素相同
+C3 通过  131 个 LOO=0 行, 其答案开头在训练集中出现次数恒为 1 (负向对照: 分层对象与层名一致)
+      R1=0.1832 (锚 0.1832, n=131) | R2=0.7653 (锚 0.7653, n=426) | keep=819
+C2 通过  同口径代码在 v11 上复现 §46 的 R1/R2 (容差 1e-03)
+      Δ_train=5.1735 ± 0.0784 (锚 5.1735, n=819)
+C4 通过  同口径 delta_k1 在 v11 上复现 §42 的 Δ_train 且显著为正
+C5 通过  d=64   n_heads=4   head_dim=16  rope_dim=8 合法
+C5 通过  d=128  n_heads=8   head_dim=16  rope_dim=8 合法
+C5 通过  d=256  n_heads=16  head_dim=16  rope_dim=8 合法
+train step 1/1 weighted_answer_loss 7.0838
+train step 1/1 weighted_answer_loss 7.0838
+      micro_batch 64 vs 32: max|Δgrad|=7.451e-09  max 相对=5.904e-07  (60 个梯度张量)
+C6 通过  micro_batch 切分梯度相对差 5.90e-07 < 1e-4 ⇒ 兜底方案精确等价
+
+全部检查通过 → 允许跑实验 A。

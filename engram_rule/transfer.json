@@ -1,0 +1,11 @@
+{
+ "train_rows": 124593,
+ "held_rows": 31147,
+ "T1_q_skel_hit": 732,
+ "T1_rate": 0.0235,
+ "T2_a_skel_hit": 929,
+ "T2_rate": 0.02983,
+ "T3_bigram_jaccard": 0.30598,
+ "train_skel": 114811,
+ "train_ans_skel": 111759
+}

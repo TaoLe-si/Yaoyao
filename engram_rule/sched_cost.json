@@ -1,0 +1,24 @@
+{
+ "ckpt": "engram_rule_scaling_v2_n124593_d128_wd0p0.pt",
+ "rows": 8,
+ "cap": 40,
+ "L": 166,
+ "sec_full": 0.0079,
+ "sec_gen": 2.2249,
+ "n_steps": 320,
+ "ratio": 280.66,
+ "per_step_sec": 0.006952784955501556,
+ "per_row_full_sec": 0.0009909272193908691,
+ "breakeven_steps": 0.1,
+ "extrap": {
+  "bs": 256,
+  "micro": 64,
+  "n_micro": 4,
+  "ans_med": 40,
+  "steps": 19468,
+  "sec_per_step_new": 71.2,
+  "speedup_vs_now": 8981.0,
+  "hours_full": 385.0,
+  "steps_per_bg_run": 50
+ }
+}

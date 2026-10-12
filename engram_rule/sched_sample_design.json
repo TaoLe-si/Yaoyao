@@ -1,0 +1,29 @@
+{
+ "design": "scheduled sampling：只在答案段内、线性退火、梯度 detach",
+ "S1": "替换范围 = [starts, len)，问题段不动",
+ "S2": "替换比例 p 线性退火 1→0",
+ "S3": "梯度不穿过替换点（detach）",
+ "cost": {
+  "micro_batch": 64,
+  "bs": 256,
+  "answer_tok_med": 40,
+  "fwd_now": 4,
+  "fwd_new": 160,
+  "ratio": 40.0,
+  "sec_per_step_now": 0.5,
+  "est_sec_per_step": [
+   4.0,
+   20.0
+  ],
+  "hours_optimistic": 21.6,
+  "hours_pessimistic": 108.2
+ },
+ "predictions": {
+  "P1": "p=0 时与现有实现逐位相同（loss / 末权重）",
+  "P2": "替换只在 [starts,len) 内，问题段一位不换",
+  "P3": "同 seed 两跑逐位相同",
+  "P4": "p=1 时 loss 明显高于 p=0",
+  "P5": "退火末端自由生成首字符命中率上升"
+ },
+ "evidence": "§69.41：教师强制首字符命中 83/200(41.5%)，其中仅 28(33.7%)自由生成也对"
+}

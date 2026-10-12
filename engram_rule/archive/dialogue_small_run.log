@@ -1,0 +1,15 @@
+
+
+
+C:\Users\Administrator\Desktop\DiscreteModel\engram_rule\dialogue_small.py:205: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\torch\csrc\autograd\generated\python_variable_methods.cpp:821.)
+  print("train step %d/%d answer_loss %.4f" % (step + 1, steps, float(loss)))
+train step 1/30 answer_loss 6.4003
+train step 7/30 answer_loss 5.7066
+train step 14/30 answer_loss 5.1362
+train step 21/30 answer_loss 4.7463
+train step 28/30 answer_loss 4.5847
+samples bytes=524288 rows=240 train=167 eval=37 vocab=512 seq=96
+answer-only metrics {'answer_nll': 5.031122217841327, 'answer_ppl': 153.10473318686746, 'answer_token_accuracy': 0.13168449197860962, 'answer_tokens': 1496, 'examples': 37}
+saved checkpoint C:\Users\Administrator\Desktop\DiscreteModel\engram_rule\engram_rule_dialogue_bpe_small.pt
+Scope: sampled single-turn data only; not a complex/multi-turn quality benchmark.

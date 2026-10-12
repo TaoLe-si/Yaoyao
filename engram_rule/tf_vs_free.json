@@ -1,0 +1,16 @@
+{
+ "seed": 12345,
+ "n": 200,
+ "tf_first_hit": 83,
+ "tf_rate": 0.415,
+ "free_first_hit": 71,
+ "cells": {
+  "TF对+自对": 28,
+  "TF对+自错": 55,
+  "TF错+自错": 74,
+  "TF错+自对": 43
+ },
+ "tf_to_free_rate": 0.3373493975903614,
+ "prior_full_first_acc": 0.4043,
+ "reach_cover_rate": 0.325
+}
