@@ -210,6 +210,30 @@
     "ok": true
   },
   {
+    "sent": "小明打球",
+    "gold": "打/play(AGENT=小明 PATIENT=球) ",
+    "pred": "打/play(AGENT=小明 PATIENT=球) ",
+    "ok": true
+  },
+  {
+    "sent": "老师打球",
+    "gold": "打/play(AGENT=老师 PATIENT=球) ",
+    "pred": "打/play(AGENT=老师 PATIENT=球) ",
+    "ok": true
+  },
+  {
+    "sent": "狗打球",
+    "gold": "打/play(AGENT=狗 PATIENT=球) ",
+    "pred": "打/play(AGENT=狗 PATIENT=球) ",
+    "ok": true
+  },
+  {
+    "sent": "妈妈打猫",
+    "gold": "打/hit(AGENT=妈妈 PATIENT=猫) ",
+    "pred": "打/hit(AGENT=妈妈 PATIENT=猫) ",
+    "ok": true
+  },
+  {
     "sent": "老师看石头",
     "gold": "REJECT",
     "pred": "REJECT",
@@ -385,6 +409,18 @@
   },
   {
     "sent": "石头把苹果吃了",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "苹果打球",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "桌子打猫",
     "gold": "REJECT",
     "pred": "REJECT",
     "ok": true

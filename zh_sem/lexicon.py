@@ -37,6 +37,7 @@ NOUN_PROPS = {
     "学校":  dict(animate=False, edible=False, liquid=False, place=True),
     "家":    dict(animate=False, edible=False, liquid=False, place=True),
     "花":    dict(animate=False, edible=False, liquid=False, place=False),
+    "球":    dict(animate=False, edible=False, liquid=False, place=False),
 }
 
 
@@ -89,6 +90,7 @@ ENTRIES = {
     "学校": [N("学校", "PLACE")],
     "家": [N("家", "PLACE")],
     "花": [N("花", "PLANT")],
+    "球": [N("球", "SPORT")],
     # ---- 动词 ----
     "吃": [V("吃", "吃", ["AGENT", "PATIENT"], ["PATIENT"])],
     "喝": [V("喝", "喝", ["AGENT", "PATIENT"], ["PATIENT"])],
@@ -96,6 +98,9 @@ ENTRIES = {
     # ★多义：同形、同框架，选择限制不同
     "看": [V("看", "看/read", ["AGENT", "PATIENT"], ["PATIENT"]),
            V("看", "看/visit", ["AGENT", "PATIENT"], ["PATIENT"])],
+    # ★第二种多义：两个义项都可能成立，靠词汇偏好消歧
+    "打": [V("打", "打/hit", ["AGENT", "PATIENT"], ["PATIENT"]),
+           V("打", "打/play", ["AGENT", "PATIENT"], ["PATIENT"])],
     "喜欢": [V("喜欢", "喜欢", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
     "去": [V("去", "去", ["AGENT", "GOAL"], [])],
     "给": [V("给", "给", ["AGENT", "RECIPIENT", "PATIENT"], [])],

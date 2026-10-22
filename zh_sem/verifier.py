@@ -22,6 +22,10 @@ ROLE_REQ = {
     ("看/read", "PATIENT"): {"cls": "READABLE"},
     ("看/visit", "AGENT"): {"animate": True},
     ("看/visit", "PATIENT"): {"place": True},
+    ("打/hit", "AGENT"): {"animate": True},
+    ("打/hit", "PATIENT"): {"cls_not": "SPORT"},
+    ("打/play", "AGENT"): {"animate": True},
+    ("打/play", "PATIENT"): {"cls": "SPORT"},
     ("喜欢", "EXPERIENCER"): {"animate": True},
     ("去", "AGENT"): {"animate": True},
     ("去", "GOAL"): {"place": True},
@@ -49,6 +53,9 @@ def verify(m, lex):
         for k, v in req.items():
             if k == "cls":
                 if info.get("cls") != v:
+                    return False
+            elif k == "cls_not":
+                if info.get("cls") == v:
                     return False
             elif props.get(k) != v:
                 return False

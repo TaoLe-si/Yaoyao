@@ -3,77 +3,77 @@
     "valid_exact": 1.0,
     "invalid_reject": 1.0,
     "overall": 1.0,
-    "valid_ok": 35,
-    "valid_n": 35,
-    "invalid_ok": 30,
-    "invalid_n": 30
+    "valid_ok": 39,
+    "valid_n": 39,
+    "invalid_ok": 32,
+    "invalid_n": 32
   },
   "baselines": {
     "accept_all": {
       "valid_exact": 1.0,
       "invalid_reject": 0.0,
-      "overall": 0.5384615384615384,
-      "valid_ok": 35,
-      "valid_n": 35,
+      "overall": 0.5492957746478874,
+      "valid_ok": 39,
+      "valid_n": 39,
       "invalid_ok": 0,
-      "invalid_n": 30
+      "invalid_n": 32
     },
     "reject_all": {
       "valid_exact": 0.0,
       "invalid_reject": 1.0,
-      "overall": 0.46153846153846156,
+      "overall": 0.4507042253521127,
       "valid_ok": 0,
-      "valid_n": 35,
-      "invalid_ok": 30,
-      "invalid_n": 30
+      "valid_n": 39,
+      "invalid_ok": 32,
+      "invalid_n": 32
     },
     "cell_lookup": {
-      "valid_exact": 0.9142857142857143,
-      "invalid_reject": 0.5,
-      "overall": 0.7230769230769231,
-      "valid_ok": 32,
-      "valid_n": 35,
-      "invalid_ok": 15,
-      "invalid_n": 30
+      "valid_exact": 0.9230769230769231,
+      "invalid_reject": 0.53125,
+      "overall": 0.7464788732394366,
+      "valid_ok": 36,
+      "valid_n": 39,
+      "invalid_ok": 17,
+      "invalid_n": 32
     },
     "verifier": {
       "valid_exact": 1.0,
       "invalid_reject": 1.0,
       "overall": 1.0,
-      "valid_ok": 35,
-      "valid_n": 35,
-      "invalid_ok": 30,
-      "invalid_n": 30
+      "valid_ok": 39,
+      "valid_n": 39,
+      "invalid_ok": 32,
+      "invalid_n": 32
     }
   },
   "controls": {
     "random_props_consistent": {
-      "valid_exact": 0.6666666666666666,
-      "invalid_reject": 1.0,
-      "overall": 0.8461538461538461,
-      "valid_ok": 20,
-      "valid_n": 30,
-      "invalid_ok": 35,
-      "invalid_n": 35,
-      "changed_nouns": 15
+      "valid_exact": 0.8888888888888888,
+      "invalid_reject": 0.9622641509433962,
+      "overall": 0.9436619718309859,
+      "valid_ok": 16,
+      "valid_n": 18,
+      "invalid_ok": 51,
+      "invalid_n": 53,
+      "changed_nouns": 20
     },
     "random_props_broken": {
-      "valid_exact": 0.8857142857142857,
-      "invalid_reject": 0.6666666666666666,
-      "overall": 0.7846153846153846,
-      "valid_ok": 31,
-      "valid_n": 35,
-      "invalid_ok": 20,
-      "invalid_n": 30
+      "valid_exact": 0.9487179487179487,
+      "invalid_reject": 0.5,
+      "overall": 0.7464788732394366,
+      "valid_ok": 37,
+      "valid_n": 39,
+      "invalid_ok": 16,
+      "invalid_n": 32
     },
     "position_only": {
-      "valid_exact": 0.9428571428571428,
+      "valid_exact": 0.8717948717948718,
       "invalid_reject": 0.0,
-      "overall": 0.5076923076923077,
-      "valid_ok": 33,
-      "valid_n": 35,
+      "overall": 0.4788732394366197,
+      "valid_ok": 34,
+      "valid_n": 39,
       "invalid_ok": 0,
-      "invalid_n": 30
+      "invalid_n": 32
     }
   },
   "lovo": [
@@ -345,6 +345,51 @@
       ]
     },
     {
+      "verb": "打",
+      "heldout": 6,
+      "valid_exact": 0.25,
+      "invalid_reject": 1.0,
+      "overall": 0.5,
+      "items": [
+        {
+          "sent": "小明打球",
+          "gold": "打/play(AGENT=小明 PATIENT=球) ",
+          "pred": "打/hit(AGENT=小明 PATIENT=球) ",
+          "ok": false
+        },
+        {
+          "sent": "老师打球",
+          "gold": "打/play(AGENT=老师 PATIENT=球) ",
+          "pred": "打/hit(AGENT=老师 PATIENT=球) ",
+          "ok": false
+        },
+        {
+          "sent": "狗打球",
+          "gold": "打/play(AGENT=狗 PATIENT=球) ",
+          "pred": "打/hit(AGENT=狗 PATIENT=球) ",
+          "ok": false
+        },
+        {
+          "sent": "妈妈打猫",
+          "gold": "打/hit(AGENT=妈妈 PATIENT=猫) ",
+          "pred": "打/hit(AGENT=妈妈 PATIENT=猫) ",
+          "ok": true
+        },
+        {
+          "sent": "苹果打球",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "桌子打猫",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        }
+      ]
+    },
+    {
       "verb": "有",
       "heldout": 2,
       "valid_exact": 1.0,
@@ -492,7 +537,7 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.15384615384615385,
+    "P3c_consistent_world_overall_delta": -0.05633802816901412,
     "P4_position_only_near_accept_all": true,
     "P5_lovo_unseen_verb_ge_0.60": false
   }

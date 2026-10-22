@@ -48,6 +48,11 @@ TRAIN_VALID = [
     ("我今天看书", E("看/read", {"AGENT": "我", "PATIENT": "书"}, TIME=True)),
     ("老师看学校", E("看/visit", {"AGENT": "老师", "PATIENT": "学校"})),
     ("我看学校", E("看/visit", {"AGENT": "我", "PATIENT": "学校"})),
+    # ---- 打：两个义项都可能成立，靠偏好消歧 ----
+    ("我打球", E("打/play", {"AGENT": "我", "PATIENT": "球"})),
+    ("他打球", E("打/play", {"AGENT": "他", "PATIENT": "球"})),
+    ("我打猫", E("打/hit", {"AGENT": "我", "PATIENT": "猫"})),
+    ("老师打猫", E("打/hit", {"AGENT": "老师", "PATIENT": "猫"})),
     # ---- 其他动词 ----
     ("我买书", E("买", {"AGENT": "我", "PATIENT": "书"})),
     ("他买苹果", E("买", {"AGENT": "他", "PATIENT": "苹果"})),
@@ -100,6 +105,8 @@ TRAIN_INVALID = [
     ("老师看桌子", None),
     ("老师给桌子书", None),
     ("桌子很忙", None),
+    ("桌子打球", None),
+    ("苹果打猫", None),
 ]
 
 HELDOUT_VALID = [
@@ -141,6 +148,11 @@ HELDOUT_VALID = [
     ("苹果被妈妈买了", E("买", {"AGENT": "妈妈", "PATIENT": "苹果"}, PERF=True, BEI=True)),
     ("我把水喝了", E("喝", {"AGENT": "我", "PATIENT": "水"}, PERF=True, BA=True)),
     ("妈妈把苹果买了", E("买", {"AGENT": "妈妈", "PATIENT": "苹果"}, PERF=True, BA=True)),
+    # ---- 打：留出义项偏好 ----
+    ("小明打球", E("打/play", {"AGENT": "小明", "PATIENT": "球"})),
+    ("老师打球", E("打/play", {"AGENT": "老师", "PATIENT": "球"})),
+    ("狗打球", E("打/play", {"AGENT": "狗", "PATIENT": "球"})),
+    ("妈妈打猫", E("打/hit", {"AGENT": "妈妈", "PATIENT": "猫"})),
 ]
 
 HELDOUT_INVALID = [
@@ -177,6 +189,8 @@ HELDOUT_INVALID = [
     ("我被石头吃了", None),
     ("我把石头吃了", None),
     ("石头把苹果吃了", None),
+    ("苹果打球", None),
+    ("桌子打猫", None),
 ]
 
 TRAIN = TRAIN_VALID + TRAIN_INVALID
