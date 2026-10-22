@@ -85,6 +85,12 @@ MANUAL_VALID = [
         "PATIENT": entity("人",
                           comps={"REL": E("说话", {"AGENT": "人"})},
                           REL_ROLE="AGENT")})),
+    # ---- 时态/体 ----
+    ("他喝过水", E("喝", {"AGENT": "他", "PATIENT": "水"}, EXP=True)),
+    ("妈妈看着书", E("看/read", {"AGENT": "妈妈", "PATIENT": "书"}, PROG=True)),
+    ("我正在喝水", E("喝", {"AGENT": "我", "PATIENT": "水"}, PROG=True)),
+    ("老师吃过苹果了", E("吃", {"AGENT": "老师", "PATIENT": "苹果"}, EXP=True, PERF=True)),
+    ("妈妈喜欢过老师", E("喜欢", {"EXPERIENCER": "妈妈", "STIMULUS": "老师"}, EXP=True)),
     # ---- 新动词 SV ----
     ("姐姐唱", E("唱", {"AGENT": "姐姐"})),
     ("哥哥跳", E("跳", {"AGENT": "哥哥"})),
@@ -139,6 +145,13 @@ MANUAL_INVALID = [
     ("电视把苹果吃了", None),
     ("老师把石头吃了", None),
     ("花喝水", None),
+    # ---- 体标记负例 ----
+    ("他喝了了水", None),
+    ("妈妈看着过书", None),
+    ("老师正在喜欢妈妈", None),
+    ("妈妈喜欢着老师", None),
+    ("妈妈正在", None),
+    ("苹果红着", None),
 ]
 
 MANUAL = MANUAL_VALID + MANUAL_INVALID

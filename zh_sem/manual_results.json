@@ -1,7 +1,7 @@
 {
-  "n": 85,
-  "valid_n": 61,
-  "invalid_n": 24,
+  "n": 96,
+  "valid_n": 66,
+  "invalid_n": 30,
   "model": {
     "overall": 1.0,
     "valid_exact": 1.0,

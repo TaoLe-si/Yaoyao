@@ -54,6 +54,12 @@ TRAIN_VALID = [
                           REL_ROLE="PATIENT")})),
     # ---- ATTR / QUANT / 主语关系化 ----
     ("我说话", E("说话", {"AGENT": "我"})),
+    # ---- 时态/体 ----
+    ("我吃过饭", E("吃", {"AGENT": "我", "PATIENT": "饭"}, EXP=True)),
+    ("我看着书", E("看/read", {"AGENT": "我", "PATIENT": "书"}, PROG=True)),
+    ("我正在吃饭", E("吃", {"AGENT": "我", "PATIENT": "饭"}, PROG=True)),
+    ("我吃过饭了", E("吃", {"AGENT": "我", "PATIENT": "饭"}, EXP=True, PERF=True)),
+    ("我喜欢过他", E("喜欢", {"EXPERIENCER": "我", "STIMULUS": "他"}, EXP=True)),
     ("老师看红的花", E("看/look", {
         "AGENT": "老师", "PATIENT": entity("花", ATTR="红")})),
     ("老师看说话的人", E("看/look", {
@@ -154,6 +160,16 @@ TRAIN_INVALID = [
     ("桌子很聪明", None),
     ("我喜欢吃石头", None),
     ("我跑的猫", None),
+    # ---- 体标记：重复 / 冲突 / 状态动词 / 无谓词 ----
+    ("我吃了了饭", None),
+    ("我吃着过饭", None),
+    ("我吃了过饭", None),
+    ("我吃着饭了", None),
+    ("花红着", None),
+    ("我正在", None),
+    ("我饭了", None),
+    ("我正在喜欢他", None),
+    ("我喜欢着他", None),
 ]
 
 HELDOUT_VALID = [

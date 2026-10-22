@@ -18,6 +18,9 @@ sys.path.insert(0, HERE)
 from lexicon import ENTRIES, VERB_FRAME, VOPT   # noqa: E402
 from semantics import canon, entity, event, state  # noqa: E402
 
+VERB_STATIVE = {e["sense"]: bool(e.get("stative"))
+                for es in ENTRIES.values() for e in es if e["pos"] == "V"}
+
 _FORMS = sorted(ENTRIES, key=len, reverse=True)
 _MAXLEN = max(len(f) for f in _FORMS)
 _PUNCT = set("。，、；：！？!?.,;: \t\n")
@@ -137,6 +140,32 @@ def _np_value(np):
     return np["pred"]
 
 
+def _add_aspect(vp, key):
+    """给事件 VP 加体标记；冲突/重复/状态动词 + 进行体一律拒绝。
+
+    允许：{了}, {过}, {着}, {正在}, {过,了}
+    拒绝：重复标记；过+了以外的混用；状态动词加 着/正在。
+    """
+    if "verb" not in vp:
+        return None
+    mods = vp["mods"]
+    if key in mods:
+        return None
+    if key == "EXP":
+        if "PROG" in mods or "PERF" in mods:
+            return None
+    elif key == "PROG":
+        if "EXP" in mods or "PERF" in mods:
+            return None
+        if VERB_STATIVE.get(vp["verb"]):
+            return None
+    elif key == "PERF":
+        if "PROG" in mods:
+            return None
+        # 过 + 了 允许（"吃过饭了"）
+    return _copy_vp2(vp, **{key: True})
+
+
 def _with_mods(m, **mods):
     n = dict(m)
     n["roles"] = dict(m["roles"])
@@ -206,11 +235,16 @@ def _combine(L, R, add):
                                       "LOC": _np_value(pp["obj"])},
                                construction="loc_state"))
 
-    # R4: ADV(不/今天) + VP -> VP
+    # R4: ADV(不/今天/正在) + VP -> VP
     for adv in L.get("ADV", []):
         if adv["kind"] in ("NEG", "TIME"):
             for vp in R.get("VP", []):
                 add("VP", _copy_vp2(vp, **{adv["kind"]: True}))
+        elif adv["kind"] == "PROG":
+            for vp in R.get("VP", []):
+                nv = _add_aspect(vp, "PROG")
+                if nv:
+                    add("VP", nv)
 
     # R5: ADV(很) + AP -> AP
     for adv in L.get("ADV", []):
@@ -233,11 +267,13 @@ def _combine(L, R, add):
             if nv:
                 add("VP", nv)
 
-    # R7: VP + PART(了) -> VP
+    # R7: VP + PART(了/过/着) -> VP（带体标记冲突检查）
     for vp in L.get("VP", []):
         for pt in R.get("PART", []):
-            if pt["kind"] == "PERF":
-                add("VP", _copy_vp2(vp, PERF=True))
+            if pt["kind"] in ("PERF", "EXP", "PROG"):
+                nv = _add_aspect(vp, pt["kind"])
+                if nv:
+                    add("VP", nv)
 
     # R8: P + NP -> PP / PPBA / PPBEI
     for p in L.get("P", []):

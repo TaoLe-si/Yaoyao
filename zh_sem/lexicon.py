@@ -83,9 +83,9 @@ def PRON(form):
     return dict(pos="PRON", cls="HUMAN", props=NOUN_PROPS[form])
 
 
-def V(form, sense, frame, opt=None, comp=False):
+def V(form, sense, frame, opt=None, comp=False, stative=False):
     return dict(pos="V", sense=sense, frame=list(frame), opt=list(opt or []),
-                comp=bool(comp))
+                comp=bool(comp), stative=bool(stative))
 
 
 def A():
@@ -150,7 +150,8 @@ ENTRIES = {
     # ★第二种多义：两个义项都可能成立，靠词汇偏好消歧
     "打": [V("打", "打/hit", ["AGENT", "PATIENT"], ["PATIENT"]),
            V("打", "打/play", ["AGENT", "PATIENT"], ["PATIENT"])],
-    "喜欢": [V("喜欢", "喜欢", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"], comp=True)],
+    "喜欢": [V("喜欢", "喜欢", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"],
+               comp=True, stative=True)],
     "去": [V("去", "去", ["AGENT", "GOAL"], [])],
     "给": [V("给", "给", ["AGENT", "RECIPIENT", "PATIENT"], [])],
     "有": [V("有", "有", ["POSSESSOR", "POSSESSED"], [])],
@@ -161,6 +162,8 @@ ENTRIES = {
     "不": [ADV("NEG")], "很": [ADV("DEGREE")],
     "昨天": [ADV("TIME")], "今天": [ADV("TIME")],
     "了": [PART("PERF")], "的": [PART("MOD")], "吗": [PART("Q")],
+    "过": [PART("EXP")], "着": [PART("PROG")],
+    "正在": [ADV("PROG")],
     "在": [P()], "把": [P()], "被": [P()],
     "和": [CONJ()],
     "一": [NUM()],
@@ -222,9 +225,9 @@ ENTRIES = {
     "用": [V("用", "用", ["AGENT", "PATIENT"], ["PATIENT"])],
     "送": [V("送", "送", ["AGENT", "RECIPIENT", "PATIENT"], [])],
     "卖": [V("卖", "卖", ["AGENT", "PATIENT"], ["PATIENT"])],
-    "认识": [V("认识", "认识", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
-    "爱": [V("爱", "爱", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
-    "知道": [V("知道", "知道", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
+    "认识": [V("认识", "认识", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"], stative=True)],
+    "爱": [V("爱", "爱", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"], stative=True)],
+    "知道": [V("知道", "知道", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"], stative=True)],
     "说话": [V("说话", "说话", ["AGENT"], [])],
     "看见": [V("看见", "看见", ["AGENT", "PATIENT"], ["PATIENT"])],
     # ---- 扩展形容词 ----
