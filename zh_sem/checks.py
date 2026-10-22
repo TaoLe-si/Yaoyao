@@ -98,6 +98,13 @@ def main():
     else:
         check("C10 大 held-out 构式覆盖", False, "large_heldout.json 缺失")
 
+    # C11 独立人工 held-out：非空且与 TRAIN/HELDOUT 不重叠
+    from manual_heldout import MANUAL  # noqa: E402
+    mset = {s for s, _ in MANUAL}
+    check("C11 人工 held-out 独立",
+          len(MANUAL) >= 50 and not (mset & tr) and not (mset & hd),
+          "n=%d overlap=%s" % (len(MANUAL), sorted(mset & (tr | hd))[:3]))
+
     print("\n%s" % ("全部通过" if not FAILS else "失败: %s" % FAILS))
     return 0 if not FAILS else 1
 

@@ -22,20 +22,38 @@ _FORMS = sorted(ENTRIES, key=len, reverse=True)
 _MAXLEN = max(len(f) for f in _FORMS)
 
 
-def tokenize(sent):
+def tokenize(sent, strict=True):
+    """最长匹配分词。
+
+    strict=True  : 词表外直接抛错（训练/检查用，保证数据全覆盖）。
+    strict=False : 开放词表降级——已知单字按单字切；连续未知字符合并成一个
+                   未知词（前缀 "\\x00"），交给解析器当未知 NP 处理，不抛错。
+    """
     out = []
     i = 0
     while i < len(sent):
         matched = None
-        for L in range(min(_MAXLEN, len(sent) - i), 0, -1):
+        for L in range(min(4, len(sent) - i), 0, -1):
             w = sent[i:i + L]
             if w in ENTRIES:
                 matched = w
                 break
-        if matched is None:
+        if matched is not None:
+            out.append(matched)
+            i += len(matched)
+            continue
+        ch = sent[i]
+        if ch in ENTRIES:
+            out.append(ch)
+            i += 1
+            continue
+        if strict:
             raise ValueError("OOV %r at %d in %r" % (sent[i:i + 1], i, sent))
-        out.append(matched)
-        i += len(matched)
+        j = i
+        while j < len(sent) and sent[j] not in ENTRIES:
+            j += 1
+        out.append("\x00" + sent[i:j])
+        i = j
     return out
 
 
@@ -237,8 +255,8 @@ def _combine(L, R, add):
                              QUANT=q["num"] + q["cl"]))
 
 
-def parse(sent):
-    forms = tokenize(sent)
+def parse(sent, strict=True):
+    forms = tokenize(sent, strict=strict)
     n = len(forms)
     chart = {}
 
@@ -246,6 +264,10 @@ def parse(sent):
         chart.setdefault((i, j), {}).setdefault(cat, []).append(m)
 
     for i, form in enumerate(forms):
+        if form.startswith("\x00"):
+            # 未知词：只当未知 NP；没有词性/属性 ⇒ 不参与选择限制否决
+            add(i, i + 1, "NP", entity(form))
+            continue
         for e in ENTRIES[form]:
             pos = e["pos"]
             if pos in ("N", "PRON"):

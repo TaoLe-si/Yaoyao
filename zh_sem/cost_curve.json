@@ -2,15 +2,15 @@
   "summary": {
     "n_words": 26,
     "n_reached_0.9": 26,
-    "labels_mean": 0.23076923076923078,
+    "labels_mean": 0.15384615384615385,
     "labels_median": 0.0,
-    "labels_max": 3,
+    "labels_max": 2,
     "labels_zero": 24
   },
   "rows": [
     {
       "word": "写",
-      "labels": 3,
+      "labels": 2,
       "init_acc": 0.8125,
       "final_acc": 1.0,
       "reached_0.9": true,
@@ -18,7 +18,7 @@
     },
     {
       "word": "读",
-      "labels": 3,
+      "labels": 2,
       "init_acc": 0.625,
       "final_acc": 1.0,
       "reached_0.9": true,

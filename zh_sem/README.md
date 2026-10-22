@@ -15,6 +15,9 @@
 | `train.py` | 训练并保存 `weights.pkl` |
 | `evaluate.py` | held-out 评测 + 基线 + 三组负向对照 + 留一动词 |
 | `large_eval.py` | 300 条冻结大 held-out（12 类构式，按类均衡） |
+| `manual_heldout.py` / `manual_eval.py` | **独立人工 held-out**（77 条，手写 gold，不用验证器） |
+| `open_vocab.py` | OOV 降级验证（strict vs 开放词表） |
+| `grow_lexicon.py` + `corpus_zh.txt` | 语料候选抽取 → 教师反馈 → 入典 |
 | `cost_curve.py` | 26 个新动词的"反馈成本"曲线（每条词需要多少标签） |
 | `rsi.py` | 验证器 / 打乱标签 / 纯自训练 / 主动学习 四组对照 |
 | `verifier.py` | 手写验证器（角色—属性约束，同时是 RSI 上限） |
@@ -24,16 +27,19 @@
 
 ```bash
 cd zh_sem
-python checks.py      # 先过检查（C1–C10）
+python checks.py      # 先过检查（C1–C11）
 python train.py       # 反馈学习
 python evaluate.py    # 主 held-out（83 条）+ 基线/对照/LOVO
 python large_eval.py  # 300 条冻结大 held-out（12 类构式）
+python manual_eval.py # 77 条独立人工 held-out
 python cost_curve.py  # 每词反馈成本曲线
+python grow_lexicon.py# 语料候选 → 反馈 → 入典
+python open_vocab.py  # OOV 降级
 python rsi.py         # A/B/C/D 对照
 ```
 
-当前规模：**154 个词形 / 156 个义项**、12 类构式、91 条训练句、
-83 条人工 held-out、300 条冻结大 held-out。
+当前规模：**154 个词形 / 156 个义项**、12 类构式、92 条训练句、
+83 条人工 held-out、300 条冻结大 held-out、77 条独立人工 held-out。
 
 所有读数落在 `eval_results.json` / `rsi_results.json`，不要手改。
 

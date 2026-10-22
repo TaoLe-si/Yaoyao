@@ -2,8 +2,8 @@
   "n": 300,
   "freshly_generated": false,
   "overall": 0.98,
-  "valid_exact": 1.0,
-  "invalid_reject": 0.9629629629629629,
+  "valid_exact": 0.9927536231884058,
+  "invalid_reject": 0.9691358024691358,
   "valid_n": 138,
   "invalid_n": 162,
   "by_tag": {

@@ -18,6 +18,7 @@ sys.path.insert(0, HERE)
 from lexicon import PROP_KEYS, entity_info  # noqa: E402
 from parser import parse, tokenize  # noqa: E402
 from semantics import canon  # noqa: E402
+from verifier import violating_roles  # noqa: E402
 
 
 def slot_feats(verb, role, head, lex, mode="full"):
@@ -57,8 +58,17 @@ def slot_score(w, verb, role, head, lex, mode="full"):
     return sum(w.get(f, 0) for f in slot_feats(verb, role, head, lex, mode))
 
 
+SHARED_ROLES = {"AGENT", "EXPERIENCER", "POSSESSOR", "RECIPIENT", "GOAL"}
+
+
 def slot_valid(w, verb, role, head, lex, mode="full"):
-    """逐属性否决，带回退；类约束只在动词专属证据下生效。"""
+    """逐属性否决，带回退；类约束只在动词专属证据下生效。
+
+    回退只对"语义上普遍"的角色开放：
+      AGENT/EXPERIENCER/POSSESSOR/RECIPIENT 必须有生、GOAL 必须是地点。
+    PATIENT/STIMULUS/THEME/LOC 的约束是**谓词专属**的，不能从别的动词迁移
+    （否则「聪明」的主题约束会误杀「干净/新/热」）。
+    """
     if mode == "position_only":
         return True
     info = entity_info(lex, head)
@@ -76,8 +86,10 @@ def slot_valid(w, verb, role, head, lex, mode="full"):
         wv = w.get(("verb_role_%s" % k, verb, role, v), 0)
         if wv != 0:
             gate = wv
-        else:
+        elif role in SHARED_ROLES:
             gate = w.get(("role_%s" % k, role, v), 0)
+        else:
+            gate = 0
         if gate < 0:
             return False
     return True
@@ -134,10 +146,20 @@ def train(data, lex, mode="full", epochs=40, seed=0):
             cands = parse(sent)
             pred, pf = predict(w, cands, lex, mode)
             if gold is None:
-                # 负例：惩罚**所有**当前被接受的候选，否则另一个义项会漏学
+                # 负例：反馈里带"原因"——只惩罚违反 ROLE_REQ 的角色。
+                # 这样「老师在苹果」只罚 LOC，不会把 THEME=老师 学成负证据。
                 for m in cands:
-                    if candidate_valid(w, m, lex, mode):
-                        update(w, [], cand_feats(m, lex, mode))
+                    if not candidate_valid(w, m, lex, mode):
+                        continue
+                    bad = violating_roles(m, lex)
+                    targets = [(v, r, h) for v, r, h in cand_slots(m)
+                               if not bad or r in bad]
+                    if not targets:
+                        targets = cand_slots(m)
+                    fs = []
+                    for v, r, h in targets:
+                        fs += slot_feats(v, r, h, lex, mode)
+                    update(w, [], fs)
             else:
                 target = _target(cands, gold)
                 if target is None:

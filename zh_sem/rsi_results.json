@@ -1,27 +1,27 @@
 {
   "n_eval": 200,
   "signature_overlap": {
-    "count": 70,
-    "n_eval_sigs": 120
+    "count": 101,
+    "n_eval_sigs": 135
   },
   "A_random": [
     {
       "round": 1,
-      "n_train": 132,
-      "accuracy": 0.97,
-      "valid_exact": 0.9230769230769231,
-      "invalid_reject": 0.9864864864864865
+      "n_train": 152,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
     },
     {
       "round": 2,
-      "n_train": 192,
-      "accuracy": 0.985,
-      "valid_exact": 0.9423076923076923,
+      "n_train": 212,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
       "invalid_reject": 1.0
     },
     {
       "round": 3,
-      "n_train": 252,
+      "n_train": 272,
       "accuracy": 1.0,
       "valid_exact": 1.0,
       "invalid_reject": 1.0
@@ -30,24 +30,24 @@
   "A_active": [
     {
       "round": 1,
-      "n_train": 76,
-      "added": 4,
-      "accuracy": 0.98,
-      "valid_exact": 0.9615384615384616,
-      "invalid_reject": 0.9864864864864865
+      "n_train": 92,
+      "added": 0,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
     },
     {
       "round": 2,
-      "n_train": 79,
-      "added": 3,
-      "accuracy": 0.99,
-      "valid_exact": 0.9615384615384616,
+      "n_train": 93,
+      "added": 1,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
       "invalid_reject": 1.0
     },
     {
       "round": 3,
-      "n_train": 80,
-      "added": 1,
+      "n_train": 93,
+      "added": 0,
       "accuracy": 1.0,
       "valid_exact": 1.0,
       "invalid_reject": 1.0
@@ -56,69 +56,69 @@
   "B": [
     {
       "round": 1,
-      "n_train": 132,
-      "accuracy": 0.68,
-      "valid_exact": 0.34615384615384615,
-      "invalid_reject": 0.7972972972972973
+      "n_train": 152,
+      "accuracy": 0.71,
+      "valid_exact": 0.525,
+      "invalid_reject": 0.75625
     },
     {
       "round": 2,
-      "n_train": 192,
-      "accuracy": 0.48,
-      "valid_exact": 0.21153846153846154,
-      "invalid_reject": 0.5743243243243243
+      "n_train": 212,
+      "accuracy": 0.71,
+      "valid_exact": 0.45,
+      "invalid_reject": 0.775
     },
     {
       "round": 3,
-      "n_train": 252,
-      "accuracy": 0.62,
-      "valid_exact": 0.38461538461538464,
-      "invalid_reject": 0.7027027027027027
+      "n_train": 272,
+      "accuracy": 0.685,
+      "valid_exact": 0.275,
+      "invalid_reject": 0.7875
     }
   ],
   "C": {
-    "accuracy": 0.935
+    "accuracy": 1.0
   },
   "D_self_training": [
     {
       "round": 1,
-      "n_train": 132,
-      "accuracy": 0.94,
-      "valid_exact": 0.9615384615384616,
-      "invalid_reject": 0.9324324324324325
+      "n_train": 152,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
     },
     {
       "round": 2,
-      "n_train": 192,
-      "accuracy": 0.935,
-      "valid_exact": 0.9423076923076923,
-      "invalid_reject": 0.9324324324324325
+      "n_train": 212,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
     },
     {
       "round": 3,
-      "n_train": 252,
-      "accuracy": 0.94,
-      "valid_exact": 0.9615384615384616,
-      "invalid_reject": 0.9324324324324325
+      "n_train": 272,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
     }
   ],
   "mcnemar_A_random_vs_B": {
-    "p": 2.6469779601696886e-23,
-    "A_only_correct": 76,
+    "p": 2.168404344971009e-19,
+    "A_only_correct": 63,
     "B_only_correct": 0
   },
   "mcnemar_A_active_vs_B": {
-    "p": 2.6469779601696886e-23,
-    "A_only_correct": 76,
+    "p": 2.168404344971009e-19,
+    "A_only_correct": 63,
     "B_only_correct": 0
   },
   "mcnemar_A_active_vs_D": {
-    "p": 0.00048828125,
-    "A_only_correct": 12,
+    "p": 1.0,
+    "A_only_correct": 0,
     "D_only_correct": 0
   },
   "P6_rsi_effective": true,
   "P7_active_beats_random": 0.0,
-  "P8_self_training_beats_none": 0.004999999999999893,
+  "P8_self_training_beats_none": 0.0,
   "note": "评测标签来自手写验证器；这里的读数只能叫『与验证器一致率』，验证器是模型的上限，不是独立真值。"
 }

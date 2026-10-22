@@ -1,0 +1,103 @@
+{
+  "cases": [
+    {
+      "sent": "我吃苹果",
+      "strict_raises": false,
+      "open_tokens": [
+        "我",
+        "吃",
+        "苹果"
+      ],
+      "n_candidates": 1,
+      "pred": "吃(AGENT=我 PATIENT=苹果) ",
+      "oov_tokens": []
+    },
+    {
+      "sent": "我吃菠萝",
+      "strict_raises": true,
+      "open_tokens": [
+        "我",
+        "吃",
+        "\u0000菠萝"
+      ],
+      "n_candidates": 1,
+      "pred": "吃(AGENT=我 PATIENT=\u0000菠萝) ",
+      "oov_tokens": [
+        "\u0000菠萝"
+      ]
+    },
+    {
+      "sent": "妈妈买榴莲",
+      "strict_raises": true,
+      "open_tokens": [
+        "妈妈",
+        "买",
+        "\u0000榴莲"
+      ],
+      "n_candidates": 1,
+      "pred": "买(AGENT=妈妈 PATIENT=\u0000榴莲) ",
+      "oov_tokens": [
+        "\u0000榴莲"
+      ]
+    },
+    {
+      "sent": "我喝可乐",
+      "strict_raises": true,
+      "open_tokens": [
+        "我",
+        "喝",
+        "\u0000可乐"
+      ],
+      "n_candidates": 1,
+      "pred": "喝(AGENT=我 PATIENT=\u0000可乐) ",
+      "oov_tokens": [
+        "\u0000可乐"
+      ]
+    },
+    {
+      "sent": "狗吃草莓",
+      "strict_raises": true,
+      "open_tokens": [
+        "狗",
+        "吃",
+        "草",
+        "\u0000莓"
+      ],
+      "n_candidates": 0,
+      "pred": "REJECT",
+      "oov_tokens": [
+        "\u0000莓"
+      ]
+    },
+    {
+      "sent": "我吃菠萝和苹果",
+      "strict_raises": true,
+      "open_tokens": [
+        "我",
+        "吃",
+        "\u0000菠萝",
+        "和",
+        "苹果"
+      ],
+      "n_candidates": 1,
+      "pred": "吃(AGENT=我 PATIENT=\u0000菠萝+苹果) ",
+      "oov_tokens": [
+        "\u0000菠萝"
+      ]
+    },
+    {
+      "sent": "我游泳",
+      "strict_raises": true,
+      "open_tokens": [
+        "我",
+        "\u0000游泳"
+      ],
+      "n_candidates": 0,
+      "pred": "REJECT",
+      "oov_tokens": [
+        "\u0000游泳"
+      ]
+    }
+  ],
+  "note": "未知词只作为无属性的 NP 放行；未知谓词无法识别（无 POS）。"
+}

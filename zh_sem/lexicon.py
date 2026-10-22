@@ -17,9 +17,9 @@ v0.2 关键变化（专家评审 #1：候选泄漏 / 无歧义）：
 """
 
 def _p(animate=False, edible=False, liquid=False, place=False,
-       readable=False, sport=False):
+       readable=False, sport=False, clothing=False):
     return dict(animate=animate, edible=edible, liquid=liquid, place=place,
-                readable=readable, sport=sport)
+                readable=readable, sport=sport, clothing=clothing)
 
 
 NOUN_PROPS = {
@@ -63,13 +63,14 @@ NOUN_PROPS = {
     "牛奶": _p(liquid=True), "茶": _p(liquid=True),
     "咖啡": _p(liquid=True), "果汁": _p(liquid=True),
     # ---- 扩展：物体 / 可读物 ----
-    "笔": _p(), "书包": _p(), "衣服": _p(), "鞋": _p(), "帽子": _p(),
-    "手机": _p(), "电脑": _p(), "电视": _p(), "门": _p(), "窗": _p(),
+    "笔": _p(), "书包": _p(), "衣服": _p(clothing=True), "鞋": _p(clothing=True),
+    "帽子": _p(clothing=True), "手机": _p(), "电脑": _p(), "电视": _p(),
+    "门": _p(), "窗": _p(),
     "报纸": _p(readable=True), "杂志": _p(readable=True),
     # ---- 扩展：地点 / 植物 ----
     "公园": _p(place=True), "医院": _p(place=True), "商店": _p(place=True),
     "银行": _p(place=True), "车站": _p(place=True), "教室": _p(place=True),
-    "图书馆": _p(place=True), "树": _p(), "草": _p(),
+    "图书馆": _p(place=True), "树": _p(), "草": _p(edible=True),
 }
 
 
@@ -209,8 +210,8 @@ ENTRIES = {
     "关": [V("关", "关", ["AGENT", "PATIENT"], ["PATIENT"])],
     "找": [V("找", "找", ["AGENT", "PATIENT"], ["PATIENT"])],
     "等": [V("等", "等", ["AGENT", "PATIENT"], ["PATIENT"])],
-    "问": [V("问", "问", ["AGENT", "RECIPIENT", "PATIENT"], [])],
-    "教": [V("教", "教", ["AGENT", "RECIPIENT", "PATIENT"], [])],
+    "问": [V("问", "问", ["AGENT", "RECIPIENT", "PATIENT"], ["PATIENT"])],
+    "教": [V("教", "教", ["AGENT", "RECIPIENT", "PATIENT"], ["PATIENT"])],
     "学": [V("学", "学", ["AGENT", "PATIENT"], ["PATIENT"])],
     "做": [V("做", "做", ["AGENT", "PATIENT"], ["PATIENT"])],
     "用": [V("用", "用", ["AGENT", "PATIENT"], ["PATIENT"])],
@@ -233,7 +234,7 @@ VOPT = {e["sense"]: e["opt"]
         for es in ENTRIES.values() for e in es if e["pos"] == "V"}
 SENSE_FORM = {e["sense"]: f
               for f, es in ENTRIES.items() for e in es if e["pos"] == "V"}
-PROP_KEYS = ("animate", "edible", "liquid", "place", "readable", "sport")
+PROP_KEYS = ("animate", "edible", "liquid", "place", "readable", "sport", "clothing")
 
 NUMERALS = set("一二三四五六七八九十两")
 CLASSIFIERS = {f for f, es in ENTRIES.items() if any(e["pos"] == "CL" for e in es)}

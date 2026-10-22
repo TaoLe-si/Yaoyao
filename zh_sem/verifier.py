@@ -89,3 +89,33 @@ def label_sentence(sent, lex):
         if verify(m, lex):
             return m
     return None
+
+
+def violating_roles(m, lex):
+    """反馈里的"原因"：列出违反 ROLE_REQ 的角色。
+
+    训练负例只惩罚这些角色，避免把无关槽位也学成负证据。
+    """
+    bad = []
+    for role, head in m["roles"].items():
+        req = ROLE_REQ.get((m["pred"], role))
+        if not req:
+            continue
+        info = entity_info(lex, head)
+        if info is None:
+            bad.append(role)
+            continue
+        props = info.get("props") or {}
+        for k, v in req.items():
+            if k == "cls":
+                if info.get("cls") != v:
+                    bad.append(role)
+                    break
+            elif k == "cls_not":
+                if info.get("cls") == v:
+                    bad.append(role)
+                    break
+            elif props.get(k) != v:
+                bad.append(role)
+                break
+    return bad

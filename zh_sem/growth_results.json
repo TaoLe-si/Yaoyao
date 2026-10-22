@@ -1,0 +1,255 @@
+{
+  "proposals": [
+    {
+      "word": "小说",
+      "count": 11
+    },
+    {
+      "word": "喝可乐",
+      "count": 8
+    },
+    {
+      "word": "穿衣服",
+      "count": 8
+    },
+    {
+      "word": "菠萝",
+      "count": 8
+    },
+    {
+      "word": "榴莲",
+      "count": 8
+    },
+    {
+      "word": "草莓",
+      "count": 8
+    },
+    {
+      "word": "喝可",
+      "count": 8
+    },
+    {
+      "word": "可乐",
+      "count": 8
+    },
+    {
+      "word": "游泳",
+      "count": 8
+    },
+    {
+      "word": "唱歌",
+      "count": 8
+    },
+    {
+      "word": "跳舞",
+      "count": 8
+    },
+    {
+      "word": "跑步",
+      "count": 8
+    },
+    {
+      "word": "阅读",
+      "count": 8
+    },
+    {
+      "word": "穿衣",
+      "count": 8
+    },
+    {
+      "word": "穿",
+      "count": 8
+    },
+    {
+      "word": "吃菠萝",
+      "count": 6
+    },
+    {
+      "word": "吃草莓",
+      "count": 6
+    },
+    {
+      "word": "读小说",
+      "count": 6
+    },
+    {
+      "word": "吃菠",
+      "count": 6
+    },
+    {
+      "word": "吃草",
+      "count": 6
+    }
+  ],
+  "rows": [
+    {
+      "word": "小说",
+      "count": 11,
+      "accepted": true,
+      "pos": "N",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "喝可乐",
+      "count": 8,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "穿衣服",
+      "count": 8,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "菠萝",
+      "count": 8,
+      "accepted": true,
+      "pos": "N",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "榴莲",
+      "count": 8,
+      "accepted": true,
+      "pos": "N",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "草莓",
+      "count": 8,
+      "accepted": true,
+      "pos": "N",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "喝可",
+      "count": 8,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "可乐",
+      "count": 8,
+      "accepted": true,
+      "pos": "N",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "游泳",
+      "count": 8,
+      "accepted": true,
+      "pos": "V",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "唱歌",
+      "count": 8,
+      "accepted": true,
+      "pos": "V",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "跳舞",
+      "count": 8,
+      "accepted": true,
+      "pos": "V",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "跑步",
+      "count": 8,
+      "accepted": true,
+      "pos": "V",
+      "labels": 0,
+      "before_acc": 1.0,
+      "init_acc": 1.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "阅读",
+      "count": 8,
+      "accepted": true,
+      "pos": "V",
+      "labels": 2,
+      "before_acc": 0.5,
+      "init_acc": 0.5,
+      "final_acc": 1.0
+    },
+    {
+      "word": "穿衣",
+      "count": 8,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "穿",
+      "count": 8,
+      "accepted": true,
+      "pos": "V",
+      "labels": 1,
+      "before_acc": 0.0,
+      "init_acc": 0.0,
+      "final_acc": 1.0
+    },
+    {
+      "word": "吃菠萝",
+      "count": 6,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "吃草莓",
+      "count": 6,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "读小说",
+      "count": 6,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "吃菠",
+      "count": 6,
+      "accepted": false,
+      "reason": "教师未确认"
+    },
+    {
+      "word": "吃草",
+      "count": 6,
+      "accepted": false,
+      "reason": "教师未确认"
+    }
+  ],
+  "n_accepted": 11,
+  "labels_total": 3,
+  "before_acc": 0.8636363636363636,
+  "after_acc": 1.0,
+  "note": "教师表是人工反馈的替身；候选来自字符 n-gram 频次。"
+}

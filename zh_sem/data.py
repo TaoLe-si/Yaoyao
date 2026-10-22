@@ -129,6 +129,7 @@ TRAIN_INVALID = [
     ("猫在桌子", None),
     ("书在水", None),
     ("老师在苹果", None),
+    ("桌子很聪明", None),
 ]
 
 HELDOUT_VALID = [

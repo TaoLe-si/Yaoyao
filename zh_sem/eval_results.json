@@ -48,22 +48,22 @@
   },
   "controls": {
     "random_props_consistent": {
-      "valid_exact": 0.7692307692307693,
-      "invalid_reject": 0.9298245614035088,
-      "overall": 0.8795180722891566,
-      "valid_ok": 20,
+      "valid_exact": 0.8461538461538461,
+      "invalid_reject": 0.9649122807017544,
+      "overall": 0.927710843373494,
+      "valid_ok": 22,
       "valid_n": 26,
-      "invalid_ok": 53,
+      "invalid_ok": 55,
       "invalid_n": 57,
-      "changed_nouns": 70
+      "changed_nouns": 72
     },
     "random_props_broken": {
-      "valid_exact": 0.8478260869565217,
-      "invalid_reject": 0.5945945945945946,
-      "overall": 0.7349397590361446,
-      "valid_ok": 39,
+      "valid_exact": 0.8695652173913043,
+      "invalid_reject": 0.5135135135135135,
+      "overall": 0.7108433734939759,
+      "valid_ok": 40,
       "valid_n": 46,
-      "invalid_ok": 22,
+      "invalid_ok": 19,
       "invalid_n": 37
     },
     "position_only": {
@@ -591,7 +591,7 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.12048192771084343,
+    "P3c_consistent_world_overall_delta": -0.07228915662650603,
     "P4_position_only_near_accept_all": true,
     "P5_lovo_unseen_verb_ge_0.60": false
   }
