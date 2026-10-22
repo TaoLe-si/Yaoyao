@@ -105,6 +105,24 @@ def main():
           len(MANUAL) >= 50 and not (mset & tr) and not (mset & hd),
           "n=%d overlap=%s" % (len(MANUAL), sorted(mset & (tr | hd))[:3]))
 
+    # C12–C14 跨句指代：负向对照与"最近"规则
+    from discourse import collect_mentions, process_pair, resolve_candidates
+    pair = process_pair("苹果很红。", "他喝水。")
+    ctx, _ = collect_mentions("苹果很红。", [])
+    check("C12 无先行词必须绑定失败",
+          pair[-1] is None and len(resolve_candidates("他喝水。", ctx)) == 0,
+          "pred=%s" % (pair[-1] if pair else None))
+
+    pair = process_pair("老师看见小明。", "他喝水。")
+    ag = pair[-1]["roles"].get("AGENT") if pair[-1] else None
+    check("C13 最近匹配先行词", ag == "小明", "AGENT=%s" % ag)
+
+    pair = process_pair("苹果很红。", "它很聪明。")
+    ctx, _ = collect_mentions("苹果很红。", [])
+    check("C14 不兼容先行词必须绑定失败",
+          pair[-1] is None and len(resolve_candidates("它很聪明。", ctx)) == 0,
+          "pred=%s" % (pair[-1] if pair else None))
+
     print("\n%s" % ("全部通过" if not FAILS else "失败: %s" % FAILS))
     return 0 if not FAILS else 1
 

@@ -19,6 +19,7 @@
 | `open_vocab.py` | OOV 降级验证（strict vs 开放词表） |
 | `grow_lexicon.py` + `corpus_zh.txt` | 语料候选抽取 → 教师反馈 → 入典 |
 | `cost_curve.py` | 26 个新动词的"反馈成本"曲线（每条词需要多少标签） |
+| `discourse.py` / `discourse_eval.py` | 跨句指代（他/它）+ 对话状态 + 负向对照 |
 | `rsi.py` | 验证器 / 打乱标签 / 纯自训练 / 主动学习 四组对照 |
 | `verifier.py` | 手写验证器（角色—属性约束，同时是 RSI 上限） |
 | `checks.py` | 静态检查 C1–C10（分词往返 / 正例可解析 / 构式覆盖） |
@@ -27,7 +28,7 @@
 
 ```bash
 cd zh_sem
-python checks.py      # 先过检查（C1–C11）
+python checks.py      # 先过检查（C1–C14）
 python train.py       # 反馈学习
 python evaluate.py    # 主 held-out（82 条）+ 基线/对照/LOVO
 python large_eval.py  # 300 条冻结大 held-out（12 类构式）
@@ -35,6 +36,7 @@ python manual_eval.py # 85 条独立人工 held-out
 python cost_curve.py  # 每词反馈成本曲线
 python grow_lexicon.py# 语料候选 → 反馈 → 入典
 python open_vocab.py  # OOV 降级
+python discourse_eval.py # 跨句指代
 python rsi.py         # A/B/C/D 对照
 ```
 

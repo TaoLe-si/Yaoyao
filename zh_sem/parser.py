@@ -20,6 +20,7 @@ from semantics import canon, entity, event, state  # noqa: E402
 
 _FORMS = sorted(ENTRIES, key=len, reverse=True)
 _MAXLEN = max(len(f) for f in _FORMS)
+_PUNCT = set("。，、；：！？!?.,;: \t\n")
 
 
 def tokenize(sent, strict=True):
@@ -43,6 +44,9 @@ def tokenize(sent, strict=True):
             i += len(matched)
             continue
         ch = sent[i]
+        if ch in _PUNCT:
+            i += 1
+            continue
         if ch in ENTRIES:
             out.append(ch)
             i += 1

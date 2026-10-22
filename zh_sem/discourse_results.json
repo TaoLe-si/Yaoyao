@@ -1,0 +1,176 @@
+{
+  "valid_n": 15,
+  "nearest_accuracy": 1.0,
+  "first_match_accuracy": 0.5333333333333333,
+  "no_antecedent_reject": 1.0,
+  "incompatible_reject": 1.0,
+  "valid_rows": [
+    {
+      "s1": "小明吃苹果。",
+      "s2": "他喝水。",
+      "gold": "喝(AGENT=小明 PATIENT=水) ",
+      "pred": "喝(AGENT=小明 PATIENT=水) ",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "老师看见小明。",
+      "s2": "他喝水。",
+      "gold": "喝(AGENT=小明 PATIENT=水) ",
+      "pred": "喝(AGENT=小明 PATIENT=水) ",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "小明看见老师。",
+      "s2": "他喝水。",
+      "gold": "喝(AGENT=老师 PATIENT=水) ",
+      "pred": "喝(AGENT=老师 PATIENT=水) ",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "妈妈看见老师。",
+      "s2": "他喝水。",
+      "gold": "喝(AGENT=老师 PATIENT=水) ",
+      "pred": "喝(AGENT=老师 PATIENT=水) ",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "老师看见妈妈。",
+      "s2": "他喝水。",
+      "gold": "喝(AGENT=妈妈 PATIENT=水) ",
+      "pred": "喝(AGENT=妈妈 PATIENT=水) ",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "我买苹果。",
+      "s2": "它很红。",
+      "gold": "红(THEME=苹果) [DEGREE]",
+      "pred": "红(THEME=苹果) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "妈妈买香蕉。",
+      "s2": "它很甜。",
+      "gold": "甜(THEME=香蕉) [DEGREE]",
+      "pred": "甜(THEME=香蕉) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "老师看见学校。",
+      "s2": "它很大。",
+      "gold": "大(THEME=学校) [DEGREE]",
+      "pred": "大(THEME=学校) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "妈妈买书。",
+      "s2": "它很新。",
+      "gold": "新(THEME=书) [DEGREE]",
+      "pred": "新(THEME=书) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "我买苹果和香蕉。",
+      "s2": "它很甜。",
+      "gold": "甜(THEME=香蕉) [DEGREE]",
+      "pred": "甜(THEME=香蕉) [DEGREE]",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "小明喝水。",
+      "s2": "他很高兴。",
+      "gold": "高兴(THEME=小明) [DEGREE]",
+      "pred": "高兴(THEME=小明) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "猫吃鱼。",
+      "s2": "它喝水。",
+      "gold": "喝(AGENT=鱼 PATIENT=水) ",
+      "pred": "喝(AGENT=鱼 PATIENT=水) ",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "猫和鱼喝水。",
+      "s2": "它很聪明。",
+      "gold": "聪明(THEME=鱼) [DEGREE]",
+      "pred": "聪明(THEME=鱼) [DEGREE]",
+      "ok": true,
+      "first_match_ok": false
+    },
+    {
+      "s1": "妈妈买苹果。",
+      "s2": "它很大。",
+      "gold": "大(THEME=苹果) [DEGREE]",
+      "pred": "大(THEME=苹果) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    },
+    {
+      "s1": "我买书。",
+      "s2": "它很新。",
+      "gold": "新(THEME=书) [DEGREE]",
+      "pred": "新(THEME=书) [DEGREE]",
+      "ok": true,
+      "first_match_ok": true
+    }
+  ],
+  "no_antecedent_rows": [
+    {
+      "s1": "苹果很红。",
+      "s2": "他喝水。",
+      "rejected": true,
+      "binding_failed": true
+    },
+    {
+      "s1": "小明很高兴。",
+      "s2": "它很红。",
+      "rejected": true,
+      "binding_failed": true
+    },
+    {
+      "s1": "今天很热。",
+      "s2": "他喝水。",
+      "rejected": true,
+      "binding_failed": true
+    },
+    {
+      "s1": "桌子在教室。",
+      "s2": "他喝水。",
+      "rejected": true,
+      "binding_failed": true
+    },
+    {
+      "s1": null,
+      "s2": "他喝水。",
+      "rejected": true,
+      "binding_failed": true
+    }
+  ],
+  "incompatible_rows": [
+    {
+      "s1": "苹果很红。",
+      "s2": "它很聪明。",
+      "rejected": true,
+      "binding_failed": true
+    },
+    {
+      "s1": "小明吃饭。",
+      "s2": "它很高兴。",
+      "rejected": true,
+      "binding_failed": true
+    }
+  ],
+  "note": "gold 手写；指代=最近匹配且满足谓词选择限制；验证器不是这里的标签来源。"
+}

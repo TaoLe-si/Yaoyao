@@ -1,6 +1,6 @@
 {
   "n": 300,
-  "freshly_generated": true,
+  "freshly_generated": false,
   "overall": 0.9766666666666667,
   "valid_exact": 0.9924242424242424,
   "invalid_reject": 0.9642857142857143,
