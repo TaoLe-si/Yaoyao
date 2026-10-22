@@ -48,22 +48,22 @@
   },
   "controls": {
     "random_props_consistent": {
-      "valid_exact": 0.90625,
+      "valid_exact": 0.875,
       "invalid_reject": 0.96,
-      "overall": 0.9390243902439024,
-      "valid_ok": 29,
+      "overall": 0.926829268292683,
+      "valid_ok": 28,
       "valid_n": 32,
       "invalid_ok": 48,
       "invalid_n": 50,
       "changed_nouns": 72
     },
     "random_props_broken": {
-      "valid_exact": 0.851063829787234,
-      "invalid_reject": 0.5714285714285714,
-      "overall": 0.7317073170731707,
-      "valid_ok": 40,
+      "valid_exact": 0.8085106382978723,
+      "invalid_reject": 0.5428571428571428,
+      "overall": 0.6951219512195121,
+      "valid_ok": 38,
       "valid_n": 47,
-      "invalid_ok": 20,
+      "invalid_ok": 19,
       "invalid_n": 35
     },
     "position_only": {
@@ -573,6 +573,11 @@
       ]
     },
     {
+      "verb": "说",
+      "heldout": 0,
+      "note": "held-out 无该动词"
+    },
+    {
       "verb": "跑",
       "heldout": 0,
       "note": "held-out 无该动词"
@@ -585,7 +590,7 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.060975609756097615,
+    "P3c_consistent_world_overall_delta": -0.07317073170731703,
     "P4_position_only_near_accept_all": true,
     "P5_lovo_unseen_verb_ge_0.60": false
   }

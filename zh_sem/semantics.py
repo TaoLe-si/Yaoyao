@@ -28,8 +28,8 @@ def state(pred, roles=None, comps=None, construction="state", **mods):
     return d
 
 
-def entity(head, base=None, construction="entity", **mods):
-    return {
+def entity(head, base=None, comps=None, construction="entity", **mods):
+    d = {
         "kind": "entity",
         "pred": head,
         "base": base or head,
@@ -37,6 +37,9 @@ def entity(head, base=None, construction="entity", **mods):
         "mods": {k: v for k, v in mods.items() if v},
         "construction": construction,
     }
+    if comps:
+        d["comps"] = dict(comps)
+    return d
 
 
 def _freeze(x):
@@ -49,15 +52,16 @@ def _freeze(x):
 
 
 def canon(m):
-    """忽略 construction 的规范形式；None 表示 REJECT。"""
+    """忽略 construction 的规范形式；None 表示 REJECT。嵌套 comps 递归规范化。"""
     if m is None:
         return None
+    comps = tuple(sorted((k, canon(v)) for k, v in m.get("comps", {}).items()))
     return (
         m["kind"],
         m["pred"],
         tuple(sorted(m["roles"].items())),
         tuple(sorted((k, v) for k, v in m["mods"].items() if v)),
-        _freeze(m.get("comps", {})),
+        comps,
     )
 
 

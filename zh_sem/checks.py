@@ -39,7 +39,7 @@ def main():
 
     # C3 解析失败必须精确等于预期集合（不是恒真）
     no_cand = {s for s, _ in TRAIN + HELDOUT if not parse(s)}
-    expected = {"猫给狗", "苹果很跑"}
+    expected = {"猫给狗", "苹果很跑", "我跑的猫"}
     check("C3 解析失败集合精确", no_cand == expected,
           "got=%s expected=%s" % (sorted(no_cand), sorted(expected)))
 

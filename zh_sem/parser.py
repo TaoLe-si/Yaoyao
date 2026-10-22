@@ -84,6 +84,27 @@ def _comp_ok(vp):
     return all(r in vp["roles"] for r in frame[1:] if r not in opt)
 
 
+def _gap_role(s):
+    """关系从句的缺口：S 里没填、且允许省略的宾语角色。"""
+    if s.get("kind") not in ("event", "state"):
+        return None
+    frame = VERB_FRAME.get(s["pred"])
+    if not frame:
+        return None
+    opt = VOPT.get(s["pred"], [])
+    for r in frame[1:]:
+        if r not in s["roles"] and r in opt:
+            return r
+    return None
+
+
+def _fill_gap(s, gap, head):
+    c = dict(s)
+    c["roles"] = dict(s["roles"])
+    c["roles"][gap] = head
+    return c
+
+
 def _copy_vp2(vp, **mods):
     nv = _copy_vp(vp)
     nv["mods"].update({k: v for k, v in mods.items() if v})
@@ -296,6 +317,23 @@ def _combine(L, R, add):
                        "mods": dict(vp["mods"]), "construction": "vp",
                        "comp": False, "comps": comps})
 
+    # R22: S + PART(的) -> RELMOD（关系从句；缺口 = 未填的可选宾语）
+    for s in L.get("S", []):
+        for pt in R.get("PART", []):
+            if pt["kind"] != "MOD":
+                continue
+            gap = _gap_role(s)
+            if gap:
+                add("RELMOD", {"meaning": s, "gap": gap})
+
+    # R23: RELMOD + N -> NP（关系化名词短语）
+    for rm in L.get("RELMOD", []):
+        for np in R.get("NP", []):
+            head = np.get("base", np["pred"])
+            rel = _fill_gap(rm["meaning"], rm["gap"], head)
+            add("NP", entity(head, base=head, comps={"REL": rel},
+                             REL_ROLE=rm["gap"]))
+
 
 def parse(sent, strict=True):
     forms = tokenize(sent, strict=strict)
@@ -347,7 +385,7 @@ def parse(sent, strict=True):
     cands = list(out.get("S", []))
     if not cands:
         for np in out.get("NP", []):
-            if np["mods"].get("ATTR"):
+            if np["mods"].get("ATTR") or np.get("comps"):
                 cands.append(np)
 
     seen = set()

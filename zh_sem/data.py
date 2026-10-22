@@ -44,6 +44,9 @@ TRAIN_VALID = [
     ("猫喜欢鱼", E("喜欢", {"EXPERIENCER": "猫", "STIMULUS": "鱼"})),
     ("我喜欢喝水", E("喜欢", {"EXPERIENCER": "我"},
                      comps={"STIMULUS": E("喝", {"AGENT": "我", "PATIENT": "水"})})),
+    ("妈妈说的书", entity("书",
+                       comps={"REL": E("说", {"AGENT": "妈妈", "PATIENT": "书"})},
+                       REL_ROLE="PATIENT")),
     # ---- 看：两个义项 ----
     ("老师看书", E("看/read", {"AGENT": "老师", "PATIENT": "书"})),
     ("你看书", E("看/read", {"AGENT": "你", "PATIENT": "书"})),
@@ -133,6 +136,7 @@ TRAIN_INVALID = [
     ("老师在苹果", None),
     ("桌子很聪明", None),
     ("我喜欢吃石头", None),
+    ("我跑的猫", None),
 ]
 
 HELDOUT_VALID = [

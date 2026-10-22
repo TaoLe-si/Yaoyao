@@ -1,6 +1,6 @@
 {
-  "n": 80,
-  "valid_n": 56,
+  "n": 81,
+  "valid_n": 57,
   "invalid_n": 24,
   "model": {
     "overall": 1.0,
@@ -14,13 +14,6 @@
     "invalid_reject": 1.0,
     "errors": []
   },
-  "coverage_gaps": [
-    {
-      "sent": "他说的书",
-      "why": "关系从句 构式缺失",
-      "model": "REJECT",
-      "verifier": "REJECT"
-    }
-  ],
+  "coverage_gaps": [],
   "note": "gold 为手写判断，未调用验证器；句子使用 v0.3 新词，与 TRAIN/HELDOUT 零重叠。coverage_gaps 不计入准确率，它们是真汉语成立但当前表示不了的情况。"
 }

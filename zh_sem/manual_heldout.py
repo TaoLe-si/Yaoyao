@@ -65,6 +65,10 @@ MANUAL_VALID = [
     ("妈妈爱爸爸", E("爱", {"EXPERIENCER": "妈妈", "STIMULUS": "爸爸"})),
     ("我喜欢吃苹果", E("喜欢", {"EXPERIENCER": "我"},
                       comps={"STIMULUS": E("吃", {"AGENT": "我", "PATIENT": "苹果"})})),
+    # ---- 关系从句 ----
+    ("他说的书", entity("书",
+                     comps={"REL": E("说", {"AGENT": "他", "PATIENT": "书"})},
+                     REL_ROLE="PATIENT")),
     # ---- 新动词 SV ----
     ("姐姐唱", E("唱", {"AGENT": "姐姐"})),
     ("哥哥跳", E("跳", {"AGENT": "哥哥"})),
@@ -123,6 +127,4 @@ MANUAL = MANUAL_VALID + MANUAL_INVALID
 
 # 覆盖缺口：这些句子在真实汉语里成立，但当前词典/语法表示不了。
 # 不计入准确率；单独报告，用来证明验证器 != 真理。
-MANUAL_COVERAGE_GAPS = [
-    ("他说的书", "关系从句 构式缺失"),
-]
+MANUAL_COVERAGE_GAPS = []
