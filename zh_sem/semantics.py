@@ -51,15 +51,19 @@ def _freeze(x):
     return x
 
 
+def _role_canon(v):
+    return canon(v) if isinstance(v, dict) else v
+
+
 def canon(m):
-    """忽略 construction 的规范形式；None 表示 REJECT。嵌套 comps 递归规范化。"""
+    """忽略 construction 的规范形式；None 表示 REJECT。嵌套 comps/角色递归规范化。"""
     if m is None:
         return None
     comps = tuple(sorted((k, canon(v)) for k, v in m.get("comps", {}).items()))
     return (
         m["kind"],
         m["pred"],
-        tuple(sorted(m["roles"].items())),
+        tuple(sorted((k, _role_canon(v)) for k, v in m["roles"].items())),
         tuple(sorted((k, v) for k, v in m["mods"].items() if v)),
         comps,
     )
@@ -68,7 +72,8 @@ def canon(m):
 def describe(m):
     if m is None:
         return "REJECT"
-    roles = " ".join("%s=%s" % (k, v) for k, v in sorted(m["roles"].items()))
+    roles = " ".join("%s=%s" % (k, describe(v) if isinstance(v, dict) else v)
+                     for k, v in sorted(m["roles"].items()))
     mods = " ".join("%s" % k for k, v in sorted(m["mods"].items()) if v)
     s = "%s(%s) %s" % (m["pred"], roles, ("[" + mods + "]") if mods else "")
     if m.get("comps"):

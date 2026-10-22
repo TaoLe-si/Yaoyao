@@ -111,6 +111,11 @@ def _copy_vp2(vp, **mods):
     return nv
 
 
+def _np_value(np):
+    """简单 NP 存词头字符串；带嵌套（关系从句）的 NP 存整个实体，避免丢失 REL。"""
+    return np if np.get("comps") else np["pred"]
+
+
 def _with_mods(m, **mods):
     n = dict(m)
     n["roles"] = dict(m["roles"])
@@ -127,7 +132,7 @@ def _fill_object(vp, np):
     for role in VERB_FRAME[vp["verb"]][1:]:
         if role not in vp["roles"]:
             nv = _copy_vp(vp)
-            nv["roles"][role] = np["pred"]
+            nv["roles"][role] = _np_value(np)
             return nv
     return None
 
@@ -141,7 +146,7 @@ def _close_s(subj, vp):
     if subj_role in vp["roles"]:
         return None
     roles = dict(vp["roles"])
-    roles[subj_role] = subj["pred"]
+    roles[subj_role] = _np_value(subj)
     if any(r not in roles for r in frame if r not in opt):
         return None
     comps = {}
@@ -150,7 +155,7 @@ def _close_s(subj, vp):
         c["roles"] = dict(comp["roles"])
         cframe = VERB_FRAME.get(c["pred"])
         if cframe and cframe[0] not in c["roles"]:
-            c["roles"][cframe[0]] = subj["pred"]      # 控制：补语主语 = 外层主语
+            c["roles"][cframe[0]] = _np_value(subj)   # 控制：补语主语 = 外层主语
         comps[name] = c
     return event(vp["verb"], roles, comps=comps or None,
                  construction="SVO", **vp["mods"])
@@ -167,7 +172,7 @@ def _combine(L, R, add):
     # R2: NP + AP -> 形容词谓语句（含否定）
     for np in L.get("NP", []):
         for ap in R.get("AP", []):
-            add("S", state(ap["adj"], {"THEME": np["pred"]},
+            add("S", state(ap["adj"], {"THEME": _np_value(np)},
                            DEGREE=ap.get("degree", False),
                            NEG=ap.get("neg", False),
                            construction="adj_state"))
@@ -176,7 +181,8 @@ def _combine(L, R, add):
     for np in L.get("NP", []):
         for pp in R.get("PP", []):
             if pp["prep"] == "在":
-                add("S", state("在", {"THEME": np["pred"], "LOC": pp["obj"]["pred"]},
+                add("S", state("在", {"THEME": _np_value(np),
+                                      "LOC": _np_value(pp["obj"])},
                                construction="loc_state"))
 
     # R4: ADV(不/今天) + VP -> VP
@@ -226,7 +232,7 @@ def _combine(L, R, add):
     for pp in L.get("PP", []):
         if pp["prep"] == "在":
             for vp in R.get("VP", []):
-                add("VP", _copy_vp2(vp, LOC=pp["obj"]["pred"]))
+                add("VP", _copy_vp2(vp, LOC=_np_value(pp["obj"])))
 
     # R10: NP + PPBA -> NPBA
     for np in L.get("NP", []):
@@ -246,8 +252,8 @@ def _combine(L, R, add):
             if "AGENT" in vp["roles"] or "PATIENT" in vp["roles"]:
                 continue
             roles = dict(vp["roles"])
-            roles["AGENT"] = n["agent"]["pred"]
-            roles["PATIENT"] = n["patient"]["pred"]
+            roles["AGENT"] = _np_value(n["agent"])
+            roles["PATIENT"] = _np_value(n["patient"])
             if all(r in roles for r in VERB_FRAME[vp["verb"]] if r not in VOPT[vp["verb"]]):
                 add("S", event(vp["verb"], roles, construction="BA", BA=True, **vp["mods"]))
 
@@ -259,8 +265,8 @@ def _combine(L, R, add):
             if "AGENT" in vp["roles"] or "PATIENT" in vp["roles"]:
                 continue
             roles = dict(vp["roles"])
-            roles["PATIENT"] = n["patient"]["pred"]
-            roles["AGENT"] = n["agent"]["pred"]
+            roles["PATIENT"] = _np_value(n["patient"])
+            roles["AGENT"] = _np_value(n["agent"])
             if all(r in roles for r in VERB_FRAME[vp["verb"]] if r not in VOPT[vp["verb"]]):
                 add("S", event(vp["verb"], roles, construction="BEI", BEI=True, **vp["mods"]))
 

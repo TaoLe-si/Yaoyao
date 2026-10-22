@@ -47,6 +47,11 @@ TRAIN_VALID = [
     ("妈妈说的书", entity("书",
                        comps={"REL": E("说", {"AGENT": "妈妈", "PATIENT": "书"})},
                        REL_ROLE="PATIENT")),
+    ("妈妈看他说的书", E("看/read", {
+        "AGENT": "妈妈",
+        "PATIENT": entity("书",
+                          comps={"REL": E("说", {"AGENT": "他", "PATIENT": "书"})},
+                          REL_ROLE="PATIENT")})),
     # ---- 看：两个义项 ----
     ("老师看书", E("看/read", {"AGENT": "老师", "PATIENT": "书"})),
     ("你看书", E("看/read", {"AGENT": "你", "PATIENT": "书"})),

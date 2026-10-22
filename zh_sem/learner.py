@@ -42,10 +42,15 @@ def slot_feats(verb, role, head, lex, mode="full"):
 
 
 def cand_slot_items(m, prefix=""):
-    """递归展开槽位：外层角色 + 补语里的角色（路径如 "STIMULUS/PATIENT"）。"""
+    """递归展开槽位：外层角色 + 补语/嵌套实体里的角色（路径如 "STIMULUS/PATIENT"）。"""
     items = []
     for role, head in m["roles"].items():
-        items.append((prefix + role, m["pred"], role, head))
+        if isinstance(head, dict):
+            h = head.get("base", head.get("pred"))
+            items.append((prefix + role, m["pred"], role, h))
+            items += cand_slot_items(head, prefix + role + "/")
+        else:
+            items.append((prefix + role, m["pred"], role, head))
     for name, comp in m.get("comps", {}).items():
         items += cand_slot_items(comp, prefix + name + "/")
     return items

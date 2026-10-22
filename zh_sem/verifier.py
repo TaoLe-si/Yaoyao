@@ -82,6 +82,8 @@ def verify(m, lex):
     for role, head in m["roles"].items():
         if _role_bad(m["pred"], role, head, lex):
             return False
+        if isinstance(head, dict) and not verify(head, lex):
+            return False
     for comp in m.get("comps", {}).values():
         if not verify(comp, lex):
             return False
@@ -89,13 +91,15 @@ def verify(m, lex):
 
 
 def violating_paths(m, lex, prefix=""):
-    """反馈里的"原因"：返回违反 ROLE_REQ 的槽位路径（含补语路径）。"""
+    """反馈里的"原因"：返回违反 ROLE_REQ 的槽位路径（含补语/嵌套实体路径）。"""
     bad = set()
     if m is None:
         return bad
     for role, head in m["roles"].items():
         if _role_bad(m["pred"], role, head, lex):
             bad.add(prefix + role)
+        if isinstance(head, dict):
+            bad |= violating_paths(head, lex, prefix + role + "/")
     for name, comp in m.get("comps", {}).items():
         bad |= violating_paths(comp, lex, prefix + name + "/")
     return bad

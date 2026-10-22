@@ -245,12 +245,15 @@ CLASSIFIERS = {f for f, es in ENTRIES.items() if any(e["pos"] == "CL" for e in e
 def entity_info(lex, head):
     """解析角色填充词的信息。
 
-    支持三种 head：
+    支持：
       - 普通词形（"苹果"）
-      - 并列复合（"我+小明"）：属性取各部分合取（all），词类拼成 "HUMAN+HUMAN"
-      - 数量短语（"一个苹果"）：剥掉"数词+量词"前缀，取基础名词的属性
+      - 并列复合（"我+小明"）：属性取各部分合取
+      - 数量短语（"一个苹果"）：剥掉"数词+量词"前缀
+      - 嵌套实体（关系化 NP）：取其中心名词
     返回 {"props":..., "cls":...} 或 None。
     """
+    if isinstance(head, dict):
+        head = head.get("base", head.get("pred"))
     if "+" in head:
         parts = head.split("+")
         infos = [entity_info(lex, p) for p in parts]

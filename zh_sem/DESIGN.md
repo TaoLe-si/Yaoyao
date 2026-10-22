@@ -772,3 +772,43 @@ cd zh_sem
 python checks.py && python train.py && python evaluate.py
 python manual_eval.py && python large_eval.py
 ```
+
+---
+
+## 十六、v0.6.1：嵌套角色填充（关系化 NP 嵌入句子）（2026-10-22）
+
+### 16.1 改动
+
+- 角色槽不再只存词头：**带 `comps` 的 NP（关系化）存整个实体**；
+  简单 NP 仍存字符串（保持旧 gold 不变）。
+- `canon` / `describe` 递归处理角色值；`entity_info` 接受嵌套实体（取其中心名词）；
+  打分器的槽位展开与验证器的违规路径都**递归进入角色实体**。
+- 解析器的所有填槽点（主语/宾语/把/被/地点/形容词主题/补语控制主语）
+  统一走 `_np_value`。
+- 新增训练句 `妈妈看他说的书`；人工 held-out 新增 `我看他说的书`。
+
+### 16.2 读数
+
+| 口径 | 结果 |
+|---|---|
+| 主 held-out（82 条） | **47/47 正、35/35 负 = 1.0000** |
+| 独立人工 held-out（82 条：58 正 / 24 负） | **1.0000**（模型与验证器均 1.0000） |
+| `我看他说的书` | 计入准确率，**正确**：`看/read(AGENT=我, PATIENT=书{REL=说(AGENT=他, PATIENT=书)})` |
+| 300 条冻结大 held-out | 0.9800（正 0.9928 / 负 0.9691） |
+| 覆盖缺口 | **0 条** |
+
+### 16.3 边界
+
+1. 只有带 `comps` 的 NP 保留嵌套；带 `ATTR`/`QUANT` 的 NP 仍存字符串，
+   嵌入更大句子时修饰会丢（"红的花"作宾语只剩"花"）。
+2. 并列复合不保留各部分的 `comps`。
+3. 关系从句只支持**宾语缺口**；主语关系化、多重嵌套未实现。
+4. 嵌套让 canon/特征递归，但打分器仍是离散特征求和；没有量词辖域/作用域。
+
+### 16.4 复现
+
+```bash
+cd zh_sem
+python checks.py && python train.py && python evaluate.py
+python manual_eval.py && python large_eval.py
+```

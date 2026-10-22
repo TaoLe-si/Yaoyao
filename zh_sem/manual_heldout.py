@@ -69,6 +69,11 @@ MANUAL_VALID = [
     ("他说的书", entity("书",
                      comps={"REL": E("说", {"AGENT": "他", "PATIENT": "书"})},
                      REL_ROLE="PATIENT")),
+    ("我看他说的书", E("看/read", {
+        "AGENT": "我",
+        "PATIENT": entity("书",
+                          comps={"REL": E("说", {"AGENT": "他", "PATIENT": "书"})},
+                          REL_ROLE="PATIENT")})),
     # ---- 新动词 SV ----
     ("姐姐唱", E("唱", {"AGENT": "姐姐"})),
     ("哥哥跳", E("跳", {"AGENT": "哥哥"})),
