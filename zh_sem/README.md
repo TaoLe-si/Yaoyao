@@ -29,9 +29,9 @@
 cd zh_sem
 python checks.py      # 先过检查（C1–C11）
 python train.py       # 反馈学习
-python evaluate.py    # 主 held-out（83 条）+ 基线/对照/LOVO
+python evaluate.py    # 主 held-out（82 条）+ 基线/对照/LOVO
 python large_eval.py  # 300 条冻结大 held-out（12 类构式）
-python manual_eval.py # 77 条独立人工 held-out
+python manual_eval.py # 79 条独立人工 held-out
 python cost_curve.py  # 每词反馈成本曲线
 python grow_lexicon.py# 语料候选 → 反馈 → 入典
 python open_vocab.py  # OOV 降级
@@ -39,7 +39,7 @@ python rsi.py         # A/B/C/D 对照
 ```
 
 当前规模：**154 个词形 / 156 个义项**、12 类构式、92 条训练句、
-83 条人工 held-out、300 条冻结大 held-out、77 条独立人工 held-out。
+82 条人工 held-out、300 条冻结大 held-out、79 条独立人工 held-out。
 
 所有读数落在 `eval_results.json` / `rsi_results.json`，不要手改。
 

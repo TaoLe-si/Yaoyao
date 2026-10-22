@@ -34,6 +34,10 @@ MANUAL_VALID = [
     ("小明喝水", E("喝", {"AGENT": "小明", "PATIENT": "水"})),
     ("姐姐看书", E("看/read", {"AGENT": "姐姐", "PATIENT": "书"})),
     ("哥哥看学校", E("看/visit", {"AGENT": "哥哥", "PATIENT": "学校"})),
+    ("老师看石头", E("看/look", {"AGENT": "老师", "PATIENT": "石头"})),
+    ("妈妈看衣服", E("看/look", {"AGENT": "妈妈", "PATIENT": "衣服"})),
+    ("老师看水", E("看/look", {"AGENT": "老师", "PATIENT": "水"})),
+    ("弟弟看桌子", E("看/look", {"AGENT": "弟弟", "PATIENT": "桌子"})),
     ("医生打球", E("打/play", {"AGENT": "医生", "PATIENT": "球"})),
     # ---- 新动词 ----
     ("学生写书", E("写", {"AGENT": "学生", "PATIENT": "书"})),
@@ -89,7 +93,6 @@ MANUAL_VALID = [
 MANUAL_INVALID = [
     ("狗吃石头", None),
     ("妈妈喝面条", None),
-    ("老师看水", None),
     ("电视打球", None),
     ("石头写书", None),
     ("苹果读报纸", None),
@@ -106,7 +109,6 @@ MANUAL_INVALID = [
     ("我和石头吃饭", None),
     ("我喝面包", None),
     ("老师吃咖啡", None),
-    ("弟弟看桌子", None),
     ("学生去书", None),
     ("爷爷回苹果", None),
     ("苹果被石头吃了", None),
@@ -120,8 +122,6 @@ MANUAL = MANUAL_VALID + MANUAL_INVALID
 # 覆盖缺口：这些句子在真实汉语里成立，但当前词典/语法表示不了。
 # 不计入准确率；单独报告，用来证明验证器 != 真理。
 MANUAL_COVERAGE_GAPS = [
-    ("老师看石头", "看/look 义项缺失（只定义了 read/visit）"),
-    ("妈妈看衣服", "同上"),
     ("我喜欢吃苹果", "喜欢 + 谓词补语 构式缺失"),
     ("他说的书", "关系从句 构式缺失"),
 ]

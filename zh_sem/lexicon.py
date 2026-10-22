@@ -142,7 +142,8 @@ ENTRIES = {
     "跑": [V("跑", "跑", ["AGENT"], [])],
     # ★多义：同形、同框架，选择限制不同
     "看": [V("看", "看/read", ["AGENT", "PATIENT"], ["PATIENT"]),
-           V("看", "看/visit", ["AGENT", "PATIENT"], ["PATIENT"])],
+           V("看", "看/visit", ["AGENT", "PATIENT"], ["PATIENT"]),
+           V("看", "看/look", ["AGENT", "PATIENT"], ["PATIENT"])],
     # ★第二种多义：两个义项都可能成立，靠词汇偏好消歧
     "打": [V("打", "打/hit", ["AGENT", "PATIENT"], ["PATIENT"]),
            V("打", "打/play", ["AGENT", "PATIENT"], ["PATIENT"])],

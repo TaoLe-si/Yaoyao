@@ -24,6 +24,12 @@
     "ok": true
   },
   {
+    "sent": "我看桌子",
+    "gold": "看/look(AGENT=我 PATIENT=桌子) ",
+    "pred": "看/look(AGENT=我 PATIENT=桌子) ",
+    "ok": true
+  },
+  {
     "sent": "狗吃苹果",
     "gold": "吃(AGENT=狗 PATIENT=苹果) ",
     "pred": "吃(AGENT=狗 PATIENT=苹果) ",
@@ -273,18 +279,6 @@
     "sent": "老师和妈妈看学校",
     "gold": "看/visit(AGENT=老师+妈妈 PATIENT=学校) ",
     "pred": "看/visit(AGENT=老师+妈妈 PATIENT=学校) ",
-    "ok": true
-  },
-  {
-    "sent": "老师看石头",
-    "gold": "REJECT",
-    "pred": "REJECT",
-    "ok": true
-  },
-  {
-    "sent": "我看桌子",
-    "gold": "REJECT",
-    "pred": "REJECT",
     "ok": true
   },
   {

@@ -48,6 +48,8 @@ TRAIN_VALID = [
     ("我今天看书", E("看/read", {"AGENT": "我", "PATIENT": "书"}, TIME=True)),
     ("老师看学校", E("看/visit", {"AGENT": "老师", "PATIENT": "学校"})),
     ("我看学校", E("看/visit", {"AGENT": "我", "PATIENT": "学校"})),
+    ("老师看桌子", E("看/look", {"AGENT": "老师", "PATIENT": "桌子"})),
+    ("我看石头", E("看/look", {"AGENT": "我", "PATIENT": "石头"})),
     # ---- 打：两个义项都可能成立，靠偏好消歧 ----
     ("我打球", E("打/play", {"AGENT": "我", "PATIENT": "球"})),
     ("他打球", E("打/play", {"AGENT": "他", "PATIENT": "球"})),
@@ -113,7 +115,6 @@ TRAIN_INVALID = [
     ("石头不跑", None),
     ("花看鸟", None),
     ("桌子很高兴", None),
-    ("老师看桌子", None),
     ("老师给桌子书", None),
     ("桌子很忙", None),
     ("桌子打球", None),
@@ -124,7 +125,6 @@ TRAIN_INVALID = [
     ("石头不高兴", None),
     ("我吃一个石头", None),
     ("一个石头吃鱼", None),
-    ("我看石头", None),
     # ---- 在字句：LOC 必须是地点 ----
     ("猫在桌子", None),
     ("书在水", None),
@@ -138,6 +138,7 @@ HELDOUT_VALID = [
     ("他看书", E("看/read", {"AGENT": "他", "PATIENT": "书"})),
     ("小明看学校", E("看/visit", {"AGENT": "小明", "PATIENT": "学校"})),
     ("狗看学校", E("看/visit", {"AGENT": "狗", "PATIENT": "学校"})),
+    ("我看桌子", E("看/look", {"AGENT": "我", "PATIENT": "桌子"})),
     # ---- 其他 ----
     ("狗吃苹果", E("吃", {"AGENT": "狗", "PATIENT": "苹果"})),
     ("妈妈喝水", E("喝", {"AGENT": "妈妈", "PATIENT": "水"})),
@@ -188,8 +189,6 @@ HELDOUT_VALID = [
 
 HELDOUT_INVALID = [
     # ---- 看：两个义项都不成立 ----
-    ("老师看石头", None),
-    ("我看桌子", None),
     ("苹果看学校", None),
     ("桌子看书", None),
     # ---- 其他 ----

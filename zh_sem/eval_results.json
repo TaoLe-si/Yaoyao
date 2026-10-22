@@ -3,77 +3,77 @@
     "valid_exact": 1.0,
     "invalid_reject": 1.0,
     "overall": 1.0,
-    "valid_ok": 46,
-    "valid_n": 46,
-    "invalid_ok": 37,
-    "invalid_n": 37
+    "valid_ok": 47,
+    "valid_n": 47,
+    "invalid_ok": 35,
+    "invalid_n": 35
   },
   "baselines": {
     "accept_all": {
       "valid_exact": 1.0,
       "invalid_reject": 0.0,
-      "overall": 0.5542168674698795,
-      "valid_ok": 46,
-      "valid_n": 46,
+      "overall": 0.573170731707317,
+      "valid_ok": 47,
+      "valid_n": 47,
       "invalid_ok": 0,
-      "invalid_n": 37
+      "invalid_n": 35
     },
     "reject_all": {
       "valid_exact": 0.0,
       "invalid_reject": 1.0,
-      "overall": 0.4457831325301205,
+      "overall": 0.4268292682926829,
       "valid_ok": 0,
-      "valid_n": 46,
-      "invalid_ok": 37,
-      "invalid_n": 37
+      "valid_n": 47,
+      "invalid_ok": 35,
+      "invalid_n": 35
     },
     "cell_lookup": {
-      "valid_exact": 0.8913043478260869,
-      "invalid_reject": 0.4594594594594595,
-      "overall": 0.6987951807228916,
+      "valid_exact": 0.8723404255319149,
+      "invalid_reject": 0.42857142857142855,
+      "overall": 0.6829268292682927,
       "valid_ok": 41,
-      "valid_n": 46,
-      "invalid_ok": 17,
-      "invalid_n": 37
+      "valid_n": 47,
+      "invalid_ok": 15,
+      "invalid_n": 35
     },
     "verifier": {
       "valid_exact": 1.0,
       "invalid_reject": 1.0,
       "overall": 1.0,
-      "valid_ok": 46,
-      "valid_n": 46,
-      "invalid_ok": 37,
-      "invalid_n": 37
+      "valid_ok": 47,
+      "valid_n": 47,
+      "invalid_ok": 35,
+      "invalid_n": 35
     }
   },
   "controls": {
     "random_props_consistent": {
-      "valid_exact": 0.8461538461538461,
-      "invalid_reject": 0.9649122807017544,
-      "overall": 0.927710843373494,
-      "valid_ok": 22,
-      "valid_n": 26,
-      "invalid_ok": 55,
-      "invalid_n": 57,
+      "valid_exact": 0.875,
+      "invalid_reject": 0.96,
+      "overall": 0.926829268292683,
+      "valid_ok": 28,
+      "valid_n": 32,
+      "invalid_ok": 48,
+      "invalid_n": 50,
       "changed_nouns": 72
     },
     "random_props_broken": {
-      "valid_exact": 0.8695652173913043,
-      "invalid_reject": 0.5135135135135135,
-      "overall": 0.7108433734939759,
-      "valid_ok": 40,
-      "valid_n": 46,
-      "invalid_ok": 19,
-      "invalid_n": 37
+      "valid_exact": 0.7659574468085106,
+      "invalid_reject": 0.6,
+      "overall": 0.6951219512195121,
+      "valid_ok": 36,
+      "valid_n": 47,
+      "invalid_ok": 21,
+      "invalid_n": 35
     },
     "position_only": {
-      "valid_exact": 0.8695652173913043,
+      "valid_exact": 0.851063829787234,
       "invalid_reject": 0.0,
-      "overall": 0.4819277108433735,
+      "overall": 0.4878048780487805,
       "valid_ok": 40,
-      "valid_n": 46,
+      "valid_n": 47,
       "invalid_ok": 0,
-      "invalid_n": 37
+      "invalid_n": 35
     }
   },
   "lovo": [
@@ -448,10 +448,10 @@
     },
     {
       "verb": "看",
-      "heldout": 13,
-      "valid_exact": 0.625,
-      "invalid_reject": 0.6,
-      "overall": 0.6153846153846154,
+      "heldout": 12,
+      "valid_exact": 0.5555555555555556,
+      "invalid_reject": 1.0,
+      "overall": 0.6666666666666666,
       "items": [
         {
           "sent": "妈妈看书",
@@ -478,6 +478,12 @@
           "ok": false
         },
         {
+          "sent": "我看桌子",
+          "gold": "看/look(AGENT=我 PATIENT=桌子) ",
+          "pred": "看/read(AGENT=我 PATIENT=桌子) ",
+          "ok": false
+        },
+        {
           "sent": "猫看书",
           "gold": "看/read(AGENT=猫 PATIENT=书) ",
           "pred": "看/read(AGENT=猫 PATIENT=书) ",
@@ -499,18 +505,6 @@
           "sent": "老师和妈妈看学校",
           "gold": "看/visit(AGENT=老师+妈妈 PATIENT=学校) ",
           "pred": "看/read(AGENT=老师+妈妈 PATIENT=学校) ",
-          "ok": false
-        },
-        {
-          "sent": "老师看石头",
-          "gold": "REJECT",
-          "pred": "看/read(AGENT=老师 PATIENT=石头) ",
-          "ok": false
-        },
-        {
-          "sent": "我看桌子",
-          "gold": "REJECT",
-          "pred": "看/read(AGENT=我 PATIENT=桌子) ",
           "ok": false
         },
         {
@@ -591,7 +585,7 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.07228915662650603,
+    "P3c_consistent_world_overall_delta": -0.07317073170731703,
     "P4_position_only_near_accept_all": true,
     "P5_lovo_unseen_verb_ge_0.60": false
   }

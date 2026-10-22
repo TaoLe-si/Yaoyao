@@ -1,7 +1,7 @@
 {
-  "n": 77,
-  "valid_n": 51,
-  "invalid_n": 26,
+  "n": 79,
+  "valid_n": 55,
+  "invalid_n": 24,
   "model": {
     "overall": 1.0,
     "valid_exact": 1.0,
@@ -15,18 +15,6 @@
     "errors": []
   },
   "coverage_gaps": [
-    {
-      "sent": "老师看石头",
-      "why": "看/look 义项缺失（只定义了 read/visit）",
-      "model": "REJECT",
-      "verifier": "REJECT"
-    },
-    {
-      "sent": "妈妈看衣服",
-      "why": "同上",
-      "model": "REJECT",
-      "verifier": "REJECT"
-    },
     {
       "sent": "我喜欢吃苹果",
       "why": "喜欢 + 谓词补语 构式缺失",
