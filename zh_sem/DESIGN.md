@@ -686,3 +686,46 @@ python checks.py && python train.py && python evaluate.py
 python large_eval.py --regen
 python manual_eval.py
 ```
+
+---
+
+## 十四、v0.5：谓词补语构式（2026-10-22）
+
+### 14.1 改动
+
+- `喜欢` 标记 `comp=True`。新规则 R21：`V(comp) + VP -> VP`，
+  补语 VP 的主语由**外层主语控制填充**（control）。
+- 句义表示支持嵌套：新增 `comps` 字段；`canon` / `describe` 递归；
+  打分器的槽位递归展开（路径如 `STIMULUS/PATIENT`）；
+  验证器递归校验；负例反馈按**路径**惩罚违规槽位。
+- 修一个本轮自造的 bug：带 `comps` 的 VP 仍可被 `VP+NP` 继续填 STIMULUS，
+  产生"外层宾语 + 补语"的伪候选；训练把伪候选当反例，学出
+  "喜欢只能接食用宾语"，误杀 `老师喜欢花`。
+  **修法**：`_fill_object` 在 `vp.comps` 非空时直接返回 None。
+
+### 14.2 读数
+
+| 口径 | 结果 |
+|---|---|
+| 主 held-out（82 条） | **47/47 正、35/35 负 = 1.0000** |
+| 独立人工 held-out（80 条：56 正 / 24 负） | **1.0000**（模型与验证器均 1.0000） |
+| `我喜欢吃苹果` | 计入准确率，**正确**（嵌套补语 `STIMULUS=吃(AGENT=我, PATIENT=苹果)`） |
+| 300 条冻结大 held-out | 0.9800（正 0.9928 / 负 0.9691） |
+| 剩余覆盖缺口 | **1 条**：`他说的书`（关系从句） |
+
+### 14.3 边界
+
+1. 只有 `喜欢` 标记 `comp=True`；`爱/知道/学` 等尚未开放补语。
+2. 补语主语**强制控制**为外层主语；无法表达"我喜欢他吃苹果"这类
+   补语自带主语的结构。
+3. 补语只支持 VP，不支持小句、that-从句、疑问补语。
+4. 关系从句仍未实现，是人工集里唯一剩余的真实汉语缺口。
+
+### 14.4 复现
+
+```bash
+cd zh_sem
+python checks.py && python train.py && python evaluate.py
+python manual_eval.py
+python large_eval.py
+```

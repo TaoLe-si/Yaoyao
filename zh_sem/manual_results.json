@@ -1,6 +1,6 @@
 {
-  "n": 79,
-  "valid_n": 55,
+  "n": 80,
+  "valid_n": 56,
   "invalid_n": 24,
   "model": {
     "overall": 1.0,
@@ -15,12 +15,6 @@
     "errors": []
   },
   "coverage_gaps": [
-    {
-      "sent": "我喜欢吃苹果",
-      "why": "喜欢 + 谓词补语 构式缺失",
-      "model": "REJECT",
-      "verifier": "REJECT"
-    },
     {
       "sent": "他说的书",
       "why": "关系从句 构式缺失",

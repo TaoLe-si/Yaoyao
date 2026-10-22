@@ -1,25 +1,31 @@
 # -*- coding: utf-8 -*-
-"""句义帧：构造、规范化、对拍。"""
+"""句义帧：构造、规范化、对拍。v0.5 支持嵌套补语（comps）。"""
 
 
-def event(pred, roles=None, construction="event", **mods):
-    return {
+def event(pred, roles=None, comps=None, construction="event", **mods):
+    d = {
         "kind": "event",
         "pred": pred,
         "roles": dict(roles or {}),
         "mods": {k: v for k, v in mods.items() if v},
         "construction": construction,
     }
+    if comps:
+        d["comps"] = dict(comps)
+    return d
 
 
-def state(pred, roles=None, construction="state", **mods):
-    return {
+def state(pred, roles=None, comps=None, construction="state", **mods):
+    d = {
         "kind": "state",
         "pred": pred,
         "roles": dict(roles or {}),
         "mods": {k: v for k, v in mods.items() if v},
         "construction": construction,
     }
+    if comps:
+        d["comps"] = dict(comps)
+    return d
 
 
 def entity(head, base=None, construction="entity", **mods):
@@ -33,6 +39,15 @@ def entity(head, base=None, construction="entity", **mods):
     }
 
 
+def _freeze(x):
+    """把任意嵌套 dict/list 变成可比较、可排序的元组。"""
+    if isinstance(x, dict):
+        return tuple(sorted((k, _freeze(v)) for k, v in x.items()))
+    if isinstance(x, (list, tuple)):
+        return tuple(_freeze(v) for v in x)
+    return x
+
+
 def canon(m):
     """忽略 construction 的规范形式；None 表示 REJECT。"""
     if m is None:
@@ -42,6 +57,7 @@ def canon(m):
         m["pred"],
         tuple(sorted(m["roles"].items())),
         tuple(sorted((k, v) for k, v in m["mods"].items() if v)),
+        _freeze(m.get("comps", {})),
     )
 
 
@@ -50,4 +66,9 @@ def describe(m):
         return "REJECT"
     roles = " ".join("%s=%s" % (k, v) for k, v in sorted(m["roles"].items()))
     mods = " ".join("%s" % k for k, v in sorted(m["mods"].items()) if v)
-    return "%s(%s) %s" % (m["pred"], roles, ("[" + mods + "]") if mods else "")
+    s = "%s(%s) %s" % (m["pred"], roles, ("[" + mods + "]") if mods else "")
+    if m.get("comps"):
+        inner = " | ".join("%s=%s" % (k, describe(v))
+                           for k, v in sorted(m["comps"].items()))
+        s += " {%s}" % inner
+    return s

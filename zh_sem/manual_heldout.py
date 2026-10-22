@@ -14,8 +14,8 @@ sys.path.insert(0, HERE)
 from semantics import entity, event, state  # noqa: E402
 
 
-def E(pred, roles=None, **mods):
-    return event(pred, roles or {}, **mods)
+def E(pred, roles=None, comps=None, **mods):
+    return event(pred, roles or {}, comps=comps, **mods)
 
 
 def S(pred, theme, **mods):
@@ -63,6 +63,8 @@ MANUAL_VALID = [
     ("爷爷等朋友", E("等", {"AGENT": "爷爷", "PATIENT": "朋友"})),
     ("医生认识老师", E("认识", {"EXPERIENCER": "医生", "STIMULUS": "老师"})),
     ("妈妈爱爸爸", E("爱", {"EXPERIENCER": "妈妈", "STIMULUS": "爸爸"})),
+    ("我喜欢吃苹果", E("喜欢", {"EXPERIENCER": "我"},
+                      comps={"STIMULUS": E("吃", {"AGENT": "我", "PATIENT": "苹果"})})),
     # ---- 新动词 SV ----
     ("姐姐唱", E("唱", {"AGENT": "姐姐"})),
     ("哥哥跳", E("跳", {"AGENT": "哥哥"})),
@@ -122,6 +124,5 @@ MANUAL = MANUAL_VALID + MANUAL_INVALID
 # 覆盖缺口：这些句子在真实汉语里成立，但当前词典/语法表示不了。
 # 不计入准确率；单独报告，用来证明验证器 != 真理。
 MANUAL_COVERAGE_GAPS = [
-    ("我喜欢吃苹果", "喜欢 + 谓词补语 构式缺失"),
     ("他说的书", "关系从句 构式缺失"),
 ]

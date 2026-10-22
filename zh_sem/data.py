@@ -16,8 +16,8 @@ sys.path.insert(0, HERE)
 from semantics import entity, event, state  # noqa: E402
 
 
-def E(pred, roles=None, **mods):
-    return event(pred, roles or {}, **mods)
+def E(pred, roles=None, comps=None, **mods):
+    return event(pred, roles or {}, comps=comps, **mods)
 
 
 def S(pred, theme, **mods):
@@ -42,6 +42,8 @@ TRAIN_VALID = [
     ("我吃苹果", E("吃", {"AGENT": "我", "PATIENT": "苹果"})),
     ("小明喜欢苹果", E("喜欢", {"EXPERIENCER": "小明", "STIMULUS": "苹果"})),
     ("猫喜欢鱼", E("喜欢", {"EXPERIENCER": "猫", "STIMULUS": "鱼"})),
+    ("我喜欢喝水", E("喜欢", {"EXPERIENCER": "我"},
+                     comps={"STIMULUS": E("喝", {"AGENT": "我", "PATIENT": "水"})})),
     # ---- 看：两个义项 ----
     ("老师看书", E("看/read", {"AGENT": "老师", "PATIENT": "书"})),
     ("你看书", E("看/read", {"AGENT": "你", "PATIENT": "书"})),
@@ -130,6 +132,7 @@ TRAIN_INVALID = [
     ("书在水", None),
     ("老师在苹果", None),
     ("桌子很聪明", None),
+    ("我喜欢吃石头", None),
 ]
 
 HELDOUT_VALID = [

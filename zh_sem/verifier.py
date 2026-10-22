@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""手写验证器 v0.2：按义项给出角色允许的属性/词类。
-
-`{"cls": "READABLE"}` 表示按词类约束（看/read 的 PATIENT 必须是可读物）；
-其余键按正交属性约束。验证器等价于逐句人工反馈，同时是 RSI 的上限。
-"""
+"""手写验证器 v0.5：按义项给出角色允许的属性/词类，并递归校验嵌套补语。"""
 import os
 import sys
 
@@ -23,6 +19,7 @@ ROLE_REQ = {
     ("看/read", "PATIENT"): {"readable": True},
     ("看/visit", "AGENT"): {"animate": True},
     ("看/visit", "PATIENT"): {"place": True},
+    ("看/look", "AGENT"): {"animate": True},
     ("打/hit", "AGENT"): {"animate": True},
     ("打/hit", "PATIENT"): {"sport": False},
     ("打/play", "AGENT"): {"animate": True},
@@ -59,29 +56,54 @@ for _adj in ("高兴", "忙", "聪明"):
     ROLE_REQ.setdefault((_adj, "THEME"), {"animate": True})
 
 
+def _role_bad(pred, role, head, lex):
+    req = ROLE_REQ.get((pred, role))
+    if not req:
+        return False
+    info = entity_info(lex, head)
+    if info is None:
+        return True
+    props = info.get("props") or {}
+    for k, v in req.items():
+        if k == "cls":
+            if info.get("cls") != v:
+                return True
+        elif k == "cls_not":
+            if info.get("cls") == v:
+                return True
+        elif props.get(k) != v:
+            return True
+    return False
+
+
 def verify(m, lex):
     if m is None:
         return False
     for role, head in m["roles"].items():
-        req = ROLE_REQ.get((m["pred"], role))
-        if not req:
-            continue
-        info = entity_info(lex, head)
-        if info is None:
+        if _role_bad(m["pred"], role, head, lex):
             return False
-        props = info.get("props")
-        if props is None:
+    for comp in m.get("comps", {}).values():
+        if not verify(comp, lex):
             return False
-        for k, v in req.items():
-            if k == "cls":
-                if info.get("cls") != v:
-                    return False
-            elif k == "cls_not":
-                if info.get("cls") == v:
-                    return False
-            elif props.get(k) != v:
-                return False
     return True
+
+
+def violating_paths(m, lex, prefix=""):
+    """反馈里的"原因"：返回违反 ROLE_REQ 的槽位路径（含补语路径）。"""
+    bad = set()
+    if m is None:
+        return bad
+    for role, head in m["roles"].items():
+        if _role_bad(m["pred"], role, head, lex):
+            bad.add(prefix + role)
+    for name, comp in m.get("comps", {}).items():
+        bad |= violating_paths(comp, lex, prefix + name + "/")
+    return bad
+
+
+def violating_roles(m, lex):
+    """兼容旧接口：只返回角色名（不含路径）。"""
+    return {p.split("/")[-1] for p in violating_paths(m, lex)}
 
 
 def label_sentence(sent, lex):
@@ -89,33 +111,3 @@ def label_sentence(sent, lex):
         if verify(m, lex):
             return m
     return None
-
-
-def violating_roles(m, lex):
-    """反馈里的"原因"：列出违反 ROLE_REQ 的角色。
-
-    训练负例只惩罚这些角色，避免把无关槽位也学成负证据。
-    """
-    bad = []
-    for role, head in m["roles"].items():
-        req = ROLE_REQ.get((m["pred"], role))
-        if not req:
-            continue
-        info = entity_info(lex, head)
-        if info is None:
-            bad.append(role)
-            continue
-        props = info.get("props") or {}
-        for k, v in req.items():
-            if k == "cls":
-                if info.get("cls") != v:
-                    bad.append(role)
-                    break
-            elif k == "cls_not":
-                if info.get("cls") == v:
-                    bad.append(role)
-                    break
-            elif props.get(k) != v:
-                bad.append(role)
-                break
-    return bad

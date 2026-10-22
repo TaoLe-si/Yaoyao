@@ -58,12 +58,30 @@ def tokenize(sent, strict=True):
 
 
 def _copy_vp(vp):
-    return {
+    d = {
         "verb": vp["verb"],
         "roles": dict(vp["roles"]),
         "mods": dict(vp["mods"]),
         "construction": vp.get("construction", "vp"),
+        "comp": vp.get("comp", False),
     }
+    if vp.get("comps"):
+        d["comps"] = dict(vp["comps"])
+    return d
+
+
+def _vp_to_meaning(vp):
+    return event(vp["verb"], vp["roles"],
+                 comps=vp.get("comps"), **vp["mods"])
+
+
+def _comp_ok(vp):
+    """补语 VP 必须填满除主语外的必选论元（主语由外层主语控制）。"""
+    if "verb" not in vp or vp.get("comps"):
+        return False
+    frame = VERB_FRAME[vp["verb"]]
+    opt = VOPT[vp["verb"]]
+    return all(r in vp["roles"] for r in frame[1:] if r not in opt)
 
 
 def _copy_vp2(vp, **mods):
@@ -81,7 +99,9 @@ def _with_mods(m, **mods):
 
 
 def _fill_object(vp, np):
-    if "verb" not in vp:
+    # 补语已经占用了宾语位；带 comps 的 VP 不再接受名词宾语，
+    # 否则会生成"外层宾语 + 补语"的伪候选（曾把 喜欢 教成只能接食用宾语）。
+    if "verb" not in vp or vp.get("comps"):
         return None
     for role in VERB_FRAME[vp["verb"]][1:]:
         if role not in vp["roles"]:
@@ -103,7 +123,16 @@ def _close_s(subj, vp):
     roles[subj_role] = subj["pred"]
     if any(r not in roles for r in frame if r not in opt):
         return None
-    return event(vp["verb"], roles, construction="SVO", **vp["mods"])
+    comps = {}
+    for name, comp in vp.get("comps", {}).items():
+        c = dict(comp)
+        c["roles"] = dict(comp["roles"])
+        cframe = VERB_FRAME.get(c["pred"])
+        if cframe and cframe[0] not in c["roles"]:
+            c["roles"][cframe[0]] = subj["pred"]      # 控制：补语主语 = 外层主语
+        comps[name] = c
+    return event(vp["verb"], roles, comps=comps or None,
+                 construction="SVO", **vp["mods"])
 
 
 def _combine(L, R, add):
@@ -254,6 +283,19 @@ def _combine(L, R, add):
             add("NP", entity(q["num"] + q["cl"] + base, base=base,
                              QUANT=q["num"] + q["cl"]))
 
+    # R21: V(comp) + VP -> VP（谓词补语；补语主语由外层主语控制）
+    for vp in L.get("VP", []):
+        if not vp.get("comp") or "STIMULUS" in vp["roles"]:
+            continue
+        for sub in R.get("VP", []):
+            if not _comp_ok(sub):
+                continue
+            comps = dict(vp.get("comps", {}))
+            comps["STIMULUS"] = _vp_to_meaning(sub)
+            add("VP", {"verb": vp["verb"], "roles": dict(vp["roles"]),
+                       "mods": dict(vp["mods"]), "construction": "vp",
+                       "comp": False, "comps": comps})
+
 
 def parse(sent, strict=True):
     forms = tokenize(sent, strict=strict)
@@ -274,7 +316,8 @@ def parse(sent, strict=True):
                 add(i, i + 1, "NP", entity(form))
             elif pos == "V":
                 add(i, i + 1, "VP", {"verb": e["sense"], "roles": {}, "mods": {},
-                                     "construction": "vp"})
+                                     "construction": "vp",
+                                     "comp": e.get("comp", False)})
             elif pos == "A":
                 add(i, i + 1, "AP", {"adj": form, "degree": False, "neg": False})
             elif pos == "ADV":

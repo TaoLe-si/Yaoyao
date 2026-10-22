@@ -18,7 +18,7 @@ sys.path.insert(0, HERE)
 from lexicon import PROP_KEYS, entity_info  # noqa: E402
 from parser import parse, tokenize  # noqa: E402
 from semantics import canon  # noqa: E402
-from verifier import violating_roles  # noqa: E402
+from verifier import violating_paths  # noqa: E402
 
 
 def slot_feats(verb, role, head, lex, mode="full"):
@@ -41,15 +41,25 @@ def slot_feats(verb, role, head, lex, mode="full"):
     return fs
 
 
+def cand_slot_items(m, prefix=""):
+    """递归展开槽位：外层角色 + 补语里的角色（路径如 "STIMULUS/PATIENT"）。"""
+    items = []
+    for role, head in m["roles"].items():
+        items.append((prefix + role, m["pred"], role, head))
+    for name, comp in m.get("comps", {}).items():
+        items += cand_slot_items(comp, prefix + name + "/")
+    return items
+
+
 def cand_slots(m):
-    return [(m["pred"], role, head) for role, head in m["roles"].items()]
+    return [(v, r, h) for _, v, r, h in cand_slot_items(m)]
 
 
 def cand_feats(m, lex, mode="full"):
     fs = []
-    for verb, role, head in cand_slots(m):
+    for _, verb, role, head in cand_slot_items(m):
         fs += slot_feats(verb, role, head, lex, mode)
-    if not m["roles"]:
+    if not m["roles"] and not m.get("comps"):
         fs += [("entity",), ("entity_head", m["pred"])]
     return fs
 
@@ -112,10 +122,10 @@ def predict(w, cands, lex, mode="full"):
     best_s = None
     best_fs = None
     for m in cands:
-        slots = cand_slots(m)
-        if any(not slot_valid(w, v, r, h, lex, mode) for v, r, h in slots):
-            continue                      # 逐属性/逐槽位否决
-        total = sum(slot_score(w, v, r, h, lex, mode) for v, r, h in slots)
+        items = cand_slot_items(m)
+        if any(not slot_valid(w, v, r, h, lex, mode) for _, v, r, h in items):
+            continue                      # 逐属性/逐槽位否决（含补语）
+        total = sum(slot_score(w, v, r, h, lex, mode) for _, v, r, h in items)
         if best_s is None or total > best_s:
             best, best_s, best_fs = m, total, cand_feats(m, lex, mode)
     return best, best_fs
@@ -146,18 +156,17 @@ def train(data, lex, mode="full", epochs=40, seed=0):
             cands = parse(sent)
             pred, pf = predict(w, cands, lex, mode)
             if gold is None:
-                # 负例：反馈里带"原因"——只惩罚违反 ROLE_REQ 的角色。
-                # 这样「老师在苹果」只罚 LOC，不会把 THEME=老师 学成负证据。
+                # 负例：反馈带"原因"——只惩罚违反 ROLE_REQ 的角色（含补语路径）。
                 for m in cands:
                     if not candidate_valid(w, m, lex, mode):
                         continue
-                    bad = violating_roles(m, lex)
-                    targets = [(v, r, h) for v, r, h in cand_slots(m)
-                               if not bad or r in bad]
+                    items = cand_slot_items(m)
+                    bad = violating_paths(m, lex)
+                    targets = [it for it in items if not bad or it[0] in bad]
                     if not targets:
-                        targets = cand_slots(m)
+                        targets = items
                     fs = []
-                    for v, r, h in targets:
+                    for _, v, r, h in targets:
                         fs += slot_feats(v, r, h, lex, mode)
                     update(w, [], fs)
             else:

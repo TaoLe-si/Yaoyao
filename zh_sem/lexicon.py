@@ -82,8 +82,9 @@ def PRON(form):
     return dict(pos="PRON", cls="HUMAN", props=NOUN_PROPS[form])
 
 
-def V(form, sense, frame, opt=None):
-    return dict(pos="V", sense=sense, frame=list(frame), opt=list(opt or []))
+def V(form, sense, frame, opt=None, comp=False):
+    return dict(pos="V", sense=sense, frame=list(frame), opt=list(opt or []),
+                comp=bool(comp))
 
 
 def A():
@@ -147,7 +148,7 @@ ENTRIES = {
     # ★第二种多义：两个义项都可能成立，靠词汇偏好消歧
     "打": [V("打", "打/hit", ["AGENT", "PATIENT"], ["PATIENT"]),
            V("打", "打/play", ["AGENT", "PATIENT"], ["PATIENT"])],
-    "喜欢": [V("喜欢", "喜欢", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
+    "喜欢": [V("喜欢", "喜欢", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"], comp=True)],
     "去": [V("去", "去", ["AGENT", "GOAL"], [])],
     "给": [V("给", "给", ["AGENT", "RECIPIENT", "PATIENT"], [])],
     "有": [V("有", "有", ["POSSESSOR", "POSSESSED"], [])],
