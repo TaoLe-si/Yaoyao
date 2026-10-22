@@ -1,0 +1,222 @@
+{
+  "summary": {
+    "n_words": 26,
+    "n_reached_0.9": 26,
+    "labels_mean": 0.23076923076923078,
+    "labels_median": 0.0,
+    "labels_max": 3,
+    "labels_zero": 24
+  },
+  "rows": [
+    {
+      "word": "写",
+      "labels": 3,
+      "init_acc": 0.8125,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "读",
+      "labels": 3,
+      "init_acc": 0.625,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "说",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "听",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "唱",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "跳",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "走",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "来",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "回",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "睡",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "站",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "洗",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "开",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "关",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "找",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "等",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "问",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "教",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "学",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "做",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "用",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "送",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "卖",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "认识",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "爱",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    },
+    {
+      "word": "知道",
+      "labels": 0,
+      "init_acc": 1.0,
+      "final_acc": 1.0,
+      "reached_0.9": true,
+      "n_test": 16
+    }
+  ],
+  "max_labels": 12,
+  "note": "标签与测试集均来自手写验证器；读数是与验证器一致率。"
+}

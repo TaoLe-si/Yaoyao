@@ -1,0 +1,61 @@
+{
+  "n": 300,
+  "freshly_generated": false,
+  "overall": 0.98,
+  "valid_exact": 1.0,
+  "invalid_reject": 0.9629629629629629,
+  "valid_n": 138,
+  "invalid_n": 162,
+  "by_tag": {
+    "ADJ": {
+      "acc": 0.96,
+      "n": 25
+    },
+    "ATTR": {
+      "acc": 1.0,
+      "n": 25
+    },
+    "BA": {
+      "acc": 0.96,
+      "n": 25
+    },
+    "BEI": {
+      "acc": 0.96,
+      "n": 25
+    },
+    "CONJ": {
+      "acc": 1.0,
+      "n": 25
+    },
+    "LOC": {
+      "acc": 1.0,
+      "n": 25
+    },
+    "NEGADJ": {
+      "acc": 1.0,
+      "n": 25
+    },
+    "Q": {
+      "acc": 0.92,
+      "n": 25
+    },
+    "QUANT": {
+      "acc": 1.0,
+      "n": 25
+    },
+    "SV": {
+      "acc": 1.0,
+      "n": 25
+    },
+    "SVO": {
+      "acc": 0.96,
+      "n": 25
+    },
+    "SVOO": {
+      "acc": 1.0,
+      "n": 25
+    }
+  },
+  "accept_all_baseline": 0.46,
+  "note": "标签来自手写验证器，不是独立人工真值。"
+}

@@ -19,7 +19,7 @@ sys.path.insert(0, HERE)
 from data import HELDOUT, TRAIN, TRAIN_VALID  # noqa: E402
 from learner import (evaluate, predict, randomize_props, ratio,  # noqa: E402
                      token_forms, train)
-from lexicon import LEX, SENSE_FORM, VERB_FRAME  # noqa: E402
+from lexicon import LEX, SENSE_FORM, VERB_FRAME, entity_info  # noqa: E402
 from parser import parse  # noqa: E402
 from semantics import canon  # noqa: E402
 from verifier import label_sentence, verify  # noqa: E402
@@ -56,8 +56,11 @@ def baseline_reject_all(data):
 
 
 def _cell_keys(m, lex):
-    return [(m["pred"], role, lex[head].get("cls"))
-            for role, head in m["roles"].items()]
+    keys = []
+    for role, head in m["roles"].items():
+        info = entity_info(lex, head)
+        keys.append((m["pred"], role, info.get("cls") if info else None))
+    return keys
 
 
 def cell_table(data, lex):

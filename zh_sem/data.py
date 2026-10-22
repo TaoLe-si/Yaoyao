@@ -53,6 +53,17 @@ TRAIN_VALID = [
     ("他打球", E("打/play", {"AGENT": "他", "PATIENT": "球"})),
     ("我打猫", E("打/hit", {"AGENT": "我", "PATIENT": "猫"})),
     ("老师打猫", E("打/hit", {"AGENT": "老师", "PATIENT": "猫"})),
+    ("老师打桌子", E("打/hit", {"AGENT": "老师", "PATIENT": "桌子"})),
+    ("我打石头", E("打/hit", {"AGENT": "我", "PATIENT": "石头"})),
+    # ---- 结构覆盖：并列 / 疑问 / 否定形容词 / 数量短语 ----
+    ("我和小明吃饭", E("吃", {"AGENT": "我+小明", "PATIENT": "饭"})),
+    ("你吃饭吗", E("吃", {"AGENT": "你", "PATIENT": "饭"}, Q=True)),
+    ("老师看书吗", E("看/read", {"AGENT": "老师", "PATIENT": "书"}, Q=True)),
+    ("花不红", S("红", "花", NEG=True)),
+    ("老师不高兴", S("高兴", "老师", NEG=True)),
+    ("我吃一个苹果", E("吃", {"AGENT": "我", "PATIENT": "一个苹果"})),
+    ("妈妈买一本书", E("买", {"AGENT": "妈妈", "PATIENT": "一本书"})),
+    ("一只猫吃鱼", E("吃", {"AGENT": "一只猫", "PATIENT": "鱼"})),
     # ---- 其他动词 ----
     ("我买书", E("买", {"AGENT": "我", "PATIENT": "书"})),
     ("他买苹果", E("买", {"AGENT": "他", "PATIENT": "苹果"})),
@@ -107,6 +118,17 @@ TRAIN_INVALID = [
     ("桌子很忙", None),
     ("桌子打球", None),
     ("苹果打猫", None),
+    # ---- 结构覆盖负例 ----
+    ("我和桌子吃饭", None),
+    ("石头吃饭吗", None),
+    ("石头不高兴", None),
+    ("我吃一个石头", None),
+    ("一个石头吃鱼", None),
+    ("我看石头", None),
+    # ---- 在字句：LOC 必须是地点 ----
+    ("猫在桌子", None),
+    ("书在水", None),
+    ("老师在苹果", None),
 ]
 
 HELDOUT_VALID = [
@@ -153,6 +175,14 @@ HELDOUT_VALID = [
     ("老师打球", E("打/play", {"AGENT": "老师", "PATIENT": "球"})),
     ("狗打球", E("打/play", {"AGENT": "狗", "PATIENT": "球"})),
     ("妈妈打猫", E("打/hit", {"AGENT": "妈妈", "PATIENT": "猫"})),
+    # ---- 结构覆盖 held-out ----
+    ("我和老师看书", E("看/read", {"AGENT": "我+老师", "PATIENT": "书"})),
+    ("妈妈喝水吗", E("喝", {"AGENT": "妈妈", "PATIENT": "水"}, Q=True)),
+    ("苹果不红", S("红", "苹果", NEG=True)),
+    ("妈妈不高兴", S("高兴", "妈妈", NEG=True)),
+    ("我买一个苹果", E("买", {"AGENT": "我", "PATIENT": "一个苹果"})),
+    ("一只狗吃苹果", E("吃", {"AGENT": "一只狗", "PATIENT": "苹果"})),
+    ("老师和妈妈看学校", E("看/visit", {"AGENT": "老师+妈妈", "PATIENT": "学校"})),
 ]
 
 HELDOUT_INVALID = [
@@ -191,6 +221,12 @@ HELDOUT_INVALID = [
     ("石头把苹果吃了", None),
     ("苹果打球", None),
     ("桌子打猫", None),
+    # ---- 结构覆盖负例 ----
+    ("我和石头看书", None),
+    ("桌子喝水吗", None),
+    ("苹果不高兴", None),
+    ("一个石头喝水", None),
+    ("我和苹果吃饭", None),
 ]
 
 TRAIN = TRAIN_VALID + TRAIN_INVALID

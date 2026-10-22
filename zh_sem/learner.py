@@ -15,7 +15,7 @@ from collections import defaultdict
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from lexicon import PROP_KEYS  # noqa: E402
+from lexicon import PROP_KEYS, entity_info  # noqa: E402
 from parser import parse, tokenize  # noqa: E402
 from semantics import canon  # noqa: E402
 
@@ -24,7 +24,9 @@ def slot_feats(verb, role, head, lex, mode="full"):
     fs = [("verb_role", verb, role)]
     if mode == "position_only":
         return [("role", role)]
-    info = lex[head]
+    info = entity_info(lex, head)
+    if info is None:
+        return fs
     cls = info.get("cls")
     props = info.get("props")
     if props is None:
@@ -59,7 +61,9 @@ def slot_valid(w, verb, role, head, lex, mode="full"):
     """逐属性否决，带回退；类约束只在动词专属证据下生效。"""
     if mode == "position_only":
         return True
-    info = lex[head]
+    info = entity_info(lex, head)
+    if info is None:
+        return True
     cls = info.get("cls")
     # 类门：只在 (verb, role, cls) 有训练证据时否决（未见类不误杀）
     if w.get(("verb_role_class", verb, role, cls), 0) < 0:

@@ -22,7 +22,7 @@ sys.path.insert(0, HERE)
 
 from data import HELDOUT, TRAIN  # noqa: E402
 from learner import evaluate, predict, train  # noqa: E402
-from lexicon import LEX, VERB_FRAME  # noqa: E402
+from lexicon import LEX, VERB_FRAME, entity_info  # noqa: E402
 from parser import parse  # noqa: E402
 from semantics import canon  # noqa: E402
 from verifier import label_sentence  # noqa: E402
@@ -71,7 +71,8 @@ def signatures(sent):
     sig = set()
     for m in cands:
         for role, head in m["roles"].items():
-            sig.add((m["pred"], role, LEX[head].get("cls")))
+            info = entity_info(LEX, head)
+            sig.add((m["pred"], role, info.get("cls") if info else None))
     return sig
 
 

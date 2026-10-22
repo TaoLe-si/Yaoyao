@@ -10,6 +10,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+from lexicon import entity_info  # noqa: E402
 from parser import parse  # noqa: E402
 
 ROLE_REQ = {
@@ -19,13 +20,13 @@ ROLE_REQ = {
     ("喝", "PATIENT"): {"liquid": True},
     ("跑", "AGENT"): {"animate": True},
     ("看/read", "AGENT"): {"animate": True},
-    ("看/read", "PATIENT"): {"cls": "READABLE"},
+    ("看/read", "PATIENT"): {"readable": True},
     ("看/visit", "AGENT"): {"animate": True},
     ("看/visit", "PATIENT"): {"place": True},
     ("打/hit", "AGENT"): {"animate": True},
-    ("打/hit", "PATIENT"): {"cls_not": "SPORT"},
+    ("打/hit", "PATIENT"): {"sport": False},
     ("打/play", "AGENT"): {"animate": True},
-    ("打/play", "PATIENT"): {"cls": "SPORT"},
+    ("打/play", "PATIENT"): {"sport": True},
     ("喜欢", "EXPERIENCER"): {"animate": True},
     ("去", "AGENT"): {"animate": True},
     ("去", "GOAL"): {"place": True},
@@ -38,6 +39,25 @@ ROLE_REQ = {
     ("忙", "THEME"): {"animate": True},
 }
 
+# 扩展词表：按角色名批量给通用约束（AGENT/EXPERIENCER/POSSESSOR/RECIPIENT animate，
+# GOAL place），再对少数动词做专属覆盖。这是"手写语义"的可扩展写法，不是自动学习。
+from lexicon import ENTRIES  # noqa: E402
+
+for _es in ENTRIES.values():
+    for _e in _es:
+        if _e["pos"] != "V":
+            continue
+        for _role in _e["frame"]:
+            if _role in ("AGENT", "EXPERIENCER", "POSSESSOR", "RECIPIENT"):
+                ROLE_REQ.setdefault((_e["sense"], _role), {"animate": True})
+            elif _role == "GOAL":
+                ROLE_REQ.setdefault((_e["sense"], _role), {"place": True})
+
+for _sense in ("写", "读"):
+    ROLE_REQ.setdefault((_sense, "PATIENT"), {"readable": True})
+for _adj in ("高兴", "忙", "聪明"):
+    ROLE_REQ.setdefault((_adj, "THEME"), {"animate": True})
+
 
 def verify(m, lex):
     if m is None:
@@ -46,7 +66,9 @@ def verify(m, lex):
         req = ROLE_REQ.get((m["pred"], role))
         if not req:
             continue
-        info = lex[head]
+        info = entity_info(lex, head)
+        if info is None:
+            return False
         props = info.get("props")
         if props is None:
             return False

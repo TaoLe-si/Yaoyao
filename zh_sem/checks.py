@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """静态检查 v0.1。每条都必须能在反例下变红（专家评审 A7）。"""
+import json
 import os
 import sys
+from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -83,6 +85,18 @@ def main():
     bad = [s for s, g in TRAIN_INVALID
            if g is None and not parse(s) and s not in expected]
     check("C9 负例无候选仅限预期集合", not bad, "bad=%s" % bad)
+
+    # C10 大冻结 held-out 的构式覆盖（每类 >=15 条）
+    p = os.path.join(HERE, "large_heldout.json")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            large = json.load(f)
+        counts = Counter(r["tag"] for r in large)
+        check("C10 大 held-out 构式覆盖",
+              len(counts) >= 10 and min(counts.values()) >= 15,
+              "%d tags, min=%d" % (len(counts), min(counts.values())))
+    else:
+        check("C10 大 held-out 构式覆盖", False, "large_heldout.json 缺失")
 
     print("\n%s" % ("全部通过" if not FAILS else "失败: %s" % FAILS))
     return 0 if not FAILS else 1

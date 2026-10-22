@@ -234,6 +234,48 @@
     "ok": true
   },
   {
+    "sent": "我和老师看书",
+    "gold": "看/read(AGENT=我+老师 PATIENT=书) ",
+    "pred": "看/read(AGENT=我+老师 PATIENT=书) ",
+    "ok": true
+  },
+  {
+    "sent": "妈妈喝水吗",
+    "gold": "喝(AGENT=妈妈 PATIENT=水) [Q]",
+    "pred": "喝(AGENT=妈妈 PATIENT=水) [Q]",
+    "ok": true
+  },
+  {
+    "sent": "苹果不红",
+    "gold": "红(THEME=苹果) [NEG]",
+    "pred": "红(THEME=苹果) [NEG]",
+    "ok": true
+  },
+  {
+    "sent": "妈妈不高兴",
+    "gold": "高兴(THEME=妈妈) [NEG]",
+    "pred": "高兴(THEME=妈妈) [NEG]",
+    "ok": true
+  },
+  {
+    "sent": "我买一个苹果",
+    "gold": "买(AGENT=我 PATIENT=一个苹果) ",
+    "pred": "买(AGENT=我 PATIENT=一个苹果) ",
+    "ok": true
+  },
+  {
+    "sent": "一只狗吃苹果",
+    "gold": "吃(AGENT=一只狗 PATIENT=苹果) ",
+    "pred": "吃(AGENT=一只狗 PATIENT=苹果) ",
+    "ok": true
+  },
+  {
+    "sent": "老师和妈妈看学校",
+    "gold": "看/visit(AGENT=老师+妈妈 PATIENT=学校) ",
+    "pred": "看/visit(AGENT=老师+妈妈 PATIENT=学校) ",
+    "ok": true
+  },
+  {
     "sent": "老师看石头",
     "gold": "REJECT",
     "pred": "REJECT",
@@ -421,6 +463,36 @@
   },
   {
     "sent": "桌子打猫",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "我和石头看书",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "桌子喝水吗",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "苹果不高兴",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "一个石头喝水",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "我和苹果吃饭",
     "gold": "REJECT",
     "pred": "REJECT",
     "ok": true

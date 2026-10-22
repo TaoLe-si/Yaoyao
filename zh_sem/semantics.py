@@ -22,10 +22,11 @@ def state(pred, roles=None, construction="state", **mods):
     }
 
 
-def entity(head, construction="entity", **mods):
+def entity(head, base=None, construction="entity", **mods):
     return {
         "kind": "entity",
         "pred": head,
+        "base": base or head,
         "roles": {},
         "mods": {k: v for k, v in mods.items() if v},
         "construction": construction,

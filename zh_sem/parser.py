@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-"""非 transformer 的显式组合解析器 v0.2（多义项版）。
+"""非 transformer 的显式组合解析器 v0.3。
 
-分词（最长匹配）→ 图表分析（显式规则）→ 候选句义列表。
-一个词形可带多个义项；解析器为每个义项生成候选，因此同形歧义会保留到打分阶段。
-没有任何矩阵乘法、注意力或梯度。
+新增构造（专家共识：先补结构覆盖）：
+  - 并列：NP 和 NP -> 复合 NP
+  - 疑问：S 吗 -> S[Q]
+  - 否定形容词：不 + AP -> AP[NEG]
+  - 数量短语：数词 + 量词 + N -> NP[QUANT]
+
+仍然没有任何矩阵乘法、注意力或梯度；每条构造都是显式规则。
 """
 import os
 import sys
@@ -19,7 +23,6 @@ _MAXLEN = max(len(f) for f in _FORMS)
 
 
 def tokenize(sent):
-    """最长匹配分词；返回词形列表（歧义在 parse 阶段按义项展开）。"""
     out = []
     i = 0
     while i < len(sent):
@@ -49,6 +52,14 @@ def _copy_vp2(vp, **mods):
     nv = _copy_vp(vp)
     nv["mods"].update({k: v for k, v in mods.items() if v})
     return nv
+
+
+def _with_mods(m, **mods):
+    n = dict(m)
+    n["roles"] = dict(m["roles"])
+    n["mods"] = dict(m["mods"])
+    n["mods"].update({k: v for k, v in mods.items() if v})
+    return n
 
 
 def _fill_object(vp, np):
@@ -85,11 +96,13 @@ def _combine(L, R, add):
             if m:
                 add("S", m)
 
-    # R2: NP + AP -> 形容词谓语句
+    # R2: NP + AP -> 形容词谓语句（含否定）
     for np in L.get("NP", []):
         for ap in R.get("AP", []):
             add("S", state(ap["adj"], {"THEME": np["pred"]},
-                           DEGREE=ap["degree"], construction="adj_state"))
+                           DEGREE=ap.get("degree", False),
+                           NEG=ap.get("neg", False),
+                           construction="adj_state"))
 
     # R3: NP + PP(在) -> 在字句
     for np in L.get("NP", []):
@@ -108,7 +121,15 @@ def _combine(L, R, add):
     for adv in L.get("ADV", []):
         if adv["kind"] == "DEGREE":
             for ap in R.get("AP", []):
-                add("AP", {"adj": ap["adj"], "degree": True})
+                add("AP", {"adj": ap["adj"], "degree": True,
+                           "neg": ap.get("neg", False)})
+
+    # R5b: ADV(不) + AP -> AP（否定形容词）
+    for adv in L.get("ADV", []):
+        if adv["kind"] == "NEG":
+            for ap in R.get("AP", []):
+                add("AP", {"adj": ap["adj"], "degree": ap.get("degree", False),
+                           "neg": True})
 
     # R6: VP + NP -> VP（动宾）
     for vp in L.get("VP", []):
@@ -184,7 +205,36 @@ def _combine(L, R, add):
     # R15: APMOD + N -> NP（定中）
     for am in L.get("APMOD", []):
         for np in R.get("NP", []):
-            add("NP", entity(np["pred"], ATTR=am["adj"]))
+            add("NP", entity(np["pred"], base=np.get("base", np["pred"]),
+                             ATTR=am["adj"]))
+
+    # R16: CONJ + NP -> NP_TAIL
+    for _ in L.get("CONJ", []):
+        for np in R.get("NP", []):
+            add("NP_TAIL", {"head": np["pred"]})
+
+    # R17: NP + NP_TAIL -> 复合 NP（并列）
+    for np in L.get("NP", []):
+        for tail in R.get("NP_TAIL", []):
+            add("NP", entity(np["pred"] + "+" + tail["head"], base=np["pred"] + "+" + tail["head"]))
+
+    # R18: S + PART(吗) -> S[Q]
+    for m in L.get("S", []):
+        for pt in R.get("PART", []):
+            if pt["kind"] == "Q":
+                add("S", _with_mods(m, Q=True))
+
+    # R19: NUM + CL -> CLP
+    for num in L.get("NUM", []):
+        for cl in R.get("CL", []):
+            add("CLP", {"num": num["num"], "cl": cl["cl"]})
+
+    # R20: CLP + N -> NP（数量短语）
+    for q in L.get("CLP", []):
+        for np in R.get("NP", []):
+            base = np.get("base", np["pred"])
+            add("NP", entity(q["num"] + q["cl"] + base, base=base,
+                             QUANT=q["num"] + q["cl"]))
 
 
 def parse(sent):
@@ -204,13 +254,19 @@ def parse(sent):
                 add(i, i + 1, "VP", {"verb": e["sense"], "roles": {}, "mods": {},
                                      "construction": "vp"})
             elif pos == "A":
-                add(i, i + 1, "AP", {"adj": form, "degree": False})
+                add(i, i + 1, "AP", {"adj": form, "degree": False, "neg": False})
             elif pos == "ADV":
                 add(i, i + 1, "ADV", {"adv": form, "kind": e["kind"]})
             elif pos == "PART":
                 add(i, i + 1, "PART", {"part": form, "kind": e["kind"]})
             elif pos == "P":
                 add(i, i + 1, "P", {"prep": form})
+            elif pos == "CONJ":
+                add(i, i + 1, "CONJ", {"conj": form})
+            elif pos == "NUM":
+                add(i, i + 1, "NUM", {"num": form})
+            elif pos == "CL":
+                add(i, i + 1, "CL", {"cl": form})
 
     for length in range(2, n + 1):
         for i in range(0, n - length + 1):
