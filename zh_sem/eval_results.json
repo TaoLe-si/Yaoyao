@@ -3,83 +3,83 @@
     "valid_exact": 1.0,
     "invalid_reject": 1.0,
     "overall": 1.0,
-    "valid_ok": 31,
-    "valid_n": 31,
-    "invalid_ok": 26,
-    "invalid_n": 26
+    "valid_ok": 35,
+    "valid_n": 35,
+    "invalid_ok": 30,
+    "invalid_n": 30
   },
   "baselines": {
     "accept_all": {
       "valid_exact": 1.0,
       "invalid_reject": 0.0,
-      "overall": 0.543859649122807,
-      "valid_ok": 31,
-      "valid_n": 31,
+      "overall": 0.5384615384615384,
+      "valid_ok": 35,
+      "valid_n": 35,
       "invalid_ok": 0,
-      "invalid_n": 26
+      "invalid_n": 30
     },
     "reject_all": {
       "valid_exact": 0.0,
       "invalid_reject": 1.0,
-      "overall": 0.45614035087719296,
+      "overall": 0.46153846153846156,
       "valid_ok": 0,
-      "valid_n": 31,
-      "invalid_ok": 26,
-      "invalid_n": 26
+      "valid_n": 35,
+      "invalid_ok": 30,
+      "invalid_n": 30
     },
     "cell_lookup": {
-      "valid_exact": 0.9032258064516129,
-      "invalid_reject": 0.4230769230769231,
-      "overall": 0.6842105263157895,
-      "valid_ok": 28,
-      "valid_n": 31,
-      "invalid_ok": 11,
-      "invalid_n": 26
+      "valid_exact": 0.9142857142857143,
+      "invalid_reject": 0.5,
+      "overall": 0.7230769230769231,
+      "valid_ok": 32,
+      "valid_n": 35,
+      "invalid_ok": 15,
+      "invalid_n": 30
     },
     "verifier": {
       "valid_exact": 1.0,
       "invalid_reject": 1.0,
       "overall": 1.0,
-      "valid_ok": 31,
-      "valid_n": 31,
-      "invalid_ok": 26,
-      "invalid_n": 26
+      "valid_ok": 35,
+      "valid_n": 35,
+      "invalid_ok": 30,
+      "invalid_n": 30
     }
   },
   "controls": {
     "random_props_consistent": {
       "valid_exact": 0.6666666666666666,
       "invalid_reject": 1.0,
-      "overall": 0.8421052631578947,
-      "valid_ok": 18,
-      "valid_n": 27,
-      "invalid_ok": 30,
-      "invalid_n": 30,
+      "overall": 0.8461538461538461,
+      "valid_ok": 20,
+      "valid_n": 30,
+      "invalid_ok": 35,
+      "invalid_n": 35,
       "changed_nouns": 15
     },
     "random_props_broken": {
-      "valid_exact": 0.8709677419354839,
-      "invalid_reject": 0.6153846153846154,
-      "overall": 0.7543859649122807,
-      "valid_ok": 27,
-      "valid_n": 31,
-      "invalid_ok": 16,
-      "invalid_n": 26
+      "valid_exact": 0.8857142857142857,
+      "invalid_reject": 0.6666666666666666,
+      "overall": 0.7846153846153846,
+      "valid_ok": 31,
+      "valid_n": 35,
+      "invalid_ok": 20,
+      "invalid_n": 30
     },
     "position_only": {
-      "valid_exact": 0.9354838709677419,
+      "valid_exact": 0.9428571428571428,
       "invalid_reject": 0.0,
-      "overall": 0.5087719298245614,
-      "valid_ok": 29,
-      "valid_n": 31,
+      "overall": 0.5076923076923077,
+      "valid_ok": 33,
+      "valid_n": 35,
       "invalid_ok": 0,
-      "invalid_n": 26
+      "invalid_n": 30
     }
   },
   "lovo": [
     {
       "verb": "买",
-      "heldout": 3,
+      "heldout": 5,
       "valid_exact": 1.0,
       "invalid_reject": 1.0,
       "overall": 1.0,
@@ -94,6 +94,18 @@
           "sent": "小明买书",
           "gold": "买(AGENT=小明 PATIENT=书) ",
           "pred": "买(AGENT=小明 PATIENT=书) ",
+          "ok": true
+        },
+        {
+          "sent": "苹果被妈妈买了",
+          "gold": "买(AGENT=妈妈 PATIENT=苹果) [BEI PERF]",
+          "pred": "买(AGENT=妈妈 PATIENT=苹果) [BEI PERF]",
+          "ok": true
+        },
+        {
+          "sent": "妈妈把苹果买了",
+          "gold": "买(AGENT=妈妈 PATIENT=苹果) [BA PERF]",
+          "pred": "买(AGENT=妈妈 PATIENT=苹果) [BA PERF]",
           "ok": true
         },
         {
@@ -145,10 +157,10 @@
     },
     {
       "verb": "吃",
-      "heldout": 10,
+      "heldout": 14,
       "valid_exact": 1.0,
-      "invalid_reject": 0.3333333333333333,
-      "overall": 0.6,
+      "invalid_reject": 0.4,
+      "overall": 0.5714285714285714,
       "items": [
         {
           "sent": "狗吃苹果",
@@ -209,6 +221,30 @@
           "gold": "REJECT",
           "pred": "吃(AGENT=猫 PATIENT=水) ",
           "ok": false
+        },
+        {
+          "sent": "石头被我吃了",
+          "gold": "REJECT",
+          "pred": "吃(AGENT=我 PATIENT=石头) [BEI PERF]",
+          "ok": false
+        },
+        {
+          "sent": "我被石头吃了",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "我把石头吃了",
+          "gold": "REJECT",
+          "pred": "吃(AGENT=我 PATIENT=石头) [BA PERF]",
+          "ok": false
+        },
+        {
+          "sent": "石头把苹果吃了",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
         }
       ]
     },
@@ -241,10 +277,10 @@
     },
     {
       "verb": "喝",
-      "heldout": 8,
+      "heldout": 10,
       "valid_exact": 1.0,
       "invalid_reject": 0.25,
-      "overall": 0.625,
+      "overall": 0.7,
       "items": [
         {
           "sent": "妈妈喝水",
@@ -268,6 +304,18 @@
           "sent": "老师喝水",
           "gold": "喝(AGENT=老师 PATIENT=水) ",
           "pred": "喝(AGENT=老师 PATIENT=水) ",
+          "ok": true
+        },
+        {
+          "sent": "水被我喝了",
+          "gold": "喝(AGENT=我 PATIENT=水) [BEI PERF]",
+          "pred": "喝(AGENT=我 PATIENT=水) [BEI PERF]",
+          "ok": true
+        },
+        {
+          "sent": "我把水喝了",
+          "gold": "喝(AGENT=我 PATIENT=水) [BA PERF]",
+          "pred": "喝(AGENT=我 PATIENT=水) [BA PERF]",
           "ok": true
         },
         {
@@ -444,8 +492,8 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.1578947368421053,
+    "P3c_consistent_world_overall_delta": -0.15384615384615385,
     "P4_position_only_near_accept_all": true,
-    "P5_lovo_unseen_verb_ge_0.60": true
+    "P5_lovo_unseen_verb_ge_0.60": false
   }
 }

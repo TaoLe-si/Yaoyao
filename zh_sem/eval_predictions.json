@@ -186,6 +186,30 @@
     "ok": true
   },
   {
+    "sent": "水被我喝了",
+    "gold": "喝(AGENT=我 PATIENT=水) [BEI PERF]",
+    "pred": "喝(AGENT=我 PATIENT=水) [BEI PERF]",
+    "ok": true
+  },
+  {
+    "sent": "苹果被妈妈买了",
+    "gold": "买(AGENT=妈妈 PATIENT=苹果) [BEI PERF]",
+    "pred": "买(AGENT=妈妈 PATIENT=苹果) [BEI PERF]",
+    "ok": true
+  },
+  {
+    "sent": "我把水喝了",
+    "gold": "喝(AGENT=我 PATIENT=水) [BA PERF]",
+    "pred": "喝(AGENT=我 PATIENT=水) [BA PERF]",
+    "ok": true
+  },
+  {
+    "sent": "妈妈把苹果买了",
+    "gold": "买(AGENT=妈妈 PATIENT=苹果) [BA PERF]",
+    "pred": "买(AGENT=妈妈 PATIENT=苹果) [BA PERF]",
+    "ok": true
+  },
+  {
     "sent": "老师看石头",
     "gold": "REJECT",
     "pred": "REJECT",
@@ -337,6 +361,30 @@
   },
   {
     "sent": "石头很忙",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "石头被我吃了",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "我被石头吃了",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "我把石头吃了",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "石头把苹果吃了",
     "gold": "REJECT",
     "pred": "REJECT",
     "ok": true

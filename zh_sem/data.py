@@ -136,6 +136,11 @@ HELDOUT_VALID = [
     ("花很大", S("大", "花", DEGREE=True)),
     ("大的书", entity("书", ATTR="大")),
     ("小的苹果", entity("苹果", ATTR="小")),
+    # ---- 把 / 被 的结构覆盖 ----
+    ("水被我喝了", E("喝", {"AGENT": "我", "PATIENT": "水"}, PERF=True, BEI=True)),
+    ("苹果被妈妈买了", E("买", {"AGENT": "妈妈", "PATIENT": "苹果"}, PERF=True, BEI=True)),
+    ("我把水喝了", E("喝", {"AGENT": "我", "PATIENT": "水"}, PERF=True, BA=True)),
+    ("妈妈把苹果买了", E("买", {"AGENT": "妈妈", "PATIENT": "苹果"}, PERF=True, BA=True)),
 ]
 
 HELDOUT_INVALID = [
@@ -167,6 +172,11 @@ HELDOUT_INVALID = [
     ("苹果喜欢书", None),
     ("石头很高兴", None),
     ("石头很忙", None),
+    # ---- 把 / 被 的负例 ----
+    ("石头被我吃了", None),
+    ("我被石头吃了", None),
+    ("我把石头吃了", None),
+    ("石头把苹果吃了", None),
 ]
 
 TRAIN = TRAIN_VALID + TRAIN_INVALID
