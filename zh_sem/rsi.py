@@ -21,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 from data import HELDOUT, TRAIN  # noqa: E402
-from learner import evaluate, train  # noqa: E402
+from learner import evaluate, predict, train  # noqa: E402
 from lexicon import LEX, VERB_FRAME  # noqa: E402
 from parser import parse  # noqa: E402
 from semantics import canon  # noqa: E402
@@ -119,6 +119,64 @@ def run_group(name, eval_set, unlabeled, chunks, teacher):
     return rows
 
 
+def model_errors(w, chunk):
+    """主动学习：只挑模型当前判错的句子，用验证器给标签。"""
+    errs = []
+    for s in chunk:
+        gold = label_sentence(s, LEX)
+        pred, _ = predict(w, parse(s), LEX)
+        ok = ((pred is None and gold is None) or
+              (pred is not None and gold is not None and canon(pred) == canon(gold)))
+        if not ok:
+            errs.append((s, gold))
+    return errs
+
+
+def run_self(eval_set, chunks):
+    """D：纯自训练——模型用自己的预测当标签，不询问验证器。"""
+    data = list(TRAIN)
+    w = train(data, LEX, epochs=20, seed=0)
+    rows = []
+    for rnd, chunk in enumerate(chunks, 1):
+        pseudo = []
+        for s in chunk:
+            pred, _ = predict(w, parse(s), LEX)
+            pseudo.append((s, pred))
+        data += pseudo
+        w = train(data, LEX, epochs=20, seed=0)
+        st = evaluate(w, eval_set, LEX)
+        n = len(eval_set)
+        acc = (st["valid_ok"] + st["invalid_ok"]) / n
+        rows.append({"round": rnd, "n_train": len(data), "accuracy": acc,
+                     "valid_exact": st["valid_ok"] / max(1, st["valid_n"]),
+                     "invalid_reject": st["invalid_ok"] / max(1, st["invalid_n"]),
+                     "items": st["items"]})
+        print("  D_self round %d: train=%d acc=%.4f" % (rnd, len(data), acc))
+    return rows
+
+
+def run_active(eval_set, chunks):
+    data = list(TRAIN)
+    w = train(data, LEX, epochs=20, seed=0)
+    rows = []
+    for rnd, chunk in enumerate(chunks, 1):
+        errs = model_errors(w, chunk)
+        if errs:
+            data += errs
+            w = train(data, LEX, epochs=20, seed=0)
+        st = evaluate(w, eval_set, LEX)
+        n = len(eval_set)
+        acc = (st["valid_ok"] + st["invalid_ok"]) / n
+        rows.append({"round": rnd, "n_train": len(data), "added": len(errs),
+                     "accuracy": acc,
+                     "valid_exact": st["valid_ok"] / max(1, st["valid_n"]),
+                     "invalid_reject": st["invalid_ok"] / max(1, st["invalid_n"]),
+                     "items": st["items"]})
+        print("  A_active round %d: added=%d train=%d acc=%.4f"
+              % (rnd, len(errs), len(data), acc))
+    return rows
+
+
 def main():
     pool = build_pool()
     eval_pool = pool[:200]
@@ -134,8 +192,12 @@ def main():
 
     print("A: verifier labels")
     a_rows = run_group("A", eval_set, unlabeled, chunks, lambda c, r: [(s, label_sentence(s, LEX)) for s in c])
+    print("A_active: error-selected verifier labels")
+    act_rows = run_active(eval_set, chunks)
     print("B: shuffled accept/reject pattern")
     b_rows = run_group("B", eval_set, unlabeled, chunks, shuffled_teacher)
+    print("D: pure self-training (model labels itself, no verifier)")
+    d_rows = run_self(eval_set, chunks)
     print("C: no RSI")
     w0 = train(TRAIN, LEX, epochs=20, seed=0)
     st0 = evaluate(w0, eval_set, LEX)
@@ -145,22 +207,39 @@ def main():
     p, a_only, b_only = mcnemar(a_rows[-1]["items"], b_rows[-1]["items"])
     a_acc = a_rows[-1]["accuracy"]
     b_acc = b_rows[-1]["accuracy"]
+    act_acc = act_rows[-1]["accuracy"]
+    p_ab, act_only, b_only2 = mcnemar(act_rows[-1]["items"], b_rows[-1]["items"])
+    d_acc = d_rows[-1]["accuracy"]
+    p_ad, act_only2, d_only = mcnemar(act_rows[-1]["items"], d_rows[-1]["items"])
     res = {
         "n_eval": len(eval_set),
         "signature_overlap": {"count": overlap, "n_eval_sigs": len(eval_sigs)},
-        "A": [{k: v for k, v in r.items() if k != "items"} for r in a_rows],
+        "A_random": [{k: v for k, v in r.items() if k != "items"} for r in a_rows],
+        "A_active": [{k: v for k, v in r.items() if k != "items"} for r in act_rows],
         "B": [{k: v for k, v in r.items() if k != "items"} for r in b_rows],
         "C": {"accuracy": c_acc},
-        "mcnemar_AB": {"p": p, "A_only_correct": a_only, "B_only_correct": b_only},
+        "D_self_training": [{k: v for k, v in r.items() if k != "items"} for r in d_rows],
+        "mcnemar_A_random_vs_B": {"p": p, "A_only_correct": a_only,
+                                 "B_only_correct": b_only},
+        "mcnemar_A_active_vs_B": {"p": p_ab, "A_only_correct": act_only,
+                                 "B_only_correct": b_only2},
+        "mcnemar_A_active_vs_D": {"p": p_ad, "A_only_correct": act_only2,
+                                 "D_only_correct": d_only},
         "P6_rsi_effective": (a_acc - b_acc) >= 0.10 and p < 0.05,
+        "P7_active_beats_random": act_acc - a_acc,
+        "P8_self_training_beats_none": d_acc - c_acc,
         "note": "评测标签来自手写验证器；这里的读数只能叫『与验证器一致率』，"
                 "验证器是模型的上限，不是独立真值。",
     }
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(res, f, ensure_ascii=False, indent=2)
-    print("\nA=%.4f B=%.4f C=%.4f | A-B=%+.4f McNemar p=%.4f (A_only=%d B_only=%d)"
-          % (a_acc, b_acc, c_acc, a_acc - b_acc, p, a_only, b_only))
-    print("P6 RSI 有效（A-B>=10pp 且 p<0.05）: %s" % res["P6_rsi_effective"])
+    print("\nA=%.4f A_active=%.4f B=%.4f C=%.4f D_self=%.4f"
+          % (a_acc, act_acc, b_acc, c_acc, d_acc))
+    print("A-B=%+.4f p=%.4f | A_active-B=%+.4f p=%.4f | A_active-D=%+.4f p=%.4f"
+          % (a_acc - b_acc, p, act_acc - b_acc, p_ab, act_acc - d_acc, p_ad))
+    print("P6 RSI 有效: %s | P7 主动学习增益: %+.4f | P8 纯自训练 vs 不 RSI: %+.4f"
+          % (res["P6_rsi_effective"], res["P7_active_beats_random"],
+             res["P8_self_training_beats_none"]))
     print("saved %s" % OUT)
     return 0
 

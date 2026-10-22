@@ -4,7 +4,7 @@
     "count": 68,
     "n_eval_sigs": 112
   },
-  "A": [
+  "A_random": [
     {
       "round": 1,
       "n_train": 126,
@@ -25,6 +25,32 @@
       "accuracy": 0.98,
       "valid_exact": 0.9836065573770492,
       "invalid_reject": 0.9784172661870504
+    }
+  ],
+  "A_active": [
+    {
+      "round": 1,
+      "n_train": 68,
+      "added": 2,
+      "accuracy": 0.995,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.9928057553956835
+    },
+    {
+      "round": 2,
+      "n_train": 69,
+      "added": 1,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
+    },
+    {
+      "round": 3,
+      "n_train": 70,
+      "added": 1,
+      "accuracy": 0.995,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.9928057553956835
     }
   ],
   "B": [
@@ -53,11 +79,46 @@
   "C": {
     "accuracy": 0.95
   },
-  "mcnemar_AB": {
+  "D_self_training": [
+    {
+      "round": 1,
+      "n_train": 126,
+      "accuracy": 0.95,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.9280575539568345
+    },
+    {
+      "round": 2,
+      "n_train": 186,
+      "accuracy": 0.95,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.9280575539568345
+    },
+    {
+      "round": 3,
+      "n_train": 246,
+      "accuracy": 0.945,
+      "valid_exact": 0.9836065573770492,
+      "invalid_reject": 0.9280575539568345
+    }
+  ],
+  "mcnemar_A_random_vs_B": {
     "p": 1.5903890617646743e-17,
     "A_only_correct": 66,
     "B_only_correct": 2
   },
+  "mcnemar_A_active_vs_B": {
+    "p": 1.3552527156068805e-20,
+    "A_only_correct": 67,
+    "B_only_correct": 0
+  },
+  "mcnemar_A_active_vs_D": {
+    "p": 0.001953125,
+    "A_only_correct": 10,
+    "D_only_correct": 0
+  },
   "P6_rsi_effective": true,
+  "P7_active_beats_random": 0.015000000000000013,
+  "P8_self_training_beats_none": -0.0050000000000000044,
   "note": "评测标签来自手写验证器；这里的读数只能叫『与验证器一致率』，验证器是模型的上限，不是独立真值。"
 }
