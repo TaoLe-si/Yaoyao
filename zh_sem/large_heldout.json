@@ -1,1321 +1,74 @@
 [
  {
-  "tag": "CONJ",
-  "sent": "衣服和书喝图书馆",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "羊被熊说了",
-  "gold": {
-   "kind": "event",
-   "pred": "说",
-   "roles": {
-    "PATIENT": "羊",
-    "AGENT": "熊"
-   },
-   "mods": {
-    "BEI": true,
-    "PERF": true
-   },
-   "construction": "BEI"
-  },
-  "gold_desc": "说(AGENT=熊 PATIENT=羊) [BEI PERF]"
- },
- {
   "tag": "SV",
-  "sent": "饭睡",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "梨等兔吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "草不热",
-  "gold": {
-   "kind": "state",
-   "pred": "热",
-   "roles": {
-    "THEME": "草"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "热(THEME=草) [NEG]"
- },
- {
-  "tag": "LOC",
-  "sent": "电视在狗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "肉把虎吃了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "高兴的熊",
-  "gold": {
-   "kind": "entity",
-   "pred": "熊",
-   "base": "熊",
-   "roles": {},
-   "mods": {
-    "ATTR": "高兴"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "熊() [ATTR]"
- },
- {
-  "tag": "ADJ",
-  "sent": "橘子很慢",
-  "gold": {
-   "kind": "state",
-   "pred": "慢",
-   "roles": {
-    "THEME": "橘子"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "慢(THEME=橘子) [DEGREE]"
- },
- {
-  "tag": "LOC",
-  "sent": "书在杂志",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "商店被兔听了",
+  "sent": "奶奶睡",
   "gold": {
    "kind": "event",
-   "pred": "听",
+   "pred": "睡",
    "roles": {
-    "PATIENT": "商店",
-    "AGENT": "兔"
-   },
-   "mods": {
-    "BEI": true,
-    "PERF": true
-   },
-   "construction": "BEI"
-  },
-  "gold_desc": "听(AGENT=兔 PATIENT=商店) [BEI PERF]"
- },
- {
-  "tag": "CONJ",
-  "sent": "家和鸡蛋等鸡蛋",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "商店唱",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "牛奶不矮",
-  "gold": {
-   "kind": "state",
-   "pred": "矮",
-   "roles": {
-    "THEME": "牛奶"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "矮(THEME=牛奶) [NEG]"
- },
- {
-  "tag": "BEI",
-  "sent": "葡萄被苹果说了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "鸡蛋被电脑开了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "米饭教橘子桃",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "草跑",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "弟弟去妈妈",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "猴很好",
-  "gold": {
-   "kind": "state",
-   "pred": "好",
-   "roles": {
-    "THEME": "猴"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "好(THEME=猴) [DEGREE]"
- },
- {
-  "tag": "SV",
-  "sent": "帽子唱",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "桃和兔认识桌子",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "忙的电视",
-  "gold": {
-   "kind": "entity",
-   "pred": "电视",
-   "base": "电视",
-   "roles": {},
-   "mods": {
-    "ATTR": "忙"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "电视() [ATTR]"
- },
- {
-  "tag": "SVOO",
-  "sent": "他问姐姐桌子",
-  "gold": {
-   "kind": "event",
-   "pred": "问",
-   "roles": {
-    "RECIPIENT": "姐姐",
-    "PATIENT": "桌子",
-    "AGENT": "他"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "问(AGENT=他 PATIENT=桌子 RECIPIENT=姐姐) "
- },
- {
-  "tag": "LOC",
-  "sent": "姐姐在肉",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "医生被你说了",
-  "gold": {
-   "kind": "event",
-   "pred": "说",
-   "roles": {
-    "PATIENT": "医生",
-    "AGENT": "你"
-   },
-   "mods": {
-    "BEI": true,
-    "PERF": true
-   },
-   "construction": "BEI"
-  },
-  "gold_desc": "说(AGENT=你 PATIENT=医生) [BEI PERF]"
- },
- {
-  "tag": "BA",
-  "sent": "奶奶把你卖了",
-  "gold": {
-   "kind": "event",
-   "pred": "卖",
-   "roles": {
-    "AGENT": "奶奶",
-    "PATIENT": "你"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "卖(AGENT=奶奶 PATIENT=你) [BA PERF]"
- },
- {
-  "tag": "LOC",
-  "sent": "朋友在咖啡",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "老师很红",
-  "gold": {
-   "kind": "state",
-   "pred": "红",
-   "roles": {
-    "THEME": "老师"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "红(THEME=老师) [DEGREE]"
- },
- {
-  "tag": "BEI",
-  "sent": "书包被笔说了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个姐姐洗书",
-  "gold": {
-   "kind": "event",
-   "pred": "洗",
-   "roles": {
-    "PATIENT": "书",
-    "AGENT": "一个姐姐"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "洗(AGENT=一个姐姐 PATIENT=书) "
- },
- {
-  "tag": "SV",
-  "sent": "桃走",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "他很好",
-  "gold": {
-   "kind": "state",
-   "pred": "好",
-   "roles": {
-    "THEME": "他"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "好(THEME=他) [DEGREE]"
- },
- {
-  "tag": "ADJ",
-  "sent": "球很小",
-  "gold": {
-   "kind": "state",
-   "pred": "小",
-   "roles": {
-    "THEME": "球"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "小(THEME=球) [DEGREE]"
- },
- {
-  "tag": "CONJ",
-  "sent": "咖啡和橘子知道草",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "我把电视学了",
-  "gold": {
-   "kind": "event",
-   "pred": "学",
-   "roles": {
-    "AGENT": "我",
-    "PATIENT": "电视"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "学(AGENT=我 PATIENT=电视) [BA PERF]"
- },
- {
-  "tag": "Q",
-  "sent": "米饭来桃吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "果汁和图书馆做猴",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "笔看鱼吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "草在葡萄",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "饭把弟弟打了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "报纸等猪",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "桃说医院",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "窗很长",
-  "gold": {
-   "kind": "state",
-   "pred": "长",
-   "roles": {
-    "THEME": "窗"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "长(THEME=窗) [DEGREE]"
- },
- {
-  "tag": "QUANT",
-  "sent": "一只象去银行",
-  "gold": {
-   "kind": "event",
-   "pred": "去",
-   "roles": {
-    "GOAL": "银行",
-    "AGENT": "一只象"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "去(AGENT=一只象 GOAL=银行) "
- },
- {
-  "tag": "BEI",
-  "sent": "小明被电视洗了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个他来鸡",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "狗和妈妈开肉",
-  "gold": {
-   "kind": "event",
-   "pred": "开",
-   "roles": {
-    "PATIENT": "肉",
-    "AGENT": "狗+妈妈"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "开(AGENT=狗+妈妈 PATIENT=肉) "
- },
- {
-  "tag": "BEI",
-  "sent": "橘子被书看了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "茶把书写了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "杂志跑",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "水不短",
-  "gold": {
-   "kind": "state",
-   "pred": "短",
-   "roles": {
-    "THEME": "水"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "短(THEME=水) [NEG]"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个朋友买姐姐",
-  "gold": {
-   "kind": "event",
-   "pred": "买",
-   "roles": {
-    "PATIENT": "姐姐",
-    "AGENT": "一个朋友"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "买(AGENT=一个朋友 PATIENT=姐姐) "
- },
- {
-  "tag": "SVOO",
-  "sent": "牛给医生鸡",
-  "gold": {
-   "kind": "event",
-   "pred": "给",
-   "roles": {
-    "RECIPIENT": "医生",
-    "PATIENT": "鸡",
-    "AGENT": "牛"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "给(AGENT=牛 PATIENT=鸡 RECIPIENT=医生) "
- },
- {
-  "tag": "SVO",
-  "sent": "鱼卖窗",
-  "gold": {
-   "kind": "event",
-   "pred": "卖",
-   "roles": {
-    "PATIENT": "窗",
-    "AGENT": "鱼"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "卖(AGENT=鱼 PATIENT=窗) "
- },
- {
-  "tag": "ADJ",
-  "sent": "树很冷",
-  "gold": {
-   "kind": "state",
-   "pred": "冷",
-   "roles": {
-    "THEME": "树"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "冷(THEME=树) [DEGREE]"
- },
- {
-  "tag": "CONJ",
-  "sent": "草和帽子卖电视",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "鸡蛋在鸭",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "橘子走",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "茶开橘子",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "爷爷在兔",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "电视很漂亮",
-  "gold": {
-   "kind": "state",
-   "pred": "漂亮",
-   "roles": {
-    "THEME": "电视"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "漂亮(THEME=电视) [DEGREE]"
- },
- {
-  "tag": "LOC",
-  "sent": "水在马",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "工人读熊吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "热的面包",
-  "gold": {
-   "kind": "entity",
-   "pred": "面包",
-   "base": "面包",
-   "roles": {},
-   "mods": {
-    "ATTR": "热"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "面包() [ATTR]"
- },
- {
-  "tag": "BA",
-  "sent": "牛把杂志说了",
-  "gold": {
-   "kind": "event",
-   "pred": "说",
-   "roles": {
-    "AGENT": "牛",
-    "PATIENT": "杂志"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "说(AGENT=牛 PATIENT=杂志) [BA PERF]"
- },
- {
-  "tag": "SVO",
-  "sent": "工人读姐姐",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "红的电视",
-  "gold": {
-   "kind": "entity",
-   "pred": "电视",
-   "base": "电视",
-   "roles": {},
-   "mods": {
-    "ATTR": "红"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "电视() [ATTR]"
- },
- {
-  "tag": "SV",
-  "sent": "图书馆走",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "窗很聪明",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个你买西瓜",
-  "gold": {
-   "kind": "event",
-   "pred": "买",
-   "roles": {
-    "PATIENT": "西瓜",
-    "AGENT": "一个你"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "买(AGENT=一个你 PATIENT=西瓜) "
- },
- {
-  "tag": "SVO",
-  "sent": "爷爷知道教室",
-  "gold": {
-   "kind": "event",
-   "pred": "知道",
-   "roles": {
-    "STIMULUS": "教室",
-    "EXPERIENCER": "爷爷"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "知道(EXPERIENCER=爷爷 STIMULUS=教室) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一个西瓜说笔",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "笔看苹果",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "高的桃",
-  "gold": {
-   "kind": "entity",
-   "pred": "桃",
-   "base": "桃",
-   "roles": {},
-   "mods": {
-    "ATTR": "高"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "桃() [ATTR]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "窗不长",
-  "gold": {
-   "kind": "state",
-   "pred": "长",
-   "roles": {
-    "THEME": "窗"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "长(THEME=窗) [NEG]"
- },
- {
-  "tag": "ATTR",
-  "sent": "短的咖啡",
-  "gold": {
-   "kind": "entity",
-   "pred": "咖啡",
-   "base": "咖啡",
-   "roles": {},
-   "mods": {
-    "ATTR": "短"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "咖啡() [ATTR]"
- },
- {
-  "tag": "LOC",
-  "sent": "家在银行",
-  "gold": {
-   "kind": "state",
-   "pred": "在",
-   "roles": {
-    "THEME": "家",
-    "LOC": "银行"
-   },
-   "mods": {},
-   "construction": "loc_state"
-  },
-  "gold_desc": "在(LOC=银行 THEME=家) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一个桌子认识我",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "窗洗苹果",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "忙的茶",
-  "gold": {
-   "kind": "entity",
-   "pred": "茶",
-   "base": "茶",
-   "roles": {},
-   "mods": {
-    "ATTR": "忙"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "茶() [ATTR]"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个老师喜欢车站",
-  "gold": {
-   "kind": "event",
-   "pred": "喜欢",
-   "roles": {
-    "STIMULUS": "车站",
-    "EXPERIENCER": "一个老师"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "喜欢(EXPERIENCER=一个老师 STIMULUS=车站) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一个桌子听小明",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "狗送老师车站",
-  "gold": {
-   "kind": "event",
-   "pred": "送",
-   "roles": {
-    "RECIPIENT": "老师",
-    "PATIENT": "车站",
-    "AGENT": "狗"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "送(AGENT=狗 PATIENT=车站 RECIPIENT=老师) "
- },
- {
-  "tag": "NEGADJ",
-  "sent": "鞋不大",
-  "gold": {
-   "kind": "state",
-   "pred": "大",
-   "roles": {
-    "THEME": "鞋"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "大(THEME=鞋) [NEG]"
- },
- {
-  "tag": "BA",
-  "sent": "茶把梨卖了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "牛奶问你笔",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "公园被面条做了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "梨关帽子吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "熊走",
-  "gold": {
-   "kind": "event",
-   "pred": "走",
-   "roles": {
-    "AGENT": "熊"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "走(AGENT=熊) "
- },
- {
-  "tag": "CONJ",
-  "sent": "小明和鞋说同学",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "球把茶关了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "水被饭找了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "鱼和水回鸟",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "电脑不安静",
-  "gold": {
-   "kind": "state",
-   "pred": "安静",
-   "roles": {
-    "THEME": "电脑"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "安静(THEME=电脑) [NEG]"
- },
- {
-  "tag": "SVO",
-  "sent": "奶奶用银行",
-  "gold": {
-   "kind": "event",
-   "pred": "用",
-   "roles": {
-    "PATIENT": "银行",
     "AGENT": "奶奶"
    },
    "mods": {},
    "construction": "SVO"
   },
-  "gold_desc": "用(AGENT=奶奶 PATIENT=银行) "
- },
- {
-  "tag": "SVO",
-  "sent": "书开银行",
-  "gold": null,
-  "gold_desc": "REJECT"
+  "gold_desc": "睡(AGENT=奶奶) "
  },
  {
   "tag": "ATTR",
-  "sent": "红的橘子",
+  "sent": "吵的鱼",
   "gold": {
    "kind": "entity",
-   "pred": "橘子",
-   "base": "橘子",
+   "pred": "鱼",
+   "base": "鱼",
    "roles": {},
    "mods": {
-    "ATTR": "红"
+    "ATTR": "吵"
    },
    "construction": "entity"
   },
-  "gold_desc": "橘子() [ATTR]"
- },
- {
-  "tag": "ATTR",
-  "sent": "新的姐姐",
-  "gold": {
-   "kind": "entity",
-   "pred": "姐姐",
-   "base": "姐姐",
-   "roles": {},
-   "mods": {
-    "ATTR": "新"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "姐姐() [ATTR]"
- },
- {
-  "tag": "CONJ",
-  "sent": "医院和奶奶买苹果",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "学校把电脑做了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "鸭关公园吗",
-  "gold": {
-   "kind": "event",
-   "pred": "关",
-   "roles": {
-    "PATIENT": "公园",
-    "AGENT": "鸭"
-   },
-   "mods": {
-    "Q": true
-   },
-   "construction": "SVO"
-  },
-  "gold_desc": "关(AGENT=鸭 PATIENT=公园) [Q]"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个香蕉听哥哥",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "马把姐姐打了",
-  "gold": {
-   "kind": "event",
-   "pred": "打/hit",
-   "roles": {
-    "AGENT": "马",
-    "PATIENT": "姐姐"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "打/hit(AGENT=马 PATIENT=姐姐) [BA PERF]"
- },
- {
-  "tag": "Q",
-  "sent": "鞋写鸭吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "车站回书包吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "爷爷不脏",
-  "gold": {
-   "kind": "state",
-   "pred": "脏",
-   "roles": {
-    "THEME": "爷爷"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "脏(THEME=爷爷) [NEG]"
- },
- {
-  "tag": "BA",
-  "sent": "咖啡把菜听了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "鸭很好",
-  "gold": {
-   "kind": "state",
-   "pred": "好",
-   "roles": {
-    "THEME": "鸭"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "好(THEME=鸭) [DEGREE]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "鞋不安静",
-  "gold": {
-   "kind": "state",
-   "pred": "安静",
-   "roles": {
-    "THEME": "鞋"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "安静(THEME=鞋) [NEG]"
- },
- {
-  "tag": "BA",
-  "sent": "西瓜把公园喝了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "冷的爷爷",
-  "gold": {
-   "kind": "entity",
-   "pred": "爷爷",
-   "base": "爷爷",
-   "roles": {},
-   "mods": {
-    "ATTR": "冷"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "爷爷() [ATTR]"
- },
- {
-  "tag": "SV",
-  "sent": "同学睡",
-  "gold": {
-   "kind": "event",
-   "pred": "睡",
-   "roles": {
-    "AGENT": "同学"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "睡(AGENT=同学) "
+  "gold_desc": "鱼() [ATTR]"
  },
  {
   "tag": "LOC",
-  "sent": "果汁在草",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "狗不冷",
-  "gold": {
-   "kind": "state",
-   "pred": "冷",
-   "roles": {
-    "THEME": "狗"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "冷(THEME=狗) [NEG]"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个商店读球",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "草教弟弟朋友",
+  "sent": "银行在鸡蛋",
   "gold": null,
   "gold_desc": "REJECT"
  },
  {
   "tag": "QUANT",
-  "sent": "一个医生说手机",
+  "sent": "一个肉看饭",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "衣服把杂志学了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个姐姐等鱼",
   "gold": {
    "kind": "event",
-   "pred": "说",
+   "pred": "等",
    "roles": {
-    "PATIENT": "手机",
-    "AGENT": "一个医生"
+    "PATIENT": "鱼",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个姐姐",
+     "base": "姐姐",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
    },
    "mods": {},
    "construction": "SVO"
   },
-  "gold_desc": "说(AGENT=一个医生 PATIENT=手机) "
- },
- {
-  "tag": "CONJ",
-  "sent": "家和衣服学鱼",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "树被妈妈喝了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "教室知道花吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "书包不热",
-  "gold": {
-   "kind": "state",
-   "pred": "热",
-   "roles": {
-    "THEME": "书包"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "热(THEME=书包) [NEG]"
- },
- {
-  "tag": "SVOO",
-  "sent": "肉给我车站",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "鹅很脏",
-  "gold": {
-   "kind": "state",
-   "pred": "脏",
-   "roles": {
-    "THEME": "鹅"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "脏(THEME=鹅) [DEGREE]"
- },
- {
-  "tag": "SVO",
-  "sent": "石头喜欢妈妈",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "花很短",
-  "gold": {
-   "kind": "state",
-   "pred": "短",
-   "roles": {
-    "THEME": "花"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "短(THEME=花) [DEGREE]"
- },
- {
-  "tag": "SVOO",
-  "sent": "咖啡给熊老师",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "鸭不矮",
-  "gold": {
-   "kind": "state",
-   "pred": "矮",
-   "roles": {
-    "THEME": "鸭"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "矮(THEME=鸭) [NEG]"
+  "gold_desc": "等(AGENT=一个姐姐() [QUANT] PATIENT=鱼) "
  },
  {
   "tag": "SVO",
@@ -1325,175 +78,24 @@
  },
  {
   "tag": "ATTR",
-  "sent": "热的桃",
+  "sent": "大的树",
   "gold": {
    "kind": "entity",
-   "pred": "桃",
-   "base": "桃",
+   "pred": "树",
+   "base": "树",
    "roles": {},
    "mods": {
-    "ATTR": "热"
+    "ATTR": "大"
    },
    "construction": "entity"
   },
-  "gold_desc": "桃() [ATTR]"
+  "gold_desc": "树() [ATTR]"
  },
  {
   "tag": "QUANT",
-  "sent": "一只鱼听鸡",
-  "gold": {
-   "kind": "event",
-   "pred": "听",
-   "roles": {
-    "PATIENT": "鸡",
-    "AGENT": "一只鱼"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "听(AGENT=一只鱼 PATIENT=鸡) "
- },
- {
-  "tag": "BEI",
-  "sent": "象被鞋开了",
+  "sent": "一个笔读兔",
   "gold": null,
   "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "长的鸡蛋",
-  "gold": {
-   "kind": "entity",
-   "pred": "鸡蛋",
-   "base": "鸡蛋",
-   "roles": {},
-   "mods": {
-    "ATTR": "长"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "鸡蛋() [ATTR]"
- },
- {
-  "tag": "CONJ",
-  "sent": "鸡和老师喝衣服",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "鸡很快",
-  "gold": {
-   "kind": "state",
-   "pred": "快",
-   "roles": {
-    "THEME": "鸡"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "快(THEME=鸡) [DEGREE]"
- },
- {
-  "tag": "LOC",
-  "sent": "茶在面条",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "我在茶",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "虎睡",
-  "gold": {
-   "kind": "event",
-   "pred": "睡",
-   "roles": {
-    "AGENT": "虎"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "睡(AGENT=虎) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一只鸭找肉",
-  "gold": {
-   "kind": "event",
-   "pred": "找",
-   "roles": {
-    "PATIENT": "肉",
-    "AGENT": "一只鸭"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "找(AGENT=一只鸭 PATIENT=肉) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一个教室买家",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "图书馆和果汁来咖啡",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "爷爷读门吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "书包问狗他",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "鱼把他写了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "桌子和树读石头",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "牛奶和葡萄爱弟弟",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "羊很吵",
-  "gold": {
-   "kind": "state",
-   "pred": "吵",
-   "roles": {
-    "THEME": "羊"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "吵(THEME=羊) [DEGREE]"
  },
  {
   "tag": "SVO",
@@ -1502,280 +104,14 @@
   "gold_desc": "REJECT"
  },
  {
-  "tag": "LOC",
-  "sent": "你在肉",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一只鱼打门",
-  "gold": {
-   "kind": "event",
-   "pred": "打/hit",
-   "roles": {
-    "PATIENT": "门",
-    "AGENT": "一只鱼"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "打/hit(AGENT=一只鱼 PATIENT=门) "
- },
- {
-  "tag": "CONJ",
-  "sent": "肉和帽子读书",
+  "tag": "SVOO",
+  "sent": "桌子送苹果葡萄",
   "gold": null,
   "gold_desc": "REJECT"
  },
  {
   "tag": "CONJ",
-  "sent": "同学和小明关公园",
-  "gold": {
-   "kind": "event",
-   "pred": "关",
-   "roles": {
-    "PATIENT": "公园",
-    "AGENT": "同学+小明"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "关(AGENT=同学+小明 PATIENT=公园) "
- },
- {
-  "tag": "NEGADJ",
-  "sent": "肉不新",
-  "gold": {
-   "kind": "state",
-   "pred": "新",
-   "roles": {
-    "THEME": "肉"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "新(THEME=肉) [NEG]"
- },
- {
-  "tag": "SVOO",
-  "sent": "书包教图书馆猪",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "弟弟给面包苹果",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "爷爷在葡萄",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "工人被猫读了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "短的菜",
-  "gold": {
-   "kind": "entity",
-   "pred": "菜",
-   "base": "菜",
-   "roles": {},
-   "mods": {
-    "ATTR": "短"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "菜() [ATTR]"
- },
- {
-  "tag": "ATTR",
-  "sent": "漂亮的猫",
-  "gold": {
-   "kind": "entity",
-   "pred": "猫",
-   "base": "猫",
-   "roles": {},
-   "mods": {
-    "ATTR": "漂亮"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "猫() [ATTR]"
- },
- {
-  "tag": "CONJ",
-  "sent": "报纸和香蕉有桃",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "橘子在鱼",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "书包跳",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "窗送树饭",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "同学问杂志你",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "猴教桌子车站",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "电脑和弟弟喝面包",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "电视很旧",
-  "gold": {
-   "kind": "state",
-   "pred": "旧",
-   "roles": {
-    "THEME": "电视"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "旧(THEME=电视) [DEGREE]"
- },
- {
-  "tag": "BEI",
-  "sent": "咖啡被梨听了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "猫和饭开花",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "医生喜欢老师吗",
-  "gold": {
-   "kind": "event",
-   "pred": "喜欢",
-   "roles": {
-    "STIMULUS": "老师",
-    "EXPERIENCER": "医生"
-   },
-   "mods": {
-    "Q": true
-   },
-   "construction": "SVO"
-  },
-  "gold_desc": "喜欢(EXPERIENCER=医生 STIMULUS=老师) [Q]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "公园不安静",
-  "gold": {
-   "kind": "state",
-   "pred": "安静",
-   "roles": {
-    "THEME": "公园"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "安静(THEME=公园) [NEG]"
- },
- {
-  "tag": "BA",
-  "sent": "工人把医生做了",
-  "gold": {
-   "kind": "event",
-   "pred": "做",
-   "roles": {
-    "AGENT": "工人",
-    "PATIENT": "医生"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "做(AGENT=工人 PATIENT=医生) [BA PERF]"
- },
- {
-  "tag": "ADJ",
-  "sent": "笔很小",
-  "gold": {
-   "kind": "state",
-   "pred": "小",
-   "roles": {
-    "THEME": "笔"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "小(THEME=笔) [DEGREE]"
- },
- {
-  "tag": "Q",
-  "sent": "鸡认识鸡蛋吗",
-  "gold": {
-   "kind": "event",
-   "pred": "认识",
-   "roles": {
-    "STIMULUS": "鸡蛋",
-    "EXPERIENCER": "鸡"
-   },
-   "mods": {
-    "Q": true
-   },
-   "construction": "SVO"
-  },
-  "gold_desc": "认识(EXPERIENCER=鸡 STIMULUS=鸡蛋) [Q]"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个梨喜欢石头",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "橘子问鹅桃",
+  "sent": "桃和兔认识桌子",
   "gold": null,
   "gold_desc": "REJECT"
  },
@@ -1797,1046 +133,30 @@
   "gold_desc": "知道(EXPERIENCER=学生 STIMULUS=他) [Q]"
  },
  {
-  "tag": "ATTR",
-  "sent": "旧的家",
-  "gold": {
-   "kind": "entity",
-   "pred": "家",
-   "base": "家",
-   "roles": {},
-   "mods": {
-    "ATTR": "旧"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "家() [ATTR]"
- },
- {
-  "tag": "BEI",
-  "sent": "花被爸爸做了",
-  "gold": {
-   "kind": "event",
-   "pred": "做",
-   "roles": {
-    "PATIENT": "花",
-    "AGENT": "爸爸"
-   },
-   "mods": {
-    "BEI": true,
-    "PERF": true
-   },
-   "construction": "BEI"
-  },
-  "gold_desc": "做(AGENT=爸爸 PATIENT=花) [BEI PERF]"
- },
- {
-  "tag": "ATTR",
-  "sent": "小的鱼",
-  "gold": {
-   "kind": "entity",
-   "pred": "鱼",
-   "base": "鱼",
-   "roles": {},
-   "mods": {
-    "ATTR": "小"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "鱼() [ATTR]"
- },
- {
-  "tag": "BA",
-  "sent": "笔把面包做了",
+  "tag": "SV",
+  "sent": "报纸跑",
   "gold": null,
   "gold_desc": "REJECT"
  },
  {
-  "tag": "ATTR",
-  "sent": "快的兔",
-  "gold": {
-   "kind": "entity",
-   "pred": "兔",
-   "base": "兔",
-   "roles": {},
-   "mods": {
-    "ATTR": "快"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "兔() [ATTR]"
- },
- {
   "tag": "NEGADJ",
-  "sent": "银行不冷",
+  "sent": "球不小",
   "gold": {
    "kind": "state",
-   "pred": "冷",
+   "pred": "小",
    "roles": {
-    "THEME": "银行"
+    "THEME": "球"
    },
    "mods": {
     "NEG": true
    },
    "construction": "adj_state"
   },
-  "gold_desc": "冷(THEME=银行) [NEG]"
- },
- {
-  "tag": "SVOO",
-  "sent": "葡萄给妈妈教室",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "虎说妈妈吗",
-  "gold": {
-   "kind": "event",
-   "pred": "说",
-   "roles": {
-    "PATIENT": "妈妈",
-    "AGENT": "虎"
-   },
-   "mods": {
-    "Q": true
-   },
-   "construction": "SVO"
-  },
-  "gold_desc": "说(AGENT=虎 PATIENT=妈妈) [Q]"
- },
- {
-  "tag": "SVOO",
-  "sent": "饭送妹妹牛",
-  "gold": null,
-  "gold_desc": "REJECT"
+  "gold_desc": "小(THEME=球) [NEG]"
  },
  {
   "tag": "SVO",
-  "sent": "肉等马",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "教室唱",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "梨被银行读了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "我认识姐姐吗",
-  "gold": {
-   "kind": "event",
-   "pred": "认识",
-   "roles": {
-    "STIMULUS": "姐姐",
-    "EXPERIENCER": "我"
-   },
-   "mods": {
-    "Q": true
-   },
-   "construction": "SVO"
-  },
-  "gold_desc": "认识(EXPERIENCER=我 STIMULUS=姐姐) [Q]"
- },
- {
-  "tag": "BEI",
-  "sent": "猴被桌子开了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "电脑跳",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "石头和草说水",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "猪不干净",
-  "gold": {
-   "kind": "state",
-   "pred": "干净",
-   "roles": {
-    "THEME": "猪"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "干净(THEME=猪) [NEG]"
- },
- {
-  "tag": "SVOO",
-  "sent": "老师给小明桌子",
-  "gold": {
-   "kind": "event",
-   "pred": "给",
-   "roles": {
-    "RECIPIENT": "小明",
-    "PATIENT": "桌子",
-    "AGENT": "老师"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "给(AGENT=老师 PATIENT=桌子 RECIPIENT=小明) "
- },
- {
-  "tag": "LOC",
-  "sent": "梨在米饭",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "图书馆用牛",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一只兔听肉",
-  "gold": {
-   "kind": "event",
-   "pred": "听",
-   "roles": {
-    "PATIENT": "肉",
-    "AGENT": "一只兔"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "听(AGENT=一只兔 PATIENT=肉) "
- },
- {
-  "tag": "SVO",
-  "sent": "熊买象",
-  "gold": {
-   "kind": "event",
-   "pred": "买",
-   "roles": {
-    "PATIENT": "象",
-    "AGENT": "熊"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "买(AGENT=熊 PATIENT=象) "
- },
- {
-  "tag": "LOC",
-  "sent": "菜在哥哥",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "同学很长",
-  "gold": {
-   "kind": "state",
-   "pred": "长",
-   "roles": {
-    "THEME": "同学"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "长(THEME=同学) [DEGREE]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "学校不漂亮",
-  "gold": {
-   "kind": "state",
-   "pred": "漂亮",
-   "roles": {
-    "THEME": "学校"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "漂亮(THEME=学校) [NEG]"
- },
- {
-  "tag": "SVO",
-  "sent": "衣服打鸭",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "象在牛奶",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "苹果在姐姐",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "新的水",
-  "gold": {
-   "kind": "entity",
-   "pred": "水",
-   "base": "水",
-   "roles": {},
-   "mods": {
-    "ATTR": "新"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "水() [ATTR]"
- },
- {
-  "tag": "BEI",
-  "sent": "兔被书开了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "鸡站",
-  "gold": {
-   "kind": "event",
-   "pred": "站",
-   "roles": {
-    "AGENT": "鸡"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "站(AGENT=鸡) "
- },
- {
-  "tag": "BEI",
-  "sent": "杂志被电脑读了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一个书包听牛",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "电视喜欢同学吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "老师被奶奶学了",
-  "gold": {
-   "kind": "event",
-   "pred": "学",
-   "roles": {
-    "PATIENT": "老师",
-    "AGENT": "奶奶"
-   },
-   "mods": {
-    "BEI": true,
-    "PERF": true
-   },
-   "construction": "BEI"
-  },
-  "gold_desc": "学(AGENT=奶奶 PATIENT=老师) [BEI PERF]"
- },
- {
-  "tag": "SV",
-  "sent": "手机走",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "书包走",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "桃学银行吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "老师把爸爸洗了",
-  "gold": {
-   "kind": "event",
-   "pred": "洗",
-   "roles": {
-    "AGENT": "老师",
-    "PATIENT": "爸爸"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "洗(AGENT=老师 PATIENT=爸爸) [BA PERF]"
- },
- {
-  "tag": "ADJ",
-  "sent": "水很快",
-  "gold": {
-   "kind": "state",
-   "pred": "快",
-   "roles": {
-    "THEME": "水"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "快(THEME=水) [DEGREE]"
- },
- {
-  "tag": "SVOO",
-  "sent": "鸭教菜姐姐",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一只兔听小明",
-  "gold": {
-   "kind": "event",
-   "pred": "听",
-   "roles": {
-    "PATIENT": "小明",
-    "AGENT": "一只兔"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "听(AGENT=一只兔 PATIENT=小明) "
- },
- {
-  "tag": "ATTR",
-  "sent": "漂亮的猪",
-  "gold": {
-   "kind": "entity",
-   "pred": "猪",
-   "base": "猪",
-   "roles": {},
-   "mods": {
-    "ATTR": "漂亮"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "猪() [ATTR]"
- },
- {
-  "tag": "BEI",
-  "sent": "妹妹被窗学了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "鱼很大",
-  "gold": {
-   "kind": "state",
-   "pred": "大",
-   "roles": {
-    "THEME": "鱼"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "大(THEME=鱼) [DEGREE]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "马不慢",
-  "gold": {
-   "kind": "state",
-   "pred": "慢",
-   "roles": {
-    "THEME": "马"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "慢(THEME=马) [NEG]"
- },
- {
-  "tag": "ATTR",
-  "sent": "聪明的我",
-  "gold": {
-   "kind": "entity",
-   "pred": "我",
-   "base": "我",
-   "roles": {},
-   "mods": {
-    "ATTR": "聪明"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "我() [ATTR]"
- },
- {
-  "tag": "Q",
-  "sent": "鸭吃茶吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "鸟把牛卖了",
-  "gold": {
-   "kind": "event",
-   "pred": "卖",
-   "roles": {
-    "AGENT": "鸟",
-    "PATIENT": "牛"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "卖(AGENT=鸟 PATIENT=牛) [BA PERF]"
- },
- {
-  "tag": "BA",
-  "sent": "公园把肉喝了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "QUANT",
-  "sent": "一只兔读报纸",
-  "gold": {
-   "kind": "event",
-   "pred": "读",
-   "roles": {
-    "PATIENT": "报纸",
-    "AGENT": "一只兔"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "读(AGENT=一只兔 PATIENT=报纸) "
- },
- {
-  "tag": "ATTR",
-  "sent": "冷的香蕉",
-  "gold": {
-   "kind": "entity",
-   "pred": "香蕉",
-   "base": "香蕉",
-   "roles": {},
-   "mods": {
-    "ATTR": "冷"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "香蕉() [ATTR]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "树不新",
-  "gold": {
-   "kind": "state",
-   "pred": "新",
-   "roles": {
-    "THEME": "树"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "新(THEME=树) [NEG]"
- },
- {
-  "tag": "SVOO",
-  "sent": "橘子送公园爸爸",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "他教书医生",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "教室在花",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ADJ",
-  "sent": "面包很冷",
-  "gold": {
-   "kind": "state",
-   "pred": "冷",
-   "roles": {
-    "THEME": "面包"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "冷(THEME=面包) [DEGREE]"
- },
- {
-  "tag": "ATTR",
-  "sent": "高的石头",
-  "gold": {
-   "kind": "entity",
-   "pred": "石头",
-   "base": "石头",
-   "roles": {},
-   "mods": {
-    "ATTR": "高"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "石头() [ATTR]"
- },
- {
-  "tag": "Q",
-  "sent": "咖啡听帽子吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "苹果在书包",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "狗给家医生",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "狗睡",
-  "gold": {
-   "kind": "event",
-   "pred": "睡",
-   "roles": {
-    "AGENT": "狗"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "睡(AGENT=狗) "
- },
- {
-  "tag": "BA",
-  "sent": "马把他喝了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "鱼说图书馆",
-  "gold": {
-   "kind": "event",
-   "pred": "说",
-   "roles": {
-    "PATIENT": "图书馆",
-    "AGENT": "鱼"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "说(AGENT=鱼 PATIENT=图书馆) "
- },
- {
-  "tag": "SV",
-  "sent": "鹅跑",
-  "gold": {
-   "kind": "event",
-   "pred": "跑",
-   "roles": {
-    "AGENT": "鹅"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "跑(AGENT=鹅) "
- },
- {
-  "tag": "Q",
-  "sent": "熊去花吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "猪唱",
-  "gold": {
-   "kind": "event",
-   "pred": "唱",
-   "roles": {
-    "AGENT": "猪"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "唱(AGENT=猪) "
- },
- {
-  "tag": "SVOO",
-  "sent": "爷爷给球球",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "帽子不高",
-  "gold": {
-   "kind": "state",
-   "pred": "高",
-   "roles": {
-    "THEME": "帽子"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "高(THEME=帽子) [NEG]"
- },
- {
-  "tag": "ADJ",
-  "sent": "草很慢",
-  "gold": {
-   "kind": "state",
-   "pred": "慢",
-   "roles": {
-    "THEME": "草"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "慢(THEME=草) [DEGREE]"
- },
- {
-  "tag": "BEI",
-  "sent": "妹妹被桌子开了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "电脑爱车站吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "我把妈妈开了",
-  "gold": {
-   "kind": "event",
-   "pred": "开",
-   "roles": {
-    "AGENT": "我",
-    "PATIENT": "妈妈"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "开(AGENT=我 PATIENT=妈妈) [BA PERF]"
- },
- {
-  "tag": "BA",
-  "sent": "衣服把杂志学了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "学校不高兴",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "鸭不忙",
-  "gold": {
-   "kind": "state",
-   "pred": "忙",
-   "roles": {
-    "THEME": "鸭"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "忙(THEME=鸭) [NEG]"
- },
- {
-  "tag": "ADJ",
-  "sent": "我很新",
-  "gold": {
-   "kind": "state",
-   "pred": "新",
-   "roles": {
-    "THEME": "我"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "新(THEME=我) [DEGREE]"
- },
- {
-  "tag": "CONJ",
-  "sent": "他和妈妈学树",
-  "gold": {
-   "kind": "event",
-   "pred": "学",
-   "roles": {
-    "PATIENT": "树",
-    "AGENT": "他+妈妈"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "学(AGENT=他+妈妈 PATIENT=树) "
- },
- {
-  "tag": "SVOO",
-  "sent": "葡萄问熊鸡蛋",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "CONJ",
-  "sent": "小明和茶回肉",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BA",
-  "sent": "教室把鞋卖了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "ATTR",
-  "sent": "吵的面包",
-  "gold": {
-   "kind": "entity",
-   "pred": "面包",
-   "base": "面包",
-   "roles": {},
-   "mods": {
-    "ATTR": "吵"
-   },
-   "construction": "entity"
-  },
-  "gold_desc": "面包() [ATTR]"
- },
- {
-  "tag": "NEGADJ",
-  "sent": "桌子不好",
-  "gold": {
-   "kind": "state",
-   "pred": "好",
-   "roles": {
-    "THEME": "桌子"
-   },
-   "mods": {
-    "NEG": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "好(THEME=桌子) [NEG]"
- },
- {
-  "tag": "LOC",
-  "sent": "朋友在牛奶",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "鱼被葡萄买了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "LOC",
-  "sent": "猴在电脑",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVO",
-  "sent": "报纸说窗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SVOO",
-  "sent": "窗教学校工人",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "面条跳",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "Q",
-  "sent": "狗去石头吗",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "老师跳",
-  "gold": {
-   "kind": "event",
-   "pred": "跳",
-   "roles": {
-    "AGENT": "老师"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "跳(AGENT=老师) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一只鸡学家",
-  "gold": {
-   "kind": "event",
-   "pred": "学",
-   "roles": {
-    "PATIENT": "家",
-    "AGENT": "一只鸡"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "学(AGENT=一只鸡 PATIENT=家) "
- },
- {
-  "tag": "BA",
-  "sent": "象把鹅洗了",
-  "gold": {
-   "kind": "event",
-   "pred": "洗",
-   "roles": {
-    "AGENT": "象",
-    "PATIENT": "鹅"
-   },
-   "mods": {
-    "BA": true,
-    "PERF": true
-   },
-   "construction": "BA"
-  },
-  "gold_desc": "洗(AGENT=象 PATIENT=鹅) [BA PERF]"
- },
- {
-  "tag": "SVO",
-  "sent": "鸟有公园",
-  "gold": {
-   "kind": "event",
-   "pred": "有",
-   "roles": {
-    "POSSESSED": "公园",
-    "POSSESSOR": "鸟"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "有(POSSESSED=公园 POSSESSOR=鸟) "
- },
- {
-  "tag": "SV",
-  "sent": "面条站",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "你跑",
-  "gold": {
-   "kind": "event",
-   "pred": "跑",
-   "roles": {
-    "AGENT": "你"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "跑(AGENT=你) "
- },
- {
-  "tag": "Q",
-  "sent": "妈妈等苹果吗",
-  "gold": {
-   "kind": "event",
-   "pred": "等",
-   "roles": {
-    "PATIENT": "苹果",
-    "AGENT": "妈妈"
-   },
-   "mods": {
-    "Q": true
-   },
-   "construction": "SVO"
-  },
-  "gold_desc": "等(AGENT=妈妈 PATIENT=苹果) [Q]"
- },
- {
-  "tag": "CONJ",
-  "sent": "饭和肉爱花",
+  "sent": "弟弟去妈妈",
   "gold": null,
   "gold_desc": "REJECT"
  },
@@ -2859,26 +179,941 @@
   "gold_desc": "说(AGENT=鸭 PATIENT=妈妈) [BEI PERF]"
  },
  {
-  "tag": "ADJ",
-  "sent": "妹妹很聪明",
+  "tag": "Q",
+  "sent": "鸭吃茶吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "矮的笔",
+  "gold": {
+   "kind": "entity",
+   "pred": "笔",
+   "base": "笔",
+   "roles": {},
+   "mods": {
+    "ATTR": "矮"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "笔() [ATTR]"
+ },
+ {
+  "tag": "Q",
+  "sent": "兔卖笔吗",
+  "gold": {
+   "kind": "event",
+   "pred": "卖",
+   "roles": {
+    "PATIENT": "笔",
+    "AGENT": "兔"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "卖(AGENT=兔 PATIENT=笔) [Q]"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "水不快",
   "gold": {
    "kind": "state",
-   "pred": "聪明",
+   "pred": "快",
    "roles": {
-    "THEME": "妹妹"
+    "THEME": "水"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "快(THEME=水) [NEG]"
+ },
+ {
+  "tag": "BA",
+  "sent": "马把他喝了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "爷爷不脏",
+  "gold": {
+   "kind": "state",
+   "pred": "脏",
+   "roles": {
+    "THEME": "爷爷"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "脏(THEME=爷爷) [NEG]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "草很慢",
+  "gold": {
+   "kind": "state",
+   "pred": "慢",
+   "roles": {
+    "THEME": "草"
    },
    "mods": {
     "DEGREE": true
    },
    "construction": "adj_state"
   },
-  "gold_desc": "聪明(THEME=妹妹) [DEGREE]"
+  "gold_desc": "慢(THEME=草) [DEGREE]"
+ },
+ {
+  "tag": "BA",
+  "sent": "教室把妹妹读了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "他教书医生",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "橘子在鱼",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "图书馆和果汁来咖啡",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "米饭在你",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "牛奶和葡萄爱弟弟",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "兔不冷",
+  "gold": {
+   "kind": "state",
+   "pred": "冷",
+   "roles": {
+    "THEME": "兔"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "冷(THEME=兔) [NEG]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "石头在车站",
+  "gold": {
+   "kind": "state",
+   "pred": "在",
+   "roles": {
+    "THEME": "石头",
+    "LOC": "车站"
+   },
+   "mods": {},
+   "construction": "loc_state"
+  },
+  "gold_desc": "在(LOC=车站 THEME=石头) "
+ },
+ {
+  "tag": "SVOO",
+  "sent": "爷爷给他窗",
+  "gold": {
+   "kind": "event",
+   "pred": "给",
+   "roles": {
+    "RECIPIENT": "他",
+    "PATIENT": "窗",
+    "AGENT": "爷爷"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "给(AGENT=爷爷 PATIENT=窗 RECIPIENT=他) "
+ },
+ {
+  "tag": "ADJ",
+  "sent": "树很冷",
+  "gold": {
+   "kind": "state",
+   "pred": "冷",
+   "roles": {
+    "THEME": "树"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "冷(THEME=树) [DEGREE]"
+ },
+ {
+  "tag": "BA",
+  "sent": "茶把书写了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一本书开香蕉",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "花和橘子回妈妈",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个小明听香蕉",
+  "gold": {
+   "kind": "event",
+   "pred": "听",
+   "roles": {
+    "PATIENT": "香蕉",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个小明",
+     "base": "小明",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "听(AGENT=一个小明() [QUANT] PATIENT=香蕉) "
+ },
+ {
+  "tag": "BEI",
+  "sent": "花被爸爸做了",
+  "gold": {
+   "kind": "event",
+   "pred": "做",
+   "roles": {
+    "PATIENT": "花",
+    "AGENT": "爸爸"
+   },
+   "mods": {
+    "BEI": true,
+    "PERF": true
+   },
+   "construction": "BEI"
+  },
+  "gold_desc": "做(AGENT=爸爸 PATIENT=花) [BEI PERF]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "窗很长",
+  "gold": {
+   "kind": "state",
+   "pred": "长",
+   "roles": {
+    "THEME": "窗"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "长(THEME=窗) [DEGREE]"
+ },
+ {
+  "tag": "SV",
+  "sent": "苹果站",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个哥哥吃学生",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "吵的面包",
+  "gold": {
+   "kind": "entity",
+   "pred": "面包",
+   "base": "面包",
+   "roles": {},
+   "mods": {
+    "ATTR": "吵"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "面包() [ATTR]"
  },
  {
   "tag": "Q",
-  "sent": "电脑喝鸟吗",
+  "sent": "象开鞋吗",
+  "gold": {
+   "kind": "event",
+   "pred": "开",
+   "roles": {
+    "PATIENT": "鞋",
+    "AGENT": "象"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "开(AGENT=象 PATIENT=鞋) [Q]"
+ },
+ {
+  "tag": "Q",
+  "sent": "鸟知道鱼吗",
+  "gold": {
+   "kind": "event",
+   "pred": "知道",
+   "roles": {
+    "STIMULUS": "鱼",
+    "EXPERIENCER": "鸟"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "知道(EXPERIENCER=鸟 STIMULUS=鱼) [Q]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "桃说医院",
   "gold": null,
   "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "商店被兔听了",
+  "gold": {
+   "kind": "event",
+   "pred": "听",
+   "roles": {
+    "PATIENT": "商店",
+    "AGENT": "兔"
+   },
+   "mods": {
+    "BEI": true,
+    "PERF": true
+   },
+   "construction": "BEI"
+  },
+  "gold_desc": "听(AGENT=兔 PATIENT=商店) [BEI PERF]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "牛奶在爷爷",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "橘子睡",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "树被妈妈喝了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "草和帽子卖电视",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "窗被花打了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "树把石头卖了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "西瓜被公园喝了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "车站回书包吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "鸡蛋关鞋吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "笔看苹果",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "忙的鞋",
+  "gold": {
+   "kind": "entity",
+   "pred": "鞋",
+   "base": "鞋",
+   "roles": {},
+   "mods": {
+    "ATTR": "忙"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "鞋() [ATTR]"
+ },
+ {
+  "tag": "BA",
+  "sent": "饭把弟弟打了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "爷爷很慢",
+  "gold": {
+   "kind": "state",
+   "pred": "慢",
+   "roles": {
+    "THEME": "爷爷"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "慢(THEME=爷爷) [DEGREE]"
+ },
+ {
+  "tag": "SV",
+  "sent": "熊走",
+  "gold": {
+   "kind": "event",
+   "pred": "走",
+   "roles": {
+    "AGENT": "熊"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "走(AGENT=熊) "
+ },
+ {
+  "tag": "CONJ",
+  "sent": "报纸和香蕉有桃",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "鸭很好",
+  "gold": {
+   "kind": "state",
+   "pred": "好",
+   "roles": {
+    "THEME": "鸭"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "好(THEME=鸭) [DEGREE]"
+ },
+ {
+  "tag": "BEI",
+  "sent": "工人被猫读了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "书给教室他",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "医生给鸭香蕉",
+  "gold": {
+   "kind": "event",
+   "pred": "给",
+   "roles": {
+    "RECIPIENT": "鸭",
+    "PATIENT": "香蕉",
+    "AGENT": "医生"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "给(AGENT=医生 PATIENT=香蕉 RECIPIENT=鸭) "
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个家有我",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "球问猴电视",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个家去咖啡",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "花很短",
+  "gold": {
+   "kind": "state",
+   "pred": "短",
+   "roles": {
+    "THEME": "花"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "短(THEME=花) [DEGREE]"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "聪明的我",
+  "gold": {
+   "kind": "entity",
+   "pred": "我",
+   "base": "我",
+   "roles": {},
+   "mods": {
+    "ATTR": "聪明"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "我() [ATTR]"
+ },
+ {
+  "tag": "Q",
+  "sent": "爷爷读门吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "小明被电视洗了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "新的书包",
+  "gold": {
+   "kind": "entity",
+   "pred": "书包",
+   "base": "书包",
+   "roles": {},
+   "mods": {
+    "ATTR": "新"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "书包() [ATTR]"
+ },
+ {
+  "tag": "BEI",
+  "sent": "教室被鞋卖了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "象把鹅洗了",
+  "gold": {
+   "kind": "event",
+   "pred": "洗",
+   "roles": {
+    "AGENT": "象",
+    "PATIENT": "鹅"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "洗(AGENT=象 PATIENT=鹅) [BA PERF]"
+ },
+ {
+  "tag": "Q",
+  "sent": "人用妹妹吗",
+  "gold": {
+   "kind": "event",
+   "pred": "用",
+   "roles": {
+    "PATIENT": "妹妹",
+    "AGENT": "人"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "用(AGENT=人 PATIENT=妹妹) [Q]"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "公园和同学说鸟",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "羊很吵",
+  "gold": {
+   "kind": "state",
+   "pred": "吵",
+   "roles": {
+    "THEME": "羊"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "吵(THEME=羊) [DEGREE]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "肉在家",
+  "gold": {
+   "kind": "state",
+   "pred": "在",
+   "roles": {
+    "THEME": "肉",
+    "LOC": "家"
+   },
+   "mods": {},
+   "construction": "loc_state"
+  },
+  "gold_desc": "在(LOC=家 THEME=肉) "
+ },
+ {
+  "tag": "ATTR",
+  "sent": "干净的鸟",
+  "gold": {
+   "kind": "entity",
+   "pred": "鸟",
+   "base": "鸟",
+   "roles": {},
+   "mods": {
+    "ATTR": "干净"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "鸟() [ATTR]"
+ },
+ {
+  "tag": "BA",
+  "sent": "鱼把他写了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "饭睡",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一只牛喜欢小明",
+  "gold": {
+   "kind": "event",
+   "pred": "喜欢",
+   "roles": {
+    "STIMULUS": "小明",
+    "EXPERIENCER": {
+     "kind": "entity",
+     "pred": "一只牛",
+     "base": "牛",
+     "roles": {},
+     "mods": {
+      "QUANT": "一只"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "喜欢(EXPERIENCER=一只牛() [QUANT] STIMULUS=小明) "
+ },
+ {
+  "tag": "SV",
+  "sent": "狗说话",
+  "gold": {
+   "kind": "event",
+   "pred": "说话",
+   "roles": {
+    "AGENT": "狗"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "说话(AGENT=狗) "
+ },
+ {
+  "tag": "CONJ",
+  "sent": "桌子和树读石头",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "鱼教图书馆书",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "慢的学生",
+  "gold": {
+   "kind": "entity",
+   "pred": "学生",
+   "base": "学生",
+   "roles": {},
+   "mods": {
+    "ATTR": "慢"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "学生() [ATTR]"
+ },
+ {
+  "tag": "SV",
+  "sent": "衣服走",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "桃和桃喝球",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个爷爷听熊",
+  "gold": {
+   "kind": "event",
+   "pred": "听",
+   "roles": {
+    "PATIENT": "熊",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个爷爷",
+     "base": "爷爷",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "听(AGENT=一个爷爷() [QUANT] PATIENT=熊) "
+ },
+ {
+  "tag": "CONJ",
+  "sent": "他和妈妈学树",
+  "gold": {
+   "kind": "event",
+   "pred": "学",
+   "roles": {
+    "PATIENT": "树",
+    "AGENT": "他+妈妈"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "学(AGENT=他+妈妈 PATIENT=树) "
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "草不忙",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "鱼不大",
+  "gold": {
+   "kind": "state",
+   "pred": "大",
+   "roles": {
+    "THEME": "鱼"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "大(THEME=鱼) [NEG]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "公园教橘子桃",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "窗学医生吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "面条不快",
+  "gold": {
+   "kind": "state",
+   "pred": "快",
+   "roles": {
+    "THEME": "面条"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "快(THEME=面条) [NEG]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "电脑很忙",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "我很新",
+  "gold": {
+   "kind": "state",
+   "pred": "新",
+   "roles": {
+    "THEME": "我"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "新(THEME=我) [DEGREE]"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "猴不好",
+  "gold": {
+   "kind": "state",
+   "pred": "好",
+   "roles": {
+    "THEME": "猴"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "好(THEME=猴) [NEG]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "家在石头",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "医生把人洗了",
+  "gold": {
+   "kind": "event",
+   "pred": "洗",
+   "roles": {
+    "AGENT": "医生",
+    "PATIENT": "人"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "洗(AGENT=医生 PATIENT=人) [BA PERF]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "奶奶用银行",
+  "gold": {
+   "kind": "event",
+   "pred": "用",
+   "roles": {
+    "PATIENT": "银行",
+    "AGENT": "奶奶"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "用(AGENT=奶奶 PATIENT=银行) "
  },
  {
   "tag": "NEGADJ",
@@ -2898,6 +1133,594 @@
  },
  {
   "tag": "ADJ",
+  "sent": "窗很聪明",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "衣服和书喝图书馆",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "鸡和老师喝衣服",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "冷的学校",
+  "gold": {
+   "kind": "entity",
+   "pred": "学校",
+   "base": "学校",
+   "roles": {},
+   "mods": {
+    "ATTR": "冷"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "学校() [ATTR]"
+ },
+ {
+  "tag": "SV",
+  "sent": "学校说话",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "我和姐姐读帽子",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "肉在老师",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "老师被奶奶学了",
+  "gold": {
+   "kind": "event",
+   "pred": "学",
+   "roles": {
+    "PATIENT": "老师",
+    "AGENT": "奶奶"
+   },
+   "mods": {
+    "BEI": true,
+    "PERF": true
+   },
+   "construction": "BEI"
+  },
+  "gold_desc": "学(AGENT=奶奶 PATIENT=老师) [BEI PERF]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "鸟有公园",
+  "gold": {
+   "kind": "event",
+   "pred": "有",
+   "roles": {
+    "POSSESSED": "公园",
+    "POSSESSOR": "鸟"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "有(POSSESSED=公园 POSSESSOR=鸟) "
+ },
+ {
+  "tag": "SVO",
+  "sent": "报纸等猪",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "球把茶关了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "熊去花吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "石头和工人读熊",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "我把电视学了",
+  "gold": {
+   "kind": "event",
+   "pred": "学",
+   "roles": {
+    "AGENT": "我",
+    "PATIENT": "电视"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "学(AGENT=我 PATIENT=电视) [BA PERF]"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "球不好",
+  "gold": {
+   "kind": "state",
+   "pred": "好",
+   "roles": {
+    "THEME": "球"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "好(THEME=球) [NEG]"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "学校不漂亮",
+  "gold": {
+   "kind": "state",
+   "pred": "漂亮",
+   "roles": {
+    "THEME": "学校"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "漂亮(THEME=学校) [NEG]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "面包卖电视",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "电脑爱车站吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "鸡在鸡",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "杂志跑",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "报纸说窗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "人在电视",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "马很好",
+  "gold": {
+   "kind": "state",
+   "pred": "好",
+   "roles": {
+    "THEME": "马"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "好(THEME=马) [DEGREE]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "鱼说手机",
+  "gold": {
+   "kind": "event",
+   "pred": "说",
+   "roles": {
+    "PATIENT": "手机",
+    "AGENT": "鱼"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "说(AGENT=鱼 PATIENT=手机) "
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "老师不红",
+  "gold": {
+   "kind": "state",
+   "pred": "红",
+   "roles": {
+    "THEME": "老师"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "红(THEME=老师) [NEG]"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "果汁和图书馆做猴",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "我很冷",
+  "gold": {
+   "kind": "state",
+   "pred": "冷",
+   "roles": {
+    "THEME": "我"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "冷(THEME=我) [DEGREE]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "咖啡给熊老师",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "他很好",
+  "gold": {
+   "kind": "state",
+   "pred": "好",
+   "roles": {
+    "THEME": "他"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "好(THEME=他) [DEGREE]"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "猫和饭开花",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "安静的狗",
+  "gold": {
+   "kind": "entity",
+   "pred": "狗",
+   "base": "狗",
+   "roles": {},
+   "mods": {
+    "ATTR": "安静"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "狗() [ATTR]"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "电视不旧",
+  "gold": {
+   "kind": "state",
+   "pred": "旧",
+   "roles": {
+    "THEME": "电视"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "旧(THEME=电视) [NEG]"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "同学和小明关公园",
+  "gold": {
+   "kind": "event",
+   "pred": "关",
+   "roles": {
+    "PATIENT": "公园",
+    "AGENT": "同学+小明"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "关(AGENT=同学+小明 PATIENT=公园) "
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个家回公园",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "鸭走",
+  "gold": {
+   "kind": "event",
+   "pred": "走",
+   "roles": {
+    "AGENT": "鸭"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "走(AGENT=鸭) "
+ },
+ {
+  "tag": "SVOO",
+  "sent": "弟弟问桌子书包",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "哥哥给笔米饭",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "冷的鸭",
+  "gold": {
+   "kind": "entity",
+   "pred": "鸭",
+   "base": "鸭",
+   "roles": {},
+   "mods": {
+    "ATTR": "冷"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "鸭() [ATTR]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "草在葡萄",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "鱼被葡萄买了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "你说虎吗",
+  "gold": {
+   "kind": "event",
+   "pred": "说",
+   "roles": {
+    "PATIENT": "虎",
+    "AGENT": "你"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "说(AGENT=你 PATIENT=虎) [Q]"
+ },
+ {
+  "tag": "BEI",
+  "sent": "猴被桌子开了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "新的小明",
+  "gold": {
+   "kind": "entity",
+   "pred": "小明",
+   "base": "小明",
+   "roles": {},
+   "mods": {
+    "ATTR": "新"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "小明() [ATTR]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "手机在朋友",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "医生喜欢老师吗",
+  "gold": {
+   "kind": "event",
+   "pred": "喜欢",
+   "roles": {
+    "STIMULUS": "老师",
+    "EXPERIENCER": "医生"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "喜欢(EXPERIENCER=医生 STIMULUS=老师) [Q]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "窗教学校工人",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "面条很高兴",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "妹妹不聪明",
+  "gold": {
+   "kind": "state",
+   "pred": "聪明",
+   "roles": {
+    "THEME": "妹妹"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "聪明(THEME=妹妹) [NEG]"
+ },
+ {
+  "tag": "BEI",
+  "sent": "水被饭找了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "矮的草",
+  "gold": {
+   "kind": "entity",
+   "pred": "草",
+   "base": "草",
+   "roles": {},
+   "mods": {
+    "ATTR": "矮"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "草() [ATTR]"
+ },
+ {
+  "tag": "BA",
+  "sent": "奶奶把你卖了",
+  "gold": {
+   "kind": "event",
+   "pred": "卖",
+   "roles": {
+    "AGENT": "奶奶",
+    "PATIENT": "你"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "卖(AGENT=奶奶 PATIENT=你) [BA PERF]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "同学问杂志你",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "衣服打鸭",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "热的帽子",
+  "gold": {
+   "kind": "entity",
+   "pred": "帽子",
+   "base": "帽子",
+   "roles": {},
+   "mods": {
+    "ATTR": "热"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "帽子() [ATTR]"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "电视不漂亮",
+  "gold": {
+   "kind": "state",
+   "pred": "漂亮",
+   "roles": {
+    "THEME": "电视"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "漂亮(THEME=电视) [NEG]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "菜问狗帽子",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "马关工人",
+  "gold": {
+   "kind": "event",
+   "pred": "关",
+   "roles": {
+    "PATIENT": "工人",
+    "AGENT": "马"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "关(AGENT=马 PATIENT=工人) "
+ },
+ {
+  "tag": "ADJ",
   "sent": "鞋很旧",
   "gold": {
    "kind": "state",
@@ -2913,8 +1736,916 @@
   "gold_desc": "旧(THEME=鞋) [DEGREE]"
  },
  {
+  "tag": "ATTR",
+  "sent": "好的梨",
+  "gold": {
+   "kind": "entity",
+   "pred": "梨",
+   "base": "梨",
+   "roles": {},
+   "mods": {
+    "ATTR": "好"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "梨() [ATTR]"
+ },
+ {
+  "tag": "Q",
+  "sent": "妈妈等苹果吗",
+  "gold": {
+   "kind": "event",
+   "pred": "等",
+   "roles": {
+    "PATIENT": "苹果",
+    "AGENT": "妈妈"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "等(AGENT=妈妈 PATIENT=苹果) [Q]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "橘子很冷",
+  "gold": {
+   "kind": "state",
+   "pred": "冷",
+   "roles": {
+    "THEME": "橘子"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "冷(THEME=橘子) [DEGREE]"
+ },
+ {
+  "tag": "SV",
+  "sent": "报纸走",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "家和衣服学鱼",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个鸡蛋看水",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "狗给家医生",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个小明知道茶",
+  "gold": {
+   "kind": "event",
+   "pred": "知道",
+   "roles": {
+    "STIMULUS": "茶",
+    "EXPERIENCER": {
+     "kind": "entity",
+     "pred": "一个小明",
+     "base": "小明",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "知道(EXPERIENCER=一个小明() [QUANT] STIMULUS=茶) "
+ },
+ {
+  "tag": "SVO",
+  "sent": "工人读姐姐",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "葡萄不漂亮",
+  "gold": {
+   "kind": "state",
+   "pred": "漂亮",
+   "roles": {
+    "THEME": "葡萄"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "漂亮(THEME=葡萄) [NEG]"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个我读葡萄",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
   "tag": "LOC",
-  "sent": "家在橘子",
+  "sent": "他在面包",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "橘子不慢",
+  "gold": {
+   "kind": "state",
+   "pred": "慢",
+   "roles": {
+    "THEME": "橘子"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "慢(THEME=橘子) [NEG]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "窗洗苹果",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个小明开象",
+  "gold": {
+   "kind": "event",
+   "pred": "开",
+   "roles": {
+    "PATIENT": "象",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个小明",
+     "base": "小明",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "开(AGENT=一个小明() [QUANT] PATIENT=象) "
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一只鸡打橘子",
+  "gold": {
+   "kind": "event",
+   "pred": "打/hit",
+   "roles": {
+    "PATIENT": "橘子",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一只鸡",
+     "base": "鸡",
+     "roles": {},
+     "mods": {
+      "QUANT": "一只"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "打/hit(AGENT=一只鸡() [QUANT] PATIENT=橘子) "
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个小明学学生",
+  "gold": {
+   "kind": "event",
+   "pred": "学",
+   "roles": {
+    "PATIENT": "学生",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个小明",
+     "base": "小明",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "学(AGENT=一个小明() [QUANT] PATIENT=学生) "
+ },
+ {
+  "tag": "BEI",
+  "sent": "花被羊说了",
+  "gold": {
+   "kind": "event",
+   "pred": "说",
+   "roles": {
+    "PATIENT": "花",
+    "AGENT": "羊"
+   },
+   "mods": {
+    "BEI": true,
+    "PERF": true
+   },
+   "construction": "BEI"
+  },
+  "gold_desc": "说(AGENT=羊 PATIENT=花) [BEI PERF]"
+ },
+ {
+  "tag": "SV",
+  "sent": "鹅跑",
+  "gold": {
+   "kind": "event",
+   "pred": "跑",
+   "roles": {
+    "AGENT": "鹅"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "跑(AGENT=鹅) "
+ },
+ {
+  "tag": "ATTR",
+  "sent": "长的银行",
+  "gold": {
+   "kind": "entity",
+   "pred": "银行",
+   "base": "银行",
+   "roles": {},
+   "mods": {
+    "ATTR": "长"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "银行() [ATTR]"
+ },
+ {
+  "tag": "Q",
+  "sent": "公园来人吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "杂志被电脑读了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "牛睡",
+  "gold": {
+   "kind": "event",
+   "pred": "睡",
+   "roles": {
+    "AGENT": "牛"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "睡(AGENT=牛) "
+ },
+ {
+  "tag": "SV",
+  "sent": "人唱",
+  "gold": {
+   "kind": "event",
+   "pred": "唱",
+   "roles": {
+    "AGENT": "人"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "唱(AGENT=人) "
+ },
+ {
+  "tag": "Q",
+  "sent": "咖啡听帽子吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "车站把弟弟卖了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "鸡不快",
+  "gold": {
+   "kind": "state",
+   "pred": "快",
+   "roles": {
+    "THEME": "鸡"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "快(THEME=鸡) [NEG]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "鸡蛋给牛鸟",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个同学看橘子",
+  "gold": {
+   "kind": "event",
+   "pred": "看/look",
+   "roles": {
+    "PATIENT": "橘子",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个同学",
+     "base": "同学",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "看/look(AGENT=一个同学() [QUANT] PATIENT=橘子) "
+ },
+ {
+  "tag": "LOC",
+  "sent": "兔在葡萄",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "咖啡被梨听了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "鸭在人",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "学校把电脑做了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "象喝电视吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "熊把球买了",
+  "gold": {
+   "kind": "event",
+   "pred": "买",
+   "roles": {
+    "AGENT": "熊",
+    "PATIENT": "球"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "买(AGENT=熊 PATIENT=球) [BA PERF]"
+ },
+ {
+  "tag": "BA",
+  "sent": "肉把鱼吃了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个爷爷用桌子",
+  "gold": {
+   "kind": "event",
+   "pred": "用",
+   "roles": {
+    "PATIENT": "桌子",
+    "AGENT": {
+     "kind": "entity",
+     "pred": "一个爷爷",
+     "base": "爷爷",
+     "roles": {},
+     "mods": {
+      "QUANT": "一个"
+     },
+     "construction": "entity"
+    }
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "用(AGENT=一个爷爷() [QUANT] PATIENT=桌子) "
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "电脑不安静",
+  "gold": {
+   "kind": "state",
+   "pred": "安静",
+   "roles": {
+    "THEME": "电脑"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "安静(THEME=电脑) [NEG]"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "医院和奶奶买苹果",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "果汁给车站饭",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "衣服教弟弟朋友",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "石头在肉",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "猪不干净",
+  "gold": {
+   "kind": "state",
+   "pred": "干净",
+   "roles": {
+    "THEME": "猪"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "干净(THEME=猪) [NEG]"
+ },
+ {
+  "tag": "Q",
+  "sent": "花来商店吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "慢的弟弟",
+  "gold": {
+   "kind": "entity",
+   "pred": "弟弟",
+   "base": "弟弟",
+   "roles": {},
+   "mods": {
+    "ATTR": "慢"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "弟弟() [ATTR]"
+ },
+ {
+  "tag": "SV",
+  "sent": "牛奶说话",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "马把姐姐打了",
+  "gold": {
+   "kind": "event",
+   "pred": "打/hit",
+   "roles": {
+    "AGENT": "马",
+    "PATIENT": "姐姐"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "打/hit(AGENT=马 PATIENT=姐姐) [BA PERF]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "肉等马",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "笔很小",
+  "gold": {
+   "kind": "state",
+   "pred": "小",
+   "roles": {
+    "THEME": "笔"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "小(THEME=笔) [DEGREE]"
+ },
+ {
+  "tag": "Q",
+  "sent": "家写教室吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "学校跳",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "脏的鸭",
+  "gold": {
+   "kind": "entity",
+   "pred": "鸭",
+   "base": "鸭",
+   "roles": {},
+   "mods": {
+    "ATTR": "脏"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "鸭() [ATTR]"
+ },
+ {
+  "tag": "BA",
+  "sent": "鸟把牛卖了",
+  "gold": {
+   "kind": "event",
+   "pred": "卖",
+   "roles": {
+    "AGENT": "鸟",
+    "PATIENT": "牛"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "卖(AGENT=鸟 PATIENT=牛) [BA PERF]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "杂志很聪明",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "电脑喝鸟吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "老师把爸爸洗了",
+  "gold": {
+   "kind": "event",
+   "pred": "洗",
+   "roles": {
+    "AGENT": "老师",
+    "PATIENT": "爸爸"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "洗(AGENT=老师 PATIENT=爸爸) [BA PERF]"
+ },
+ {
+  "tag": "BA",
+  "sent": "妈妈把面条卖了",
+  "gold": {
+   "kind": "event",
+   "pred": "卖",
+   "roles": {
+    "AGENT": "妈妈",
+    "PATIENT": "面条"
+   },
+   "mods": {
+    "BA": true,
+    "PERF": true
+   },
+   "construction": "BA"
+  },
+  "gold_desc": "卖(AGENT=妈妈 PATIENT=面条) [BA PERF]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "工人在姐姐",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "电脑跳",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "笔在苹果",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "我学鞋",
+  "gold": {
+   "kind": "event",
+   "pred": "学",
+   "roles": {
+    "PATIENT": "鞋",
+    "AGENT": "我"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "学(AGENT=我 PATIENT=鞋) "
+ },
+ {
+  "tag": "ADJ",
+  "sent": "哥哥很旧",
+  "gold": {
+   "kind": "state",
+   "pred": "旧",
+   "roles": {
+    "THEME": "哥哥"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "旧(THEME=哥哥) [DEGREE]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "马很安静",
+  "gold": {
+   "kind": "state",
+   "pred": "安静",
+   "roles": {
+    "THEME": "马"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "安静(THEME=马) [DEGREE]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "茶开橘子",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "面包不冷",
+  "gold": {
+   "kind": "state",
+   "pred": "冷",
+   "roles": {
+    "THEME": "面包"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "冷(THEME=面包) [NEG]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "咖啡很高",
+  "gold": {
+   "kind": "state",
+   "pred": "高",
+   "roles": {
+    "THEME": "咖啡"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "高(THEME=咖啡) [DEGREE]"
+ },
+ {
+  "tag": "Q",
+  "sent": "梨关帽子吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "牛被杂志说了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "狗和妈妈开肉",
+  "gold": {
+   "kind": "event",
+   "pred": "开",
+   "roles": {
+    "PATIENT": "肉",
+    "AGENT": "狗+妈妈"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "开(AGENT=狗+妈妈 PATIENT=肉) "
+ },
+ {
+  "tag": "SVOO",
+  "sent": "人问教室医院",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "肉和帽子读书",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "兔被书开了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "医生在虎",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "橘子走",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "爷爷知道教室",
+  "gold": {
+   "kind": "event",
+   "pred": "知道",
+   "roles": {
+    "STIMULUS": "教室",
+    "EXPERIENCER": "爷爷"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "知道(EXPERIENCER=爷爷 STIMULUS=教室) "
+ },
+ {
+  "tag": "SV",
+  "sent": "肉跑",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "电脑和弟弟喝面包",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "书包教图书馆猪",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "桃说话",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BA",
+  "sent": "肉把虎吃了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "图书馆用牛",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "鸡说话",
+  "gold": {
+   "kind": "event",
+   "pred": "说话",
+   "roles": {
+    "AGENT": "鸡"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "说话(AGENT=鸡) "
+ },
+ {
+  "tag": "SV",
+  "sent": "教室唱",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "同学睡",
+  "gold": {
+   "kind": "event",
+   "pred": "睡",
+   "roles": {
+    "AGENT": "同学"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "睡(AGENT=同学) "
+ },
+ {
+  "tag": "SVOO",
+  "sent": "同学给车站牛奶",
   "gold": null,
   "gold_desc": "REJECT"
  },
@@ -2934,20 +2665,175 @@
   "gold_desc": "西瓜() [ATTR]"
  },
  {
+  "tag": "SVOO",
+  "sent": "老师给小明桌子",
+  "gold": {
+   "kind": "event",
+   "pred": "给",
+   "roles": {
+    "RECIPIENT": "小明",
+    "PATIENT": "桌子",
+    "AGENT": "老师"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "给(AGENT=老师 PATIENT=桌子 RECIPIENT=小明) "
+ },
+ {
+  "tag": "BEI",
+  "sent": "妹妹被桌子开了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
   "tag": "NEGADJ",
-  "sent": "学校不脏",
+  "sent": "鹅不脏",
   "gold": {
    "kind": "state",
    "pred": "脏",
    "roles": {
-    "THEME": "学校"
+    "THEME": "鹅"
    },
    "mods": {
     "NEG": true
    },
    "construction": "adj_state"
   },
-  "gold_desc": "脏(THEME=学校) [NEG]"
+  "gold_desc": "脏(THEME=鹅) [NEG]"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "面包问牛橘子",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "车站开家吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "人被苹果看了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "桃学银行吗",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "肉在象",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVO",
+  "sent": "熊买象",
+  "gold": {
+   "kind": "event",
+   "pred": "买",
+   "roles": {
+    "PATIENT": "象",
+    "AGENT": "熊"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "买(AGENT=熊 PATIENT=象) "
+ },
+ {
+  "tag": "ADJ",
+  "sent": "草很安静",
+  "gold": {
+   "kind": "state",
+   "pred": "安静",
+   "roles": {
+    "THEME": "草"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "安静(THEME=草) [DEGREE]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "鸭在报纸",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个菜用肉",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "Q",
+  "sent": "鸡认识鸡蛋吗",
+  "gold": {
+   "kind": "event",
+   "pred": "认识",
+   "roles": {
+    "STIMULUS": "鸡蛋",
+    "EXPERIENCER": "鸡"
+   },
+   "mods": {
+    "Q": true
+   },
+   "construction": "SVO"
+  },
+  "gold_desc": "认识(EXPERIENCER=鸡 STIMULUS=鸡蛋) [Q]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "鱼卖窗",
+  "gold": {
+   "kind": "event",
+   "pred": "卖",
+   "roles": {
+    "PATIENT": "窗",
+    "AGENT": "鱼"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "卖(AGENT=鱼 PATIENT=窗) "
+ },
+ {
+  "tag": "CONJ",
+  "sent": "鞋和牛读米饭",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "人不脏",
+  "gold": {
+   "kind": "state",
+   "pred": "脏",
+   "roles": {
+    "THEME": "人"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "脏(THEME=人) [NEG]"
+ },
+ {
+  "tag": "BA",
+  "sent": "报纸把人看了",
+  "gold": null,
+  "gold_desc": "REJECT"
  },
  {
   "tag": "SVO",
@@ -2965,138 +2851,287 @@
   "gold_desc": "买(AGENT=医生 PATIENT=家) "
  },
  {
-  "tag": "ADJ",
-  "sent": "马很安静",
-  "gold": {
-   "kind": "state",
-   "pred": "安静",
-   "roles": {
-    "THEME": "马"
-   },
-   "mods": {
-    "DEGREE": true
-   },
-   "construction": "adj_state"
-  },
-  "gold_desc": "安静(THEME=马) [DEGREE]"
- },
- {
-  "tag": "LOC",
-  "sent": "兔在笔",
+  "tag": "QUANT",
+  "sent": "一个西瓜看车站",
   "gold": null,
   "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "高的鞋",
+  "gold": {
+   "kind": "entity",
+   "pred": "鞋",
+   "base": "鞋",
+   "roles": {},
+   "mods": {
+    "ATTR": "高"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "鞋() [ATTR]"
+ },
+ {
+  "tag": "SVO",
+  "sent": "石头喜欢妈妈",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "橘子被书看了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SV",
+  "sent": "虎睡",
+  "gold": {
+   "kind": "event",
+   "pred": "睡",
+   "roles": {
+    "AGENT": "虎"
+   },
+   "mods": {},
+   "construction": "SVO"
+  },
+  "gold_desc": "睡(AGENT=虎) "
  },
  {
   "tag": "QUANT",
-  "sent": "一个爷爷吃爷爷",
+  "sent": "一个水找商店",
   "gold": null,
   "gold_desc": "REJECT"
  },
  {
-  "tag": "Q",
-  "sent": "同学说鸟吗",
+  "tag": "SVO",
+  "sent": "面条卖草",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "爷爷被梨等了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "LOC",
+  "sent": "姐姐在水",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "老师被爷爷用了",
   "gold": {
    "kind": "event",
-   "pred": "说",
+   "pred": "用",
    "roles": {
-    "PATIENT": "鸟",
-    "AGENT": "同学"
+    "PATIENT": "老师",
+    "AGENT": "爷爷"
    },
    "mods": {
-    "Q": true
+    "BEI": true,
+    "PERF": true
    },
-   "construction": "SVO"
+   "construction": "BEI"
   },
-  "gold_desc": "说(AGENT=同学 PATIENT=鸟) [Q]"
+  "gold_desc": "用(AGENT=爷爷 PATIENT=老师) [BEI PERF]"
+ },
+ {
+  "tag": "BEI",
+  "sent": "书包被笔说了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "热的肉",
+  "gold": {
+   "kind": "entity",
+   "pred": "肉",
+   "base": "肉",
+   "roles": {},
+   "mods": {
+    "ATTR": "热"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "肉() [ATTR]"
  },
  {
   "tag": "NEGADJ",
-  "sent": "梨不长",
+  "sent": "同学不长",
   "gold": {
    "kind": "state",
    "pred": "长",
    "roles": {
-    "THEME": "梨"
+    "THEME": "同学"
    },
    "mods": {
     "NEG": true
    },
    "construction": "adj_state"
   },
-  "gold_desc": "长(THEME=梨) [NEG]"
+  "gold_desc": "长(THEME=同学) [NEG]"
  },
  {
-  "tag": "SVO",
-  "sent": "马关工人",
+  "tag": "LOC",
+  "sent": "狗在梨",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一只鹅去梨",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "QUANT",
+  "sent": "一个肉爱花",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "花很冷",
   "gold": {
-   "kind": "event",
-   "pred": "关",
+   "kind": "state",
+   "pred": "冷",
    "roles": {
-    "PATIENT": "工人",
-    "AGENT": "马"
+    "THEME": "花"
    },
-   "mods": {},
-   "construction": "SVO"
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
   },
-  "gold_desc": "关(AGENT=马 PATIENT=工人) "
+  "gold_desc": "冷(THEME=花) [DEGREE]"
+ },
+ {
+  "tag": "BA",
+  "sent": "笔把面包做了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "BEI",
+  "sent": "猴被葡萄卖了",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "笔问爷爷狗",
+  "gold": null,
+  "gold_desc": "REJECT"
  },
  {
   "tag": "CONJ",
-  "sent": "花和橘子回妈妈",
+  "sent": "石头和草说水",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "NEGADJ",
+  "sent": "水不短",
+  "gold": {
+   "kind": "state",
+   "pred": "短",
+   "roles": {
+    "THEME": "水"
+   },
+   "mods": {
+    "NEG": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "短(THEME=水) [NEG]"
+ },
+ {
+  "tag": "ATTR",
+  "sent": "长的你",
+  "gold": {
+   "kind": "entity",
+   "pred": "你",
+   "base": "你",
+   "roles": {},
+   "mods": {
+    "ATTR": "长"
+   },
+   "construction": "entity"
+  },
+  "gold_desc": "你() [ATTR]"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "肉很短",
+  "gold": {
+   "kind": "state",
+   "pred": "短",
+   "roles": {
+    "THEME": "肉"
+   },
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
+  },
+  "gold_desc": "短(THEME=肉) [DEGREE]"
+ },
+ {
+  "tag": "BA",
+  "sent": "橘子把银行做了",
   "gold": null,
   "gold_desc": "REJECT"
  },
  {
   "tag": "ATTR",
-  "sent": "旧的妹妹",
+  "sent": "忙的医院",
   "gold": {
    "kind": "entity",
-   "pred": "妹妹",
-   "base": "妹妹",
+   "pred": "医院",
+   "base": "医院",
    "roles": {},
    "mods": {
-    "ATTR": "旧"
+    "ATTR": "忙"
    },
    "construction": "entity"
   },
-  "gold_desc": "妹妹() [ATTR]"
+  "gold_desc": "医院() [ATTR]"
  },
  {
-  "tag": "BA",
-  "sent": "教室把妹妹读了",
+  "tag": "LOC",
+  "sent": "朋友在牛奶",
   "gold": null,
   "gold_desc": "REJECT"
  },
  {
-  "tag": "SVO",
-  "sent": "鱼说手机",
+  "tag": "ATTR",
+  "sent": "快的人",
   "gold": {
-   "kind": "event",
-   "pred": "说",
-   "roles": {
-    "PATIENT": "手机",
-    "AGENT": "鱼"
+   "kind": "entity",
+   "pred": "人",
+   "base": "人",
+   "roles": {},
+   "mods": {
+    "ATTR": "快"
    },
-   "mods": {},
-   "construction": "SVO"
+   "construction": "entity"
   },
-  "gold_desc": "说(AGENT=鱼 PATIENT=手机) "
- },
- {
-  "tag": "QUANT",
-  "sent": "一个石头吃爷爷",
-  "gold": null,
-  "gold_desc": "REJECT"
+  "gold_desc": "人() [ATTR]"
  },
  {
   "tag": "BA",
-  "sent": "老师把爷爷用了",
+  "sent": "我把妈妈开了",
   "gold": {
    "kind": "event",
-   "pred": "用",
+   "pred": "开",
    "roles": {
-    "AGENT": "老师",
-    "PATIENT": "爷爷"
+    "AGENT": "我",
+    "PATIENT": "妈妈"
    },
    "mods": {
     "BA": true,
@@ -3104,47 +3139,46 @@
    },
    "construction": "BA"
   },
-  "gold_desc": "用(AGENT=老师 PATIENT=爷爷) [BA PERF]"
- },
- {
-  "tag": "SVO",
-  "sent": "面包卖电视",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "BEI",
-  "sent": "窗被花打了",
-  "gold": null,
-  "gold_desc": "REJECT"
- },
- {
-  "tag": "SV",
-  "sent": "爷爷睡",
-  "gold": {
-   "kind": "event",
-   "pred": "睡",
-   "roles": {
-    "AGENT": "爷爷"
-   },
-   "mods": {},
-   "construction": "SVO"
-  },
-  "gold_desc": "睡(AGENT=爷爷) "
+  "gold_desc": "开(AGENT=我 PATIENT=妈妈) [BA PERF]"
  },
  {
   "tag": "QUANT",
-  "sent": "一只鸡喜欢肉",
+  "sent": "一本报纸做象",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "CONJ",
+  "sent": "咖啡和橘子知道草",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "ADJ",
+  "sent": "苹果很热",
   "gold": {
-   "kind": "event",
-   "pred": "喜欢",
+   "kind": "state",
+   "pred": "热",
    "roles": {
-    "STIMULUS": "肉",
-    "EXPERIENCER": "一只鸡"
+    "THEME": "苹果"
    },
-   "mods": {},
-   "construction": "SVO"
+   "mods": {
+    "DEGREE": true
+   },
+   "construction": "adj_state"
   },
-  "gold_desc": "喜欢(EXPERIENCER=一只鸡 STIMULUS=肉) "
+  "gold_desc": "热(THEME=苹果) [DEGREE]"
+ },
+ {
+  "tag": "LOC",
+  "sent": "葡萄在兔",
+  "gold": null,
+  "gold_desc": "REJECT"
+ },
+ {
+  "tag": "SVOO",
+  "sent": "葡萄问熊鸡蛋",
+  "gold": null,
+  "gold_desc": "REJECT"
  }
 ]

@@ -105,6 +105,17 @@ def _fill_gap(s, gap, head):
     return c
 
 
+def _subject_gap_ok(vp):
+    """主语关系化：VP 只缺主语，其余必选论元已填。"""
+    if "verb" not in vp or vp.get("comps"):
+        return False
+    frame = VERB_FRAME[vp["verb"]]
+    opt = VOPT[vp["verb"]]
+    if frame[0] in vp["roles"]:
+        return False
+    return all(r in vp["roles"] for r in frame[1:] if r not in opt)
+
+
 def _copy_vp2(vp, **mods):
     nv = _copy_vp(vp)
     nv["mods"].update({k: v for k, v in mods.items() if v})
@@ -112,8 +123,14 @@ def _copy_vp2(vp, **mods):
 
 
 def _np_value(np):
-    """简单 NP 存词头字符串；带嵌套（关系从句）的 NP 存整个实体，避免丢失 REL。"""
-    return np if np.get("comps") else np["pred"]
+    """所有带修饰/嵌套的 NP 都存整个实体；只有光杆 NP 存词头字符串。
+
+    这样嵌入更大句子时 ATTR / QUANT / REL 都不会丢。
+    """
+    if (np.get("comps") or np["mods"].get("ATTR")
+            or np["mods"].get("QUANT")):
+        return np
+    return np["pred"]
 
 
 def _with_mods(m, **mods):
@@ -337,6 +354,22 @@ def _combine(L, R, add):
         for np in R.get("NP", []):
             head = np.get("base", np["pred"])
             rel = _fill_gap(rm["meaning"], rm["gap"], head)
+            add("NP", entity(head, base=head, comps={"REL": rel},
+                             REL_ROLE=rm["gap"]))
+
+    # R24: VP + PART(的) -> VRELMOD（主语关系化；VP 只缺主语）
+    for vp in L.get("VP", []):
+        for pt in R.get("PART", []):
+            if pt["kind"] != "MOD":
+                continue
+            if _subject_gap_ok(vp):
+                add("VRELMOD", {"vp": vp, "gap": VERB_FRAME[vp["verb"]][0]})
+
+    # R25: VRELMOD + N -> NP
+    for rm in L.get("VRELMOD", []):
+        for np in R.get("NP", []):
+            head = np.get("base", np["pred"])
+            rel = _fill_gap(_vp_to_meaning(rm["vp"]), rm["gap"], head)
             add("NP", entity(head, base=head, comps={"REL": rel},
                              REL_ROLE=rm["gap"]))
 

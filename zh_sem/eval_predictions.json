@@ -265,14 +265,14 @@
   },
   {
     "sent": "我买一个苹果",
-    "gold": "买(AGENT=我 PATIENT=一个苹果) ",
-    "pred": "买(AGENT=我 PATIENT=一个苹果) ",
+    "gold": "买(AGENT=我 PATIENT=一个苹果() [QUANT]) ",
+    "pred": "买(AGENT=我 PATIENT=一个苹果() [QUANT]) ",
     "ok": true
   },
   {
     "sent": "一只狗吃苹果",
-    "gold": "吃(AGENT=一只狗 PATIENT=苹果) ",
-    "pred": "吃(AGENT=一只狗 PATIENT=苹果) ",
+    "gold": "吃(AGENT=一只狗() [QUANT] PATIENT=苹果) ",
+    "pred": "吃(AGENT=一只狗() [QUANT] PATIENT=苹果) ",
     "ok": true
   },
   {

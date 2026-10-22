@@ -71,6 +71,7 @@ NOUN_PROPS = {
     "公园": _p(place=True), "医院": _p(place=True), "商店": _p(place=True),
     "银行": _p(place=True), "车站": _p(place=True), "教室": _p(place=True),
     "图书馆": _p(place=True), "树": _p(), "草": _p(edible=True),
+    "人": _p(animate=True),
 }
 
 
@@ -195,6 +196,7 @@ ENTRIES = {
     "车站": [N("车站", "PLACE")], "教室": [N("教室", "PLACE")],
     "图书馆": [N("图书馆", "PLACE")], "树": [N("树", "PLANT")],
     "草": [N("草", "PLANT")],
+    "人": [N("人", "HUMAN")],
     # ---- 扩展动词 ----
     "写": [V("写", "写", ["AGENT", "PATIENT"], ["PATIENT"])],
     "读": [V("读", "读", ["AGENT", "PATIENT"], ["PATIENT"])],
@@ -222,6 +224,7 @@ ENTRIES = {
     "认识": [V("认识", "认识", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
     "爱": [V("爱", "爱", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
     "知道": [V("知道", "知道", ["EXPERIENCER", "STIMULUS"], ["STIMULUS"])],
+    "说话": [V("说话", "说话", ["AGENT"], [])],
     # ---- 扩展形容词 ----
     "新": [A()], "旧": [A()], "快": [A()], "慢": [A()], "高": [A()], "矮": [A()],
     "长": [A()], "短": [A()], "冷": [A()], "热": [A()], "干净": [A()], "脏": [A()],

@@ -1,14 +1,14 @@
 {
   "n": 300,
-  "freshly_generated": false,
-  "overall": 0.98,
-  "valid_exact": 0.9927536231884058,
-  "invalid_reject": 0.9691358024691358,
-  "valid_n": 138,
-  "invalid_n": 162,
+  "freshly_generated": true,
+  "overall": 0.9766666666666667,
+  "valid_exact": 0.9924242424242424,
+  "invalid_reject": 0.9642857142857143,
+  "valid_n": 132,
+  "invalid_n": 168,
   "by_tag": {
     "ADJ": {
-      "acc": 0.96,
+      "acc": 1.0,
       "n": 25
     },
     "ATTR": {
@@ -24,7 +24,7 @@
       "n": 25
     },
     "CONJ": {
-      "acc": 1.0,
+      "acc": 0.96,
       "n": 25
     },
     "LOC": {
@@ -32,15 +32,15 @@
       "n": 25
     },
     "NEGADJ": {
-      "acc": 1.0,
+      "acc": 0.96,
       "n": 25
     },
     "Q": {
-      "acc": 0.92,
+      "acc": 0.96,
       "n": 25
     },
     "QUANT": {
-      "acc": 1.0,
+      "acc": 0.96,
       "n": 25
     },
     "SV": {
@@ -56,6 +56,6 @@
       "n": 25
     }
   },
-  "accept_all_baseline": 0.46,
+  "accept_all_baseline": 0.44,
   "note": "标签来自手写验证器，不是独立人工真值。"
 }

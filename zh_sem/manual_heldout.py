@@ -74,6 +74,17 @@ MANUAL_VALID = [
         "PATIENT": entity("书",
                           comps={"REL": E("说", {"AGENT": "他", "PATIENT": "书"})},
                           REL_ROLE="PATIENT")})),
+    # ---- ATTR / QUANT 保留 + 主语关系化 ----
+    ("我看红的花", E("看/look", {
+        "AGENT": "我", "PATIENT": entity("花", ATTR="红")})),
+    ("说话的人", entity("人",
+                     comps={"REL": E("说话", {"AGENT": "人"})},
+                     REL_ROLE="AGENT")),
+    ("我看说话的人", E("看/look", {
+        "AGENT": "我",
+        "PATIENT": entity("人",
+                          comps={"REL": E("说话", {"AGENT": "人"})},
+                          REL_ROLE="AGENT")})),
     # ---- 新动词 SV ----
     ("姐姐唱", E("唱", {"AGENT": "姐姐"})),
     ("哥哥跳", E("跳", {"AGENT": "哥哥"})),
@@ -96,8 +107,10 @@ MANUAL_VALID = [
     ("你打球吗", E("打/play", {"AGENT": "你", "PATIENT": "球"}, Q=True)),
     ("妈妈看书吗", E("看/read", {"AGENT": "妈妈", "PATIENT": "书"}, Q=True)),
     ("我和姐姐打球", E("打/play", {"AGENT": "我+姐姐", "PATIENT": "球"})),
-    ("一只猫喝水", E("喝", {"AGENT": "一只猫", "PATIENT": "水"})),
-    ("弟弟吃一个苹果", E("吃", {"AGENT": "弟弟", "PATIENT": "一个苹果"})),
+    ("一只猫喝水", E("喝", {"AGENT": entity("一只猫", QUANT="一只"),
+                           "PATIENT": "水"})),
+    ("弟弟吃一个苹果", E("吃", {"AGENT": "弟弟",
+                               "PATIENT": entity("一个苹果", QUANT="一个")})),
     ("我昨天去了学校", E("去", {"AGENT": "我", "GOAL": "学校"}, TIME=True, PERF=True)),
 ]
 

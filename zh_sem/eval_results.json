@@ -48,20 +48,20 @@
   },
   "controls": {
     "random_props_consistent": {
-      "valid_exact": 0.90625,
-      "invalid_reject": 0.96,
-      "overall": 0.9390243902439024,
-      "valid_ok": 29,
-      "valid_n": 32,
-      "invalid_ok": 48,
-      "invalid_n": 50,
-      "changed_nouns": 72
+      "valid_exact": 0.8695652173913043,
+      "invalid_reject": 0.9491525423728814,
+      "overall": 0.926829268292683,
+      "valid_ok": 20,
+      "valid_n": 23,
+      "invalid_ok": 56,
+      "invalid_n": 59,
+      "changed_nouns": 74
     },
     "random_props_broken": {
-      "valid_exact": 0.9148936170212766,
+      "valid_exact": 0.8297872340425532,
       "invalid_reject": 0.45714285714285713,
-      "overall": 0.7195121951219512,
-      "valid_ok": 43,
+      "overall": 0.6707317073170732,
+      "valid_ok": 39,
       "valid_n": 47,
       "invalid_ok": 16,
       "invalid_n": 35
@@ -110,8 +110,8 @@
         },
         {
           "sent": "我买一个苹果",
-          "gold": "买(AGENT=我 PATIENT=一个苹果) ",
-          "pred": "买(AGENT=我 PATIENT=一个苹果) ",
+          "gold": "买(AGENT=我 PATIENT=一个苹果() [QUANT]) ",
+          "pred": "买(AGENT=我 PATIENT=一个苹果() [QUANT]) ",
           "ok": true
         },
         {
@@ -194,8 +194,8 @@
         },
         {
           "sent": "一只狗吃苹果",
-          "gold": "吃(AGENT=一只狗 PATIENT=苹果) ",
-          "pred": "吃(AGENT=一只狗 PATIENT=苹果) ",
+          "gold": "吃(AGENT=一只狗() [QUANT] PATIENT=苹果) ",
+          "pred": "吃(AGENT=一只狗() [QUANT] PATIENT=苹果) ",
           "ok": true
         },
         {
@@ -578,6 +578,11 @@
       "note": "held-out 无该动词"
     },
     {
+      "verb": "说话",
+      "heldout": 0,
+      "note": "held-out 无该动词"
+    },
+    {
       "verb": "跑",
       "heldout": 0,
       "note": "held-out 无该动词"
@@ -590,7 +595,7 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.060975609756097615,
+    "P3c_consistent_world_overall_delta": -0.07317073170731703,
     "P4_position_only_near_accept_all": true,
     "P5_lovo_unseen_verb_ge_0.60": false
   }

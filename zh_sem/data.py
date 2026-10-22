@@ -52,6 +52,15 @@ TRAIN_VALID = [
         "PATIENT": entity("书",
                           comps={"REL": E("说", {"AGENT": "他", "PATIENT": "书"})},
                           REL_ROLE="PATIENT")})),
+    # ---- ATTR / QUANT / 主语关系化 ----
+    ("我说话", E("说话", {"AGENT": "我"})),
+    ("老师看红的花", E("看/look", {
+        "AGENT": "老师", "PATIENT": entity("花", ATTR="红")})),
+    ("老师看说话的人", E("看/look", {
+        "AGENT": "老师",
+        "PATIENT": entity("人",
+                          comps={"REL": E("说话", {"AGENT": "人"})},
+                          REL_ROLE="AGENT")})),
     # ---- 看：两个义项 ----
     ("老师看书", E("看/read", {"AGENT": "老师", "PATIENT": "书"})),
     ("你看书", E("看/read", {"AGENT": "你", "PATIENT": "书"})),
@@ -73,9 +82,12 @@ TRAIN_VALID = [
     ("老师看书吗", E("看/read", {"AGENT": "老师", "PATIENT": "书"}, Q=True)),
     ("花不红", S("红", "花", NEG=True)),
     ("老师不高兴", S("高兴", "老师", NEG=True)),
-    ("我吃一个苹果", E("吃", {"AGENT": "我", "PATIENT": "一个苹果"})),
-    ("妈妈买一本书", E("买", {"AGENT": "妈妈", "PATIENT": "一本书"})),
-    ("一只猫吃鱼", E("吃", {"AGENT": "一只猫", "PATIENT": "鱼"})),
+    ("我吃一个苹果", E("吃", {"AGENT": "我",
+                             "PATIENT": entity("一个苹果", QUANT="一个")})),
+    ("妈妈买一本书", E("买", {"AGENT": "妈妈",
+                             "PATIENT": entity("一本书", QUANT="一本")})),
+    ("一只猫吃鱼", E("吃", {"AGENT": entity("一只猫", QUANT="一只"),
+                           "PATIENT": "鱼"})),
     # ---- 其他动词 ----
     ("我买书", E("买", {"AGENT": "我", "PATIENT": "书"})),
     ("他买苹果", E("买", {"AGENT": "他", "PATIENT": "苹果"})),
@@ -194,8 +206,10 @@ HELDOUT_VALID = [
     ("妈妈喝水吗", E("喝", {"AGENT": "妈妈", "PATIENT": "水"}, Q=True)),
     ("苹果不红", S("红", "苹果", NEG=True)),
     ("妈妈不高兴", S("高兴", "妈妈", NEG=True)),
-    ("我买一个苹果", E("买", {"AGENT": "我", "PATIENT": "一个苹果"})),
-    ("一只狗吃苹果", E("吃", {"AGENT": "一只狗", "PATIENT": "苹果"})),
+    ("我买一个苹果", E("买", {"AGENT": "我",
+                             "PATIENT": entity("一个苹果", QUANT="一个")})),
+    ("一只狗吃苹果", E("吃", {"AGENT": entity("一只狗", QUANT="一只"),
+                             "PATIENT": "苹果"})),
     ("老师和妈妈看学校", E("看/visit", {"AGENT": "老师+妈妈", "PATIENT": "学校"})),
 ]
 
