@@ -1,0 +1,63 @@
+{
+  "n_eval": 200,
+  "signature_overlap": {
+    "count": 65,
+    "n_eval_sigs": 101
+  },
+  "A": [
+    {
+      "round": 1,
+      "n_train": 119,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
+    },
+    {
+      "round": 2,
+      "n_train": 179,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
+    },
+    {
+      "round": 3,
+      "n_train": 239,
+      "accuracy": 1.0,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0
+    }
+  ],
+  "B": [
+    {
+      "round": 1,
+      "n_train": 119,
+      "accuracy": 0.71,
+      "valid_exact": 0.6923076923076923,
+      "invalid_reject": 0.7185185185185186
+    },
+    {
+      "round": 2,
+      "n_train": 179,
+      "accuracy": 0.725,
+      "valid_exact": 0.2153846153846154,
+      "invalid_reject": 0.9703703703703703
+    },
+    {
+      "round": 3,
+      "n_train": 239,
+      "accuracy": 0.655,
+      "valid_exact": 0.8,
+      "invalid_reject": 0.5851851851851851
+    }
+  ],
+  "C": {
+    "accuracy": 0.87
+  },
+  "mcnemar_AB": {
+    "p": 3.3881317890172014e-21,
+    "A_only_correct": 69,
+    "B_only_correct": 0
+  },
+  "P6_rsi_effective": true,
+  "note": "评测标签来自手写验证器；这里的读数只能叫『与验证器一致率』，验证器是模型的上限，不是独立真值。"
+}

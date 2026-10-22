@@ -1,0 +1,331 @@
+{
+  "full": {
+    "valid_exact": 1.0,
+    "invalid_reject": 1.0,
+    "overall": 1.0,
+    "valid_ok": 17,
+    "valid_n": 17,
+    "invalid_ok": 14,
+    "invalid_n": 14
+  },
+  "baselines": {
+    "accept_all": {
+      "valid_exact": 1.0,
+      "invalid_reject": 0.0,
+      "overall": 0.5483870967741935,
+      "valid_ok": 17,
+      "valid_n": 17,
+      "invalid_ok": 0,
+      "invalid_n": 14
+    },
+    "reject_all": {
+      "valid_exact": 0.0,
+      "invalid_reject": 1.0,
+      "overall": 0.45161290322580644,
+      "valid_ok": 0,
+      "valid_n": 17,
+      "invalid_ok": 14,
+      "invalid_n": 14
+    },
+    "cell_lookup": {
+      "valid_exact": 1.0,
+      "invalid_reject": 0.21428571428571427,
+      "overall": 0.6451612903225806,
+      "valid_ok": 17,
+      "valid_n": 17,
+      "invalid_ok": 3,
+      "invalid_n": 14
+    },
+    "verifier": {
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0,
+      "overall": 1.0,
+      "valid_ok": 17,
+      "valid_n": 17,
+      "invalid_ok": 14,
+      "invalid_n": 14
+    }
+  },
+  "controls": {
+    "random_props_consistent": {
+      "valid_exact": 0.6666666666666666,
+      "invalid_reject": 1.0,
+      "overall": 0.8709677419354839,
+      "valid_ok": 8,
+      "valid_n": 12,
+      "invalid_ok": 19,
+      "invalid_n": 19,
+      "changed_nouns": 15
+    },
+    "random_props_broken": {
+      "valid_exact": 0.8235294117647058,
+      "invalid_reject": 0.5714285714285714,
+      "overall": 0.7096774193548387,
+      "valid_ok": 14,
+      "valid_n": 17,
+      "invalid_ok": 8,
+      "invalid_n": 14
+    },
+    "position_only": {
+      "valid_exact": 1.0,
+      "invalid_reject": 0.0,
+      "overall": 0.5483870967741935,
+      "valid_ok": 17,
+      "valid_n": 17,
+      "invalid_ok": 0,
+      "invalid_n": 14
+    }
+  },
+  "lovo": [
+    {
+      "verb": "买",
+      "heldout": 2,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0,
+      "overall": 1.0,
+      "items": [
+        {
+          "sent": "我买苹果",
+          "gold": "买(AGENT=我 PATIENT=苹果) ",
+          "pred": "买(AGENT=我 PATIENT=苹果) ",
+          "ok": true
+        },
+        {
+          "sent": "石头买书",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "verb": "去",
+      "heldout": 3,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.5,
+      "overall": 0.6666666666666666,
+      "items": [
+        {
+          "sent": "小明去学校",
+          "gold": "去(AGENT=小明 GOAL=学校) ",
+          "pred": "去(AGENT=小明 GOAL=学校) ",
+          "ok": true
+        },
+        {
+          "sent": "桌子去学校",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "小明去书",
+          "gold": "REJECT",
+          "pred": "去(AGENT=小明 GOAL=书) ",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "verb": "吃",
+      "heldout": 8,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.4,
+      "overall": 0.625,
+      "items": [
+        {
+          "sent": "狗吃苹果",
+          "gold": "吃(AGENT=狗 PATIENT=苹果) ",
+          "pred": "吃(AGENT=狗 PATIENT=苹果) ",
+          "ok": true
+        },
+        {
+          "sent": "鸡吃苹果",
+          "gold": "吃(AGENT=鸡 PATIENT=苹果) ",
+          "pred": "吃(AGENT=鸡 PATIENT=苹果) ",
+          "ok": true
+        },
+        {
+          "sent": "猫吃苹果",
+          "gold": "吃(AGENT=猫 PATIENT=苹果) ",
+          "pred": "吃(AGENT=猫 PATIENT=苹果) ",
+          "ok": true
+        },
+        {
+          "sent": "苹果吃鱼",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "书吃饭",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "老师吃水",
+          "gold": "REJECT",
+          "pred": "吃(AGENT=老师 PATIENT=水) ",
+          "ok": false
+        },
+        {
+          "sent": "我吃书",
+          "gold": "REJECT",
+          "pred": "吃(AGENT=我 PATIENT=书) ",
+          "ok": false
+        },
+        {
+          "sent": "狗吃桌子",
+          "gold": "REJECT",
+          "pred": "吃(AGENT=狗 PATIENT=桌子) ",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "verb": "喜欢",
+      "heldout": 2,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.0,
+      "overall": 0.5,
+      "items": [
+        {
+          "sent": "老师喜欢花",
+          "gold": "喜欢(EXPERIENCER=老师 STIMULUS=花) ",
+          "pred": "喜欢(EXPERIENCER=老师 STIMULUS=花) ",
+          "ok": true
+        },
+        {
+          "sent": "石头喜欢猫",
+          "gold": "REJECT",
+          "pred": "喜欢(EXPERIENCER=石头 STIMULUS=猫) ",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "verb": "喝",
+      "heldout": 6,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.3333333333333333,
+      "overall": 0.6666666666666666,
+      "items": [
+        {
+          "sent": "妈妈喝水",
+          "gold": "喝(AGENT=妈妈 PATIENT=水) ",
+          "pred": "喝(AGENT=妈妈 PATIENT=水) ",
+          "ok": true
+        },
+        {
+          "sent": "鱼喝水",
+          "gold": "喝(AGENT=鱼 PATIENT=水) ",
+          "pred": "喝(AGENT=鱼 PATIENT=水) ",
+          "ok": true
+        },
+        {
+          "sent": "妈妈把水喝了",
+          "gold": "喝(AGENT=妈妈 PATIENT=水) [BA PERF]",
+          "pred": "喝(AGENT=妈妈 PATIENT=水) [BA PERF]",
+          "ok": true
+        },
+        {
+          "sent": "石头喝水",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "我喝石头",
+          "gold": "REJECT",
+          "pred": "喝(AGENT=我 PATIENT=石头) ",
+          "ok": false
+        },
+        {
+          "sent": "猫喝石头",
+          "gold": "REJECT",
+          "pred": "喝(AGENT=猫 PATIENT=石头) ",
+          "ok": false
+        }
+      ]
+    },
+    {
+      "verb": "有",
+      "heldout": 1,
+      "valid_exact": 1.0,
+      "invalid_reject": 0.0,
+      "overall": 1.0,
+      "items": [
+        {
+          "sent": "妈妈有书",
+          "gold": "有(POSSESSED=书 POSSESSOR=妈妈) ",
+          "pred": "有(POSSESSED=书 POSSESSOR=妈妈) ",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "verb": "看",
+      "heldout": 3,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0,
+      "overall": 1.0,
+      "items": [
+        {
+          "sent": "猫看书",
+          "gold": "看(AGENT=猫 PATIENT=书) ",
+          "pred": "看(AGENT=猫 PATIENT=书) ",
+          "ok": true
+        },
+        {
+          "sent": "我不看书",
+          "gold": "看(AGENT=我 PATIENT=书) [NEG]",
+          "pred": "看(AGENT=我 PATIENT=书) [NEG]",
+          "ok": true
+        },
+        {
+          "sent": "花看鸟",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "verb": "给",
+      "heldout": 2,
+      "valid_exact": 1.0,
+      "invalid_reject": 1.0,
+      "overall": 1.0,
+      "items": [
+        {
+          "sent": "他给妈妈水",
+          "gold": "给(AGENT=他 PATIENT=水 RECIPIENT=妈妈) ",
+          "pred": "给(AGENT=他 PATIENT=水 RECIPIENT=妈妈) ",
+          "ok": true
+        },
+        {
+          "sent": "苹果给小明书",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "verb": "跑",
+      "heldout": 0,
+      "note": "held-out 无该动词"
+    }
+  ],
+  "predictions": {
+    "P1_valid_exact_ge_0.80": true,
+    "P2_invalid_reject_ge_0.80": true,
+    "P2b_beats_accept_all_on_invalid": true,
+    "P2c_beats_cell_on_invalid": true,
+    "P3a_consistent_world_invalid_stable": true,
+    "P3b_broken_labels_invalid_drop_ge_0.20": true,
+    "P3c_consistent_world_overall_delta": -0.12903225806451613,
+    "P4_position_only_near_accept_all": true,
+    "P5_lovo_unseen_verb_ge_0.60": true
+  }
+}
