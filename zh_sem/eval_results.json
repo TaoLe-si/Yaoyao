@@ -3,83 +3,83 @@
     "valid_exact": 1.0,
     "invalid_reject": 1.0,
     "overall": 1.0,
-    "valid_ok": 17,
-    "valid_n": 17,
-    "invalid_ok": 14,
-    "invalid_n": 14
+    "valid_ok": 31,
+    "valid_n": 31,
+    "invalid_ok": 26,
+    "invalid_n": 26
   },
   "baselines": {
     "accept_all": {
       "valid_exact": 1.0,
       "invalid_reject": 0.0,
-      "overall": 0.5483870967741935,
-      "valid_ok": 17,
-      "valid_n": 17,
+      "overall": 0.543859649122807,
+      "valid_ok": 31,
+      "valid_n": 31,
       "invalid_ok": 0,
-      "invalid_n": 14
+      "invalid_n": 26
     },
     "reject_all": {
       "valid_exact": 0.0,
       "invalid_reject": 1.0,
-      "overall": 0.45161290322580644,
+      "overall": 0.45614035087719296,
       "valid_ok": 0,
-      "valid_n": 17,
-      "invalid_ok": 14,
-      "invalid_n": 14
+      "valid_n": 31,
+      "invalid_ok": 26,
+      "invalid_n": 26
     },
     "cell_lookup": {
-      "valid_exact": 1.0,
-      "invalid_reject": 0.21428571428571427,
-      "overall": 0.6451612903225806,
-      "valid_ok": 17,
-      "valid_n": 17,
-      "invalid_ok": 3,
-      "invalid_n": 14
+      "valid_exact": 0.9032258064516129,
+      "invalid_reject": 0.4230769230769231,
+      "overall": 0.6842105263157895,
+      "valid_ok": 28,
+      "valid_n": 31,
+      "invalid_ok": 11,
+      "invalid_n": 26
     },
     "verifier": {
       "valid_exact": 1.0,
       "invalid_reject": 1.0,
       "overall": 1.0,
-      "valid_ok": 17,
-      "valid_n": 17,
-      "invalid_ok": 14,
-      "invalid_n": 14
+      "valid_ok": 31,
+      "valid_n": 31,
+      "invalid_ok": 26,
+      "invalid_n": 26
     }
   },
   "controls": {
     "random_props_consistent": {
       "valid_exact": 0.6666666666666666,
       "invalid_reject": 1.0,
-      "overall": 0.8709677419354839,
-      "valid_ok": 8,
-      "valid_n": 12,
-      "invalid_ok": 19,
-      "invalid_n": 19,
+      "overall": 0.8421052631578947,
+      "valid_ok": 18,
+      "valid_n": 27,
+      "invalid_ok": 30,
+      "invalid_n": 30,
       "changed_nouns": 15
     },
     "random_props_broken": {
-      "valid_exact": 0.8235294117647058,
-      "invalid_reject": 0.5714285714285714,
-      "overall": 0.7096774193548387,
-      "valid_ok": 14,
-      "valid_n": 17,
-      "invalid_ok": 8,
-      "invalid_n": 14
+      "valid_exact": 0.8709677419354839,
+      "invalid_reject": 0.6153846153846154,
+      "overall": 0.7543859649122807,
+      "valid_ok": 27,
+      "valid_n": 31,
+      "invalid_ok": 16,
+      "invalid_n": 26
     },
     "position_only": {
-      "valid_exact": 1.0,
+      "valid_exact": 0.9354838709677419,
       "invalid_reject": 0.0,
-      "overall": 0.5483870967741935,
-      "valid_ok": 17,
-      "valid_n": 17,
+      "overall": 0.5087719298245614,
+      "valid_ok": 29,
+      "valid_n": 31,
       "invalid_ok": 0,
-      "invalid_n": 14
+      "invalid_n": 26
     }
   },
   "lovo": [
     {
       "verb": "买",
-      "heldout": 2,
+      "heldout": 3,
       "valid_exact": 1.0,
       "invalid_reject": 1.0,
       "overall": 1.0,
@@ -88,6 +88,12 @@
           "sent": "我买苹果",
           "gold": "买(AGENT=我 PATIENT=苹果) ",
           "pred": "买(AGENT=我 PATIENT=苹果) ",
+          "ok": true
+        },
+        {
+          "sent": "小明买书",
+          "gold": "买(AGENT=小明 PATIENT=书) ",
+          "pred": "买(AGENT=小明 PATIENT=书) ",
           "ok": true
         },
         {
@@ -100,15 +106,21 @@
     },
     {
       "verb": "去",
-      "heldout": 3,
+      "heldout": 5,
       "valid_exact": 1.0,
-      "invalid_reject": 0.5,
-      "overall": 0.6666666666666666,
+      "invalid_reject": 0.6666666666666666,
+      "overall": 0.8,
       "items": [
         {
           "sent": "小明去学校",
           "gold": "去(AGENT=小明 GOAL=学校) ",
           "pred": "去(AGENT=小明 GOAL=学校) ",
+          "ok": true
+        },
+        {
+          "sent": "狗去学校",
+          "gold": "去(AGENT=狗 GOAL=学校) ",
+          "pred": "去(AGENT=狗 GOAL=学校) ",
           "ok": true
         },
         {
@@ -122,15 +134,21 @@
           "gold": "REJECT",
           "pred": "去(AGENT=小明 GOAL=书) ",
           "ok": false
+        },
+        {
+          "sent": "花去学校",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
         }
       ]
     },
     {
       "verb": "吃",
-      "heldout": 8,
+      "heldout": 10,
       "valid_exact": 1.0,
-      "invalid_reject": 0.4,
-      "overall": 0.625,
+      "invalid_reject": 0.3333333333333333,
+      "overall": 0.6,
       "items": [
         {
           "sent": "狗吃苹果",
@@ -148,6 +166,12 @@
           "sent": "猫吃苹果",
           "gold": "吃(AGENT=猫 PATIENT=苹果) ",
           "pred": "吃(AGENT=猫 PATIENT=苹果) ",
+          "ok": true
+        },
+        {
+          "sent": "鸟吃苹果",
+          "gold": "吃(AGENT=鸟 PATIENT=苹果) ",
+          "pred": "吃(AGENT=鸟 PATIENT=苹果) ",
           "ok": true
         },
         {
@@ -179,15 +203,21 @@
           "gold": "REJECT",
           "pred": "吃(AGENT=狗 PATIENT=桌子) ",
           "ok": false
+        },
+        {
+          "sent": "猫吃水",
+          "gold": "REJECT",
+          "pred": "吃(AGENT=猫 PATIENT=水) ",
+          "ok": false
         }
       ]
     },
     {
       "verb": "喜欢",
-      "heldout": 2,
+      "heldout": 3,
       "valid_exact": 1.0,
       "invalid_reject": 0.0,
-      "overall": 0.5,
+      "overall": 0.3333333333333333,
       "items": [
         {
           "sent": "老师喜欢花",
@@ -200,15 +230,21 @@
           "gold": "REJECT",
           "pred": "喜欢(EXPERIENCER=石头 STIMULUS=猫) ",
           "ok": false
+        },
+        {
+          "sent": "苹果喜欢书",
+          "gold": "REJECT",
+          "pred": "喜欢(EXPERIENCER=苹果 STIMULUS=书) ",
+          "ok": false
         }
       ]
     },
     {
       "verb": "喝",
-      "heldout": 6,
+      "heldout": 8,
       "valid_exact": 1.0,
-      "invalid_reject": 0.3333333333333333,
-      "overall": 0.6666666666666666,
+      "invalid_reject": 0.25,
+      "overall": 0.625,
       "items": [
         {
           "sent": "妈妈喝水",
@@ -229,6 +265,12 @@
           "ok": true
         },
         {
+          "sent": "老师喝水",
+          "gold": "喝(AGENT=老师 PATIENT=水) ",
+          "pred": "喝(AGENT=老师 PATIENT=水) ",
+          "ok": true
+        },
+        {
           "sent": "石头喝水",
           "gold": "REJECT",
           "pred": "REJECT",
@@ -245,45 +287,99 @@
           "gold": "REJECT",
           "pred": "喝(AGENT=猫 PATIENT=石头) ",
           "ok": false
+        },
+        {
+          "sent": "妈妈喝饭",
+          "gold": "REJECT",
+          "pred": "喝(AGENT=妈妈 PATIENT=饭) ",
+          "ok": false
         }
       ]
     },
     {
       "verb": "有",
-      "heldout": 1,
+      "heldout": 2,
       "valid_exact": 1.0,
       "invalid_reject": 0.0,
-      "overall": 1.0,
+      "overall": 0.5,
       "items": [
         {
           "sent": "妈妈有书",
           "gold": "有(POSSESSED=书 POSSESSOR=妈妈) ",
           "pred": "有(POSSESSED=书 POSSESSOR=妈妈) ",
           "ok": true
+        },
+        {
+          "sent": "桌子有书",
+          "gold": "REJECT",
+          "pred": "有(POSSESSED=书 POSSESSOR=桌子) ",
+          "ok": false
         }
       ]
     },
     {
       "verb": "看",
-      "heldout": 3,
-      "valid_exact": 1.0,
-      "invalid_reject": 1.0,
-      "overall": 1.0,
+      "heldout": 10,
+      "valid_exact": 0.6666666666666666,
+      "invalid_reject": 0.5,
+      "overall": 0.6,
       "items": [
         {
+          "sent": "妈妈看书",
+          "gold": "看/read(AGENT=妈妈 PATIENT=书) ",
+          "pred": "看/read(AGENT=妈妈 PATIENT=书) ",
+          "ok": true
+        },
+        {
+          "sent": "他看书",
+          "gold": "看/read(AGENT=他 PATIENT=书) ",
+          "pred": "看/read(AGENT=他 PATIENT=书) ",
+          "ok": true
+        },
+        {
+          "sent": "小明看学校",
+          "gold": "看/visit(AGENT=小明 PATIENT=学校) ",
+          "pred": "看/read(AGENT=小明 PATIENT=学校) ",
+          "ok": false
+        },
+        {
+          "sent": "狗看学校",
+          "gold": "看/visit(AGENT=狗 PATIENT=学校) ",
+          "pred": "看/read(AGENT=狗 PATIENT=学校) ",
+          "ok": false
+        },
+        {
           "sent": "猫看书",
-          "gold": "看(AGENT=猫 PATIENT=书) ",
-          "pred": "看(AGENT=猫 PATIENT=书) ",
+          "gold": "看/read(AGENT=猫 PATIENT=书) ",
+          "pred": "看/read(AGENT=猫 PATIENT=书) ",
           "ok": true
         },
         {
           "sent": "我不看书",
-          "gold": "看(AGENT=我 PATIENT=书) [NEG]",
-          "pred": "看(AGENT=我 PATIENT=书) [NEG]",
+          "gold": "看/read(AGENT=我 PATIENT=书) [NEG]",
+          "pred": "看/read(AGENT=我 PATIENT=书) [NEG]",
           "ok": true
         },
         {
-          "sent": "花看鸟",
+          "sent": "老师看石头",
+          "gold": "REJECT",
+          "pred": "看/read(AGENT=老师 PATIENT=石头) ",
+          "ok": false
+        },
+        {
+          "sent": "我看桌子",
+          "gold": "REJECT",
+          "pred": "看/read(AGENT=我 PATIENT=桌子) ",
+          "ok": false
+        },
+        {
+          "sent": "苹果看学校",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "桌子看书",
           "gold": "REJECT",
           "pred": "REJECT",
           "ok": true
@@ -292,10 +388,10 @@
     },
     {
       "verb": "给",
-      "heldout": 2,
+      "heldout": 6,
       "valid_exact": 1.0,
-      "invalid_reject": 1.0,
-      "overall": 1.0,
+      "invalid_reject": 0.6666666666666666,
+      "overall": 0.8333333333333334,
       "items": [
         {
           "sent": "他给妈妈水",
@@ -304,10 +400,34 @@
           "ok": true
         },
         {
+          "sent": "我给他苹果",
+          "gold": "给(AGENT=我 PATIENT=苹果 RECIPIENT=他) ",
+          "pred": "给(AGENT=我 PATIENT=苹果 RECIPIENT=他) ",
+          "ok": true
+        },
+        {
+          "sent": "妈妈给老师书",
+          "gold": "给(AGENT=妈妈 PATIENT=书 RECIPIENT=老师) ",
+          "pred": "给(AGENT=妈妈 PATIENT=书 RECIPIENT=老师) ",
+          "ok": true
+        },
+        {
           "sent": "苹果给小明书",
           "gold": "REJECT",
           "pred": "REJECT",
           "ok": true
+        },
+        {
+          "sent": "石头给老师书",
+          "gold": "REJECT",
+          "pred": "REJECT",
+          "ok": true
+        },
+        {
+          "sent": "老师给石头书",
+          "gold": "REJECT",
+          "pred": "给(AGENT=老师 PATIENT=书 RECIPIENT=石头) ",
+          "ok": false
         }
       ]
     },
@@ -324,7 +444,7 @@
     "P2c_beats_cell_on_invalid": true,
     "P3a_consistent_world_invalid_stable": true,
     "P3b_broken_labels_invalid_drop_ge_0.20": true,
-    "P3c_consistent_world_overall_delta": -0.12903225806451613,
+    "P3c_consistent_world_overall_delta": -0.1578947368421053,
     "P4_position_only_near_accept_all": true,
     "P5_lovo_unseen_verb_ge_0.60": true
   }

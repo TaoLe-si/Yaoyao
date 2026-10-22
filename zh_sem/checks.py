@@ -23,8 +23,7 @@ def check(name, ok, detail=""):
 
 def main():
     # C1 分词往返
-    bad = [s for s, _ in TRAIN + HELDOUT
-           if "".join(t.form for t in tokenize(s)) != s]
+    bad = [s for s, _ in TRAIN + HELDOUT if "".join(tokenize(s)) != s]
     check("C1 分词往返", not bad, "bad=%s" % bad[:3])
 
     # C2 正例必须都有 gold 候选（含 entity）

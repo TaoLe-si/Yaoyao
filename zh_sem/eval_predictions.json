@@ -1,5 +1,29 @@
 [
   {
+    "sent": "妈妈看书",
+    "gold": "看/read(AGENT=妈妈 PATIENT=书) ",
+    "pred": "看/read(AGENT=妈妈 PATIENT=书) ",
+    "ok": true
+  },
+  {
+    "sent": "他看书",
+    "gold": "看/read(AGENT=他 PATIENT=书) ",
+    "pred": "看/read(AGENT=他 PATIENT=书) ",
+    "ok": true
+  },
+  {
+    "sent": "小明看学校",
+    "gold": "看/visit(AGENT=小明 PATIENT=学校) ",
+    "pred": "看/visit(AGENT=小明 PATIENT=学校) ",
+    "ok": true
+  },
+  {
+    "sent": "狗看学校",
+    "gold": "看/visit(AGENT=狗 PATIENT=学校) ",
+    "pred": "看/visit(AGENT=狗 PATIENT=学校) ",
+    "ok": true
+  },
+  {
     "sent": "狗吃苹果",
     "gold": "吃(AGENT=狗 PATIENT=苹果) ",
     "pred": "吃(AGENT=狗 PATIENT=苹果) ",
@@ -25,8 +49,8 @@
   },
   {
     "sent": "猫看书",
-    "gold": "看(AGENT=猫 PATIENT=书) ",
-    "pred": "看(AGENT=猫 PATIENT=书) ",
+    "gold": "看/read(AGENT=猫 PATIENT=书) ",
+    "pred": "看/read(AGENT=猫 PATIENT=书) ",
     "ok": true
   },
   {
@@ -85,8 +109,8 @@
   },
   {
     "sent": "我不看书",
-    "gold": "看(AGENT=我 PATIENT=书) [NEG]",
-    "pred": "看(AGENT=我 PATIENT=书) [NEG]",
+    "gold": "看/read(AGENT=我 PATIENT=书) [NEG]",
+    "pred": "看/read(AGENT=我 PATIENT=书) [NEG]",
     "ok": true
   },
   {
@@ -99,6 +123,90 @@
     "sent": "他很高兴",
     "gold": "高兴(THEME=他) [DEGREE]",
     "pred": "高兴(THEME=他) [DEGREE]",
+    "ok": true
+  },
+  {
+    "sent": "鸟吃苹果",
+    "gold": "吃(AGENT=鸟 PATIENT=苹果) ",
+    "pred": "吃(AGENT=鸟 PATIENT=苹果) ",
+    "ok": true
+  },
+  {
+    "sent": "老师喝水",
+    "gold": "喝(AGENT=老师 PATIENT=水) ",
+    "pred": "喝(AGENT=老师 PATIENT=水) ",
+    "ok": true
+  },
+  {
+    "sent": "小明买书",
+    "gold": "买(AGENT=小明 PATIENT=书) ",
+    "pred": "买(AGENT=小明 PATIENT=书) ",
+    "ok": true
+  },
+  {
+    "sent": "我给他苹果",
+    "gold": "给(AGENT=我 PATIENT=苹果 RECIPIENT=他) ",
+    "pred": "给(AGENT=我 PATIENT=苹果 RECIPIENT=他) ",
+    "ok": true
+  },
+  {
+    "sent": "妈妈给老师书",
+    "gold": "给(AGENT=妈妈 PATIENT=书 RECIPIENT=老师) ",
+    "pred": "给(AGENT=妈妈 PATIENT=书 RECIPIENT=老师) ",
+    "ok": true
+  },
+  {
+    "sent": "狗去学校",
+    "gold": "去(AGENT=狗 GOAL=学校) ",
+    "pred": "去(AGENT=狗 GOAL=学校) ",
+    "ok": true
+  },
+  {
+    "sent": "老师在家",
+    "gold": "在(LOC=家 THEME=老师) ",
+    "pred": "在(LOC=家 THEME=老师) ",
+    "ok": true
+  },
+  {
+    "sent": "花很大",
+    "gold": "大(THEME=花) [DEGREE]",
+    "pred": "大(THEME=花) [DEGREE]",
+    "ok": true
+  },
+  {
+    "sent": "大的书",
+    "gold": "书() [ATTR]",
+    "pred": "书() [ATTR]",
+    "ok": true
+  },
+  {
+    "sent": "小的苹果",
+    "gold": "苹果() [ATTR]",
+    "pred": "苹果() [ATTR]",
+    "ok": true
+  },
+  {
+    "sent": "老师看石头",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "我看桌子",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "苹果看学校",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "桌子看书",
+    "gold": "REJECT",
+    "pred": "REJECT",
     "ok": true
   },
   {
@@ -121,12 +229,6 @@
   },
   {
     "sent": "桌子去学校",
-    "gold": "REJECT",
-    "pred": "REJECT",
-    "ok": true
-  },
-  {
-    "sent": "花看鸟",
     "gold": "REJECT",
     "pred": "REJECT",
     "ok": true
@@ -181,6 +283,60 @@
   },
   {
     "sent": "石头买书",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "妈妈喝饭",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "猫吃水",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "石头给老师书",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "老师给石头书",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "桌子有书",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "花去学校",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "苹果喜欢书",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "石头很高兴",
+    "gold": "REJECT",
+    "pred": "REJECT",
+    "ok": true
+  },
+  {
+    "sent": "石头很忙",
     "gold": "REJECT",
     "pred": "REJECT",
     "ok": true

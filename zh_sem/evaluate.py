@@ -19,7 +19,7 @@ sys.path.insert(0, HERE)
 from data import HELDOUT, TRAIN, TRAIN_VALID  # noqa: E402
 from learner import (evaluate, predict, randomize_props, ratio,  # noqa: E402
                      token_forms, train)
-from lexicon import LEX, VERB_FRAME  # noqa: E402
+from lexicon import LEX, SENSE_FORM, VERB_FRAME  # noqa: E402
 from parser import parse  # noqa: E402
 from semantics import canon  # noqa: E402
 from verifier import label_sentence, verify  # noqa: E402
@@ -112,17 +112,17 @@ def baseline_verifier(data, lex):
 
 def leave_one_verb_out(lex):
     rows = []
-    for verb in sorted(VERB_FRAME):
-        sub = [(s, g) for s, g in TRAIN if verb not in token_forms(s)]
+    for verb_form in sorted({SENSE_FORM[s] for s in VERB_FRAME}):
+        sub = [(s, g) for s, g in TRAIN if verb_form not in token_forms(s)]
         if len(sub) == len(TRAIN):
-            continue                                   # 训练集里没这个动词
-        hold = [(s, g) for s, g in HELDOUT if verb in token_forms(s)]
+            continue
+        hold = [(s, g) for s, g in HELDOUT if verb_form in token_forms(s)]
         if not hold:
-            rows.append({"verb": verb, "heldout": 0, "note": "held-out 无该动词"})
+            rows.append({"verb": verb_form, "heldout": 0, "note": "held-out 无该动词"})
             continue
         w = train(sub, lex, epochs=40, seed=0)
         st = evaluate(w, hold, lex)
-        rows.append({"verb": verb, "heldout": len(hold),
+        rows.append({"verb": verb_form, "heldout": len(hold),
                      "valid_exact": ratio(st, "valid"),
                      "invalid_reject": ratio(st, "invalid"),
                      "overall": (st["valid_ok"] + st["invalid_ok"]) / len(hold),

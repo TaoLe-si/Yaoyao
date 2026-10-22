@@ -37,7 +37,7 @@ def build_pool(limit=900, seed=0):
     fixed = {s for s, _ in TRAIN} | {s for s, _ in HELDOUT}
     raw = []
     for v in verbs:
-        frame = VERB_FRAME[v]
+        frame = LEX[v]["frame"]
         if len(frame) == 1:
             raw += ["%s%s" % (n, v) for n in nouns]
         elif len(frame) == 2:

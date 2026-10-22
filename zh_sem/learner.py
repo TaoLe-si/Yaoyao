@@ -56,17 +56,15 @@ def slot_score(w, verb, role, head, lex, mode="full"):
 
 
 def slot_valid(w, verb, role, head, lex, mode="full"):
-    """逐属性否决，带回退。
-
-    选择限制是"每动词、每槽位、每属性的合取许可"：
-      - 若该 (verb, role, prop=value) 有训练证据（权重非零）→ 用它；
-      - 否则回退到共享的 (role, prop=value)；
-      - 任一属性被否决（<0）⇒ 整个槽位无效。
-    这样"喝"的液体正分不会把"吃"的非食用宾语救回来。
-    """
+    """逐属性否决，带回退；类约束只在动词专属证据下生效。"""
     if mode == "position_only":
         return True
-    props = lex[head].get("props")
+    info = lex[head]
+    cls = info.get("cls")
+    # 类门：只在 (verb, role, cls) 有训练证据时否决（未见类不误杀）
+    if w.get(("verb_role_class", verb, role, cls), 0) < 0:
+        return False
+    props = info.get("props")
     if props is None:
         return True
     for k in PROP_KEYS:
@@ -79,6 +77,10 @@ def slot_valid(w, verb, role, head, lex, mode="full"):
         if gate < 0:
             return False
     return True
+
+
+def candidate_valid(w, m, lex, mode="full"):
+    return all(slot_valid(w, v, r, h, lex, mode) for v, r, h in cand_slots(m))
 
 
 def slot_scores(w, m, lex, mode="full"):
@@ -128,8 +130,10 @@ def train(data, lex, mode="full", epochs=40, seed=0):
             cands = parse(sent)
             pred, pf = predict(w, cands, lex, mode)
             if gold is None:
-                if pred is not None:                 # 假接受
-                    update(w, [], pf)
+                # 负例：惩罚**所有**当前被接受的候选，否则另一个义项会漏学
+                for m in cands:
+                    if candidate_valid(w, m, lex, mode):
+                        update(w, [], cand_feats(m, lex, mode))
             else:
                 target = _target(cands, gold)
                 if target is None:
@@ -208,4 +212,4 @@ def randomize_props(lex, seed=0):
 
 
 def token_forms(sent):
-    return [t.form for t in tokenize(sent)]
+    return tokenize(sent)
