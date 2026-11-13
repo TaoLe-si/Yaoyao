@@ -1,0 +1,76 @@
+{
+ "dev": 16.151881774252004,
+ "test": 16.397096571314428,
+ "params": 90324992,
+ "params_dedup": 59490304,
+ "unique_O_rows": 20145,
+ "ind": [
+  {
+   "name": "s1_w1024",
+   "code": "x",
+   "window": 1024,
+   "topk": 4
+  },
+  {
+   "name": "s2_w1024",
+   "code": "x2",
+   "window": 1024,
+   "topk": 4
+  },
+  {
+   "name": "s1_w256_k8",
+   "code": "x",
+   "window": 256,
+   "topk": 8
+  },
+  {
+   "name": "s1_c256_w256",
+   "code": "c256",
+   "window": 256,
+   "topk": 4
+  },
+  {
+   "name": "s1_z2_w256",
+   "code": "xz2",
+   "window": 256,
+   "topk": 4
+  },
+  {
+   "name": "s2_w512",
+   "code": "x2",
+   "window": 512,
+   "topk": 4
+  },
+  {
+   "name": "s1_w192",
+   "code": "x",
+   "window": 192,
+   "topk": 4
+  },
+  {
+   "name": "s3_w512",
+   "code": "x3",
+   "window": 512,
+   "topk": 4
+  },
+  {
+   "name": "s1_c1024_w256",
+   "code": "c1024",
+   "window": 256,
+   "topk": 4
+  },
+  {
+   "name": "s1_w256_k1",
+   "code": "x",
+   "window": 256,
+   "topk": 1
+  }
+ ],
+ "glob": [
+  32,
+  64,
+  128,
+  256,
+  1024
+ ]
+}
